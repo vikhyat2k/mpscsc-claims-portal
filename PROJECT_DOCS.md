@@ -792,6 +792,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
 | `a27a410` | 2026-09-22 | fix(db): checkpoint and commit purged clean database containing only Vikhyat Hindoliya |
 | `972b430` | 2026-09-22 | fix(yaml): quote string values in render.yaml for strict YAML schema validation |
 | `4fba562` | 2026-09-22 | fix(build): ensure vite build tools are installed in production environments |
@@ -799,7 +800,6 @@ This automatically launches:
 | `909bd54` | 2026-09-22 | feat(deploy): prepare codebase for seamless 1-click free server deployment (Render/Railway/Docker) |
 | `120f0b5` | 2026-09-22 | fix(git): make post-commit push non-interactive and fail-safe |
 | `2b2d77a` | 2026-09-22 | feat(git): add post-commit hook for automated GitHub synchronization |
-| `0b6c5d8` | 2026-09-22 | docs: sync recent commits table with docs automation commit |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones

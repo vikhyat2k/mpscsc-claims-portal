@@ -14,6 +14,7 @@ export default function AdminUserDetail() {
     const [error, setError] = useState("");
     const [resetPw, setResetPw] = useState("");
     const [resetMsg, setResetMsg] = useState("");
+    const [claimTypeFilter, setClaimTypeFilter] = useState("ALL");
 
     const fetchUser = async () => {
         setLoading(true);
@@ -55,7 +56,6 @@ export default function AdminUserDetail() {
     if (!data) return null;
 
     const { user, employees, claimStats, claims } = data;
-    const [claimTypeFilter, setClaimTypeFilter] = useState("ALL");
 
     const filteredClaims = (claims || []).filter(c => {
         if (claimTypeFilter === "ALL") return true;
