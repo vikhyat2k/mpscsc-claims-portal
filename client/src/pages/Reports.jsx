@@ -1,4 +1,4 @@
-﻿import api, { apiRequest } from '../utils/api';
+import api, { apiRequest } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -203,7 +203,7 @@ const Reports = () => {
                 />
                 <div>
                     <h2 style={{ margin: 0, fontSize: '15px', textTransform: 'uppercase' }}>
-                        {language === 'hi' ? 'à¤®à¤§à¥à¤¯ à¤ªà¥à¤°à¤¦à¥‡à¤¶ à¤¸à¥à¤Ÿà¥‡à¤Ÿ à¤¸à¤¿à¤µà¤¿à¤² à¤¸à¤ªà¥à¤²à¤¾à¤‡à¤œ à¤•à¥‰à¤°à¥à¤ªà¥‹à¤°à¥‡à¤¶à¤¨ à¤²à¤¿à¤®à¤¿à¤Ÿà¥‡à¤¡' : 'M.P. State Civil Supplies Corporation Limited'}
+                        {language === 'hi' ? 'मध्य प्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड' : 'M.P. State Civil Supplies Corporation Limited'}
                     </h2>
                     <h3 style={{ margin: '3px 0 0 0', fontSize: '13px', fontWeight: 'bold' }}>
                         {rt.title}
@@ -231,7 +231,7 @@ const Reports = () => {
                 </div>
                 <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid #10b981' }}>
                     <div style={{ color: '#64748b', fontSize: '0.875rem' }}>{rt.totalAmount}</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>â‚¹{stats.totalAmount.toLocaleString()}</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>₹{stats.totalAmount.toLocaleString()}</div>
                 </div>
                 <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid #f59e0b' }}>
                     <div style={{ color: '#64748b', fontSize: '0.875rem' }}>{rt.draftClaims}</div>
@@ -278,17 +278,17 @@ const Reports = () => {
                         <label className="form-label">{rt.table.category}</label>
                         <select className="form-select" value={filters.category} onChange={e => setFilters({ ...filters, category: e.target.value })}>
                             <option value="all">{rt.allCategories}</option>
-                            <option value="A">{language === 'hi' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ A' : 'Category A'}</option>
-                            <option value="B">{language === 'hi' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ B' : 'Category B'}</option>
-                            <option value="C">{language === 'hi' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ C' : 'Category C'}</option>
-                            <option value="D">{language === 'hi' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ D' : 'Category D'}</option>
-                            <option value="E">{language === 'hi' ? 'à¤¶à¥à¤°à¥‡à¤£à¥€ E' : 'Category E'}</option>
+                            <option value="A">{language === 'hi' ? 'श्रेणी A' : 'Category A'}</option>
+                            <option value="B">{language === 'hi' ? 'श्रेणी B' : 'Category B'}</option>
+                            <option value="C">{language === 'hi' ? 'श्रेणी C' : 'Category C'}</option>
+                            <option value="D">{language === 'hi' ? 'श्रेणी D' : 'Category D'}</option>
+                            <option value="E">{language === 'hi' ? 'श्रेणी E' : 'Category E'}</option>
                         </select>
                     </div>
                     <div className="form-group">
                         <label className="form-label">{rt.table.headquarter}</label>
                         <select className="form-select" value={filters.headquarter} onChange={e => setFilters({ ...filters, headquarter: e.target.value })}>
-                            <option value="all">{language === 'hi' ? 'à¤¸à¤­à¥€ à¤®à¥à¤–à¥à¤¯à¤¾à¤²à¤¯' : 'All Headquarters'}</option>
+                            <option value="all">{language === 'hi' ? 'सभी मुख्यालय' : 'All Headquarters'}</option>
                             {[...new Set(employees.map(emp => emp.headquarters))].filter(Boolean).sort().map(hq => (
                                 <option key={hq} value={hq}>{hq}</option>
                             ))}
@@ -359,7 +359,7 @@ const Reports = () => {
                                         {c.start_date || '-'}<br />{c.end_date || '-'}
                                     </td>
                                     <td style={{ textAlign: 'right', fontWeight: '600' }}>
-                                        â‚¹{(c.total_amount || 0).toLocaleString()}
+                                        ₹{(c.total_amount || 0).toLocaleString()}
                                     </td>
                                     <td>
                                         <span className={`status-pill ${c.status === 'SUBMITTED' ? 'status-submitted' : 'status-draft'}`}>
@@ -401,7 +401,7 @@ const Reports = () => {
                             {filteredClaims.length === 0 && (
                                 <tr>
                                     <td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-                                        {language === 'hi' ? 'à¤•à¥‹à¤ˆ à¤®à¤¿à¤²à¤¾à¤¨ à¤¦à¤¾à¤µà¤¾ à¤¨à¤¹à¥€à¤‚ à¤®à¤¿à¤²à¤¾à¥¤' : 'No matching claims found.'}
+                                        {language === 'hi' ? 'कोई मिलान दावा नहीं मिला।' : 'No matching claims found.'}
                                     </td>
                                 </tr>
                             )}

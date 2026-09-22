@@ -2,7 +2,7 @@
    MPSCSC Portal — Unified Design System
    Google Font: Inter
 ═══════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
 
 :root {
   --primary:       #1a5f7a;
@@ -25,7 +25,7 @@
   --r-md: 12px;
   --r-lg: 16px;
   --r-xl: 20px;
-  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --sidebar-w: 232px;
 
   /* Glassmorphism Tokens */

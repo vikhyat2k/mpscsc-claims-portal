@@ -1,4 +1,4 @@
-﻿import api, { apiRequest } from '../utils/api';
+import api, { apiRequest } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Save, Plus, Trash, Printer, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
@@ -213,7 +213,7 @@ const TransferClaim = () => {
             });
 
             if (res.ok) {
-                alert(language === 'hi' ? 'à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Transfer claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'स्थानांतरण दावा सफलतापूर्वक स्वीकृति हेतु प्रस्तुत किया गया!' : 'Transfer claim successfully submitted for approval!');
                 setClaim(prev => ({ ...prev, status: 'SUBMITTED' }));
                 fetchData();
             } else {
@@ -244,9 +244,9 @@ const TransferClaim = () => {
                         className="btn btn-secondary"
                         onClick={() => navigate(`/claims/${id}/bill`)}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                        title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤¦à¥‡à¤¯à¤• (à¤«à¥‰à¤°à¥à¤® 21) à¤¦à¥‡à¤–à¥‡à¤‚ / à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'View / Print Transfer Form 21 Bill'}
+                        title={language === 'hi' ? 'शासकीय प्रारूप में स्थानांतरण देयक (फॉर्म 21) देखें / प्रिंट करें' : 'View / Print Transfer Form 21 Bill'}
                     >
-                        <Printer size={18} /> {language === 'hi' ? 'à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ (à¤«à¥‰à¤°à¥à¤® 21)' : 'Print Transfer Bill (Form 21)'}
+                        <Printer size={18} /> {language === 'hi' ? 'स्थानांतरण देयक प्रिंट (फॉर्म 21)' : 'Print Transfer Bill (Form 21)'}
                     </button>
                     {!isReadOnly && !isSubmitted && (
                         <button className="btn btn-primary" onClick={saveClaims}>
@@ -324,16 +324,16 @@ const TransferClaim = () => {
                             </select>
                         </div>
                         <div className="form-group">
-                            <label className="form-label">{t.tourDiary.stayAmount || 'Hotel/Stay Amount'} (â‚¹)</label>
+                            <label className="form-label">{t.tourDiary.stayAmount || 'Hotel/Stay Amount'} (₹)</label>
                             <input type="number" className="form-input" value={hotelAmount} onChange={e => setHotelAmount(e.target.value)} disabled={hotelStayType === 'None' || isReadOnly} />
                         </div>
                         <div className="form-group" style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', background: 'rgba(240, 253, 244, 0.65)', backdropFilter: 'blur(8px)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed #4ade80' }}>
                             <p style={{ margin: 0, fontSize: '0.85rem', color: '#166534' }}>
                                 <strong>Guidance:</strong><br />
                                 {hotelStayType === 'Friends' ? (
-                                    `Fixed Entitlement: â‚¹${{ A: 750, B: 660, C: 550, D: 450, E: 370 }[(employee?.category?.match(/[ABCDE]/i)?.[0] || 'E').toUpperCase()]} / day`
+                                    `Fixed Entitlement: ₹${{ A: 750, B: 660, C: 550, D: 450, E: 370 }[(employee?.category?.match(/[ABCDE]/i)?.[0] || 'E').toUpperCase()]} / day`
                                 ) : hotelStayType === 'Hotel' ? (
-                                    `Max Entitlement: â‚¹${{ A: 7400, B: 5500, C: 3700, D: 2000, E: 1000 }[(employee?.category?.match(/[ABCDE]/i)?.[0] || 'E').toUpperCase()]} (Metros)`
+                                    `Max Entitlement: ₹${{ A: 7400, B: 5500, C: 3700, D: 2000, E: 1000 }[(employee?.category?.match(/[ABCDE]/i)?.[0] || 'E').toUpperCase()]} (Metros)`
                                 ) : 'Select stay type to see rates.'}
                             </p>
                         </div>
@@ -346,15 +346,15 @@ const TransferClaim = () => {
                         </div>
                         <div className="form-group">
                             <label className="form-label">{t.transfer.transportGoods}</label>
-                            <input type="number" className="form-input" value={goodsTransportCharges} onChange={(e) => setGoodsTransportCharges(e.target.value)} placeholder="â‚¹ Amount" disabled={isReadOnly} />
+                            <input type="number" className="form-input" value={goodsTransportCharges} onChange={(e) => setGoodsTransportCharges(e.target.value)} placeholder="₹ Amount" disabled={isReadOnly} />
                         </div>
                         <div className="form-group">
                             <label className="form-label">{t.transfer.packingLoading}</label>
-                            <input type="number" className="form-input" value={packingCharges} onChange={(e) => setPackingCharges(e.target.value)} placeholder="â‚¹ Amount" disabled={isReadOnly} />
+                            <input type="number" className="form-input" value={packingCharges} onChange={(e) => setPackingCharges(e.target.value)} placeholder="₹ Amount" disabled={isReadOnly} />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">{language === 'hi' ? 'à¤…à¤—à¥à¤°à¤¿à¤® à¤°à¤¾à¤¶à¤¿ (â‚¹)' : 'Advance Amount (â‚¹)'}</label>
-                            <input type="number" className="form-input" value={advanceAmount} onChange={(e) => setAdvanceAmount(e.target.value)} placeholder="â‚¹ Amount" disabled={isReadOnly} />
+                            <label className="form-label">{language === 'hi' ? 'अग्रिम राशि (₹)' : 'Advance Amount (₹)'}</label>
+                            <input type="number" className="form-input" value={advanceAmount} onChange={(e) => setAdvanceAmount(e.target.value)} placeholder="₹ Amount" disabled={isReadOnly} />
                         </div>
                     </div>
                 </div>
@@ -388,7 +388,7 @@ const TransferClaim = () => {
                                 <td>{j.arrival_date} {j.arrival_time} - {j.arrival_station}</td>
                                 <td>{j.mode} ({j.class_of_travel})</td>
                                 <td>{j.purpose}</td>
-                                <td>â‚¹{j.fare_amount}</td>
+                                <td>₹{j.fare_amount}</td>
                                 {!isReadOnly && (
                                     <td>
                                         <button className="btn btn-sm btn-outline-danger" onClick={() => removeJourney(i)}>{t.common.delete}</button>
@@ -420,36 +420,36 @@ const TransferClaim = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '1rem', textAlign: 'center', marginBottom: '0.75rem' }}>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>{t.bill.actualFare}</div>
-                        <div style={{ fontWeight: 600 }}>â‚¹{totals.fare.toLocaleString('en-IN')}</div>
+                        <div style={{ fontWeight: 600 }}>₹{totals.fare.toLocaleString('en-IN')}</div>
                     </div>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Daily Allowance</div>
-                        <div style={{ fontWeight: 600 }}>â‚¹{totals.totalDA.toLocaleString('en-IN')}</div>
+                        <div style={{ fontWeight: 600 }}>₹{totals.totalDA.toLocaleString('en-IN')}</div>
                     </div>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Stay Allowance</div>
-                        <div style={{ fontWeight: 600 }}>â‚¹{totals.totalStayAllowance.toLocaleString('en-IN')}</div>
+                        <div style={{ fontWeight: 600 }}>₹{totals.totalStayAllowance.toLocaleString('en-IN')}</div>
                     </div>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Packing</div>
-                        <div style={{ fontWeight: 600 }}>â‚¹{totals.totalPacking.toLocaleString('en-IN')}</div>
+                        <div style={{ fontWeight: 600 }}>₹{totals.totalPacking.toLocaleString('en-IN')}</div>
                     </div>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Transport</div>
-                        <div style={{ fontWeight: 600 }}>â‚¹{totals.totalTransport.toLocaleString('en-IN')}</div>
+                        <div style={{ fontWeight: 600 }}>₹{totals.totalTransport.toLocaleString('en-IN')}</div>
                     </div>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Local Transport</div>
-                        <div style={{ fontWeight: 600 }}>â‚¹{totals.totalLocalTransport.toLocaleString('en-IN')}</div>
+                        <div style={{ fontWeight: 600 }}>₹{totals.totalLocalTransport.toLocaleString('en-IN')}</div>
                     </div>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>Transfer Grant</div>
-                        <div style={{ fontWeight: 600 }}>â‚¹{totals.transferGrant.toLocaleString('en-IN')}</div>
+                        <div style={{ fontWeight: 600 }}>₹{totals.transferGrant.toLocaleString('en-IN')}</div>
                     </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '2px solid var(--primary-color)', paddingTop: '0.75rem' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.3rem', color: 'var(--primary-color)' }}>
-                        {t.bill.totalAmount}: â‚¹{totals.grandTotal.toLocaleString('en-IN')}
+                        {t.bill.totalAmount}: ₹{totals.grandTotal.toLocaleString('en-IN')}
                     </div>
                 </div>
             </div>
@@ -472,7 +472,7 @@ const TransferClaim = () => {
                                     {availableJourneys.filter(c => c.claim_type === 'TA_DA').map(c => (
                                         <tr key={c.id}>
                                             <td>
-                                                <button className="btn btn-sm btn-primary" onClick={() => handleImportFromClaim(c.id)}>{language === 'hi' ? 'à¤†à¤¯à¤¾à¤¤ à¤•à¤°à¥‡à¤‚' : 'Import'}</button>
+                                                <button className="btn btn-sm btn-primary" onClick={() => handleImportFromClaim(c.id)}>{language === 'hi' ? 'आयात करें' : 'Import'}</button>
                                             </td>
                                             <td>{c.start_date} to {c.end_date}</td>
                                             <td>{c.rendered_claim_id || `#${c.id}`} {c.td_no ? `(TD: ${c.td_no})` : ''}</td>

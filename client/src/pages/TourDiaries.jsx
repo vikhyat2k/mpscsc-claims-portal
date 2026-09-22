@@ -1,4 +1,4 @@
-﻿import api, { apiRequest } from '../utils/api';
+import api, { apiRequest } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, Plus } from 'lucide-react';
@@ -126,7 +126,7 @@ const TourDiaries = () => {
                 body: JSON.stringify({ total_amount: claim.total_amount || 0 })
             });
             if (res.ok) {
-                alert(language === 'hi' ? 'à¤¦à¥Œà¤°à¤¾ à¤¡à¤¾à¤¯à¤°à¥€ à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Tour diary claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'दौरा डायरी दावा सफलतापूर्वक प्रस्तुत किया गया!' : 'Tour diary claim successfully submitted for approval!');
                 if (selectedEmp) fetchClaims(selectedEmp);
                 else fetchAllClaims();
             } else {
@@ -210,23 +210,23 @@ const TourDiaries = () => {
                                                 className="btn btn-sm btn-primary"
                                                 onClick={() => handleSubmitClaim(c)}
                                                 style={{ background: '#2563eb' }}
-                                                title={language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤°à¥‡à¤‚' : 'Submit for approval'}
+                                                title={language === 'hi' ? 'स्वीकृति हेतु प्रस्तुत करें' : 'Submit for approval'}
                                             >
-                                                {language === 'hi' ? 'à¤¸à¤¬à¤®à¤¿à¤Ÿ' : 'Submit'}
+                                                {language === 'hi' ? 'सबमिट' : 'Submit'}
                                             </button>
                                         )}
                                         <button
                                             className="btn btn-sm btn-outline-info"
                                             onClick={() => navigate(`/claims/${c.id}/tour-diary`)}
                                         >
-                                            {language === 'hi' ? 'à¤¦à¥Œà¤°à¤¾ à¤¡à¤¾à¤¯à¤°à¥€' : 'Tour Diary'}
+                                            {language === 'hi' ? 'दौरा डायरी' : 'Tour Diary'}
                                         </button>
                                         <button
                                             className="btn btn-sm btn-outline-success"
                                             onClick={() => navigate(`/claims/${c.id}/bill`)}
-                                            title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤¦à¥‡à¤¯à¤• à¤¦à¥‡à¤–à¥‡à¤‚ / à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚ (à¤«à¥‰à¤°à¥à¤® 21)' : 'View / Print Form 21 Bill'}
+                                            title={language === 'hi' ? 'शासकीय प्रारूप में यात्रा देयक देखें / प्रिंट करें (फॉर्म 21)' : 'View / Print Form 21 Bill'}
                                         >
-                                            {language === 'hi' ? 'à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ (à¤«à¥‰à¤°à¥à¤® 21)' : 'Print Bill (Form 21)'}
+                                            {language === 'hi' ? 'देयक प्रिंट (फॉर्म 21)' : 'Print Bill (Form 21)'}
                                         </button>
                                         <button
                                             className="btn btn-sm btn-outline-primary"

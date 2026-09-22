@@ -1,4 +1,4 @@
-﻿import api, { apiRequest } from '../utils/api';
+import api, { apiRequest } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, ArrowLeft } from 'lucide-react';
@@ -92,7 +92,7 @@ const MedicalClaims = () => {
     const handleCreate = async () => {
         if (isCreating) return;
         if (selectedEmp === 'all' || !selectedEmp) {
-            alert(language === 'hi' ? 'à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¨à¤¯à¤¾ à¤¦à¤¾à¤µà¤¾ à¤¬à¤¨à¤¾à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤¸à¥‚à¤šà¥€ à¤¸à¥‡ à¤à¤• à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤šà¥à¤¨à¥‡à¤‚à¥¤' : 'Please select a specific employee from the dropdown to create a claim.');
+            alert(language === 'hi' ? 'कृपया नया दावा बनाने के लिए सूची से एक कर्मचारी चुनें।' : 'Please select a specific employee from the dropdown to create a claim.');
             return;
         }
 
@@ -157,7 +157,7 @@ const MedicalClaims = () => {
                 body: JSON.stringify({ total_amount: claim.total_amount || 0 })
             });
             if (res.ok) {
-                alert(language === 'hi' ? 'à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤¾ à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Medical claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'चिकित्सा दावा सफलतापूर्वक स्वीकृति हेतु प्रस्तुत किया गया!' : 'Medical claim successfully submitted for approval!');
                 fetchClaims(selectedEmp);
             } else {
                 alert(t.messages.errorSaving);
@@ -183,7 +183,7 @@ const MedicalClaims = () => {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <select className="form-select" style={{ width: '250px' }}
                         value={selectedEmp} onChange={e => setSelectedEmp(e.target.value)}>
-                        <option value="all">{language === 'hi' ? 'à¤¸à¤­à¥€ à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ (All Employees)' : 'All Employees'}</option>
+                        <option value="all">{language === 'hi' ? 'सभी कर्मचारी (All Employees)' : 'All Employees'}</option>
                         {employees.map(e => (
                             <option key={e.id} value={e.id}>
                                 {language === 'hi' && e.name_hi ? e.name_hi : e.name}
@@ -193,7 +193,7 @@ const MedicalClaims = () => {
                     <button
                         className={`btn ${showFamily ? 'btn-secondary' : 'btn-outline-primary'}`}
                         disabled={selectedEmp === 'all'}
-                        title={selectedEmp === 'all' ? (language === 'hi' ? 'à¤ªà¤°à¤¿à¤µà¤¾à¤° à¤¸à¥‚à¤šà¥€ à¤•à¥‡ à¤²à¤¿à¤ à¤à¤• à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤šà¥à¤¨à¥‡à¤‚' : 'Select an employee to manage family') : ''}
+                        title={selectedEmp === 'all' ? (language === 'hi' ? 'परिवार सूची के लिए एक कर्मचारी चुनें' : 'Select an employee to manage family') : ''}
                         onClick={() => setShowFamily(!showFamily)}
                     >
                         {t.medical.familyMaster}
@@ -289,9 +289,9 @@ const MedicalClaims = () => {
                                                 className="btn btn-sm btn-primary"
                                                 onClick={() => handleSubmitClaim(c)}
                                                 style={{ background: '#2563eb' }}
-                                                title={language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤°à¥‡à¤‚' : 'Submit for approval'}
+                                                title={language === 'hi' ? 'स्वीकृति हेतु प्रस्तुत करें' : 'Submit for approval'}
                                             >
-                                                {language === 'hi' ? 'à¤¸à¤¬à¤®à¤¿à¤Ÿ' : 'Submit'}
+                                                {language === 'hi' ? 'सबमिट' : 'Submit'}
                                             </button>
                                         )}
                                         <button
@@ -303,9 +303,9 @@ const MedicalClaims = () => {
                                         <button
                                             className="btn btn-sm btn-outline-success"
                                             onClick={() => navigate(`/medical-claims/${c.id}?print=1`)}
-                                            title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤†à¤µà¥‡à¤¦à¤¨ à¤ªà¤¤à¥à¤° / à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'Print Application Form / Bill in Govt Prescribed Format'}
+                                            title={language === 'hi' ? 'शासकीय प्रारूप में आवेदन पत्र / देयक प्रिंट करें' : 'Print Application Form / Bill in Govt Prescribed Format'}
                                         >
-                                            {language === 'hi' ? 'à¤†à¤µà¥‡à¤¦à¤¨ à¤à¤µà¤‚ à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ' : 'Print Form & Bill'}
+                                            {language === 'hi' ? 'आवेदन एवं देयक प्रिंट' : 'Print Form & Bill'}
                                         </button>
                                         <button
                                             className="btn btn-sm btn-outline-danger"

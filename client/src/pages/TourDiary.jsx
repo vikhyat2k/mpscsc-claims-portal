@@ -1,4 +1,4 @@
-﻿import api, { apiRequest } from '../utils/api';
+import api, { apiRequest } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Printer, FileSpreadsheet, ArrowLeft, Save, Plus, Trash, Receipt, Send, CheckCircle2 } from 'lucide-react';
@@ -207,7 +207,7 @@ const TourDiary = () => {
             });
 
             if (res.ok) {
-                alert(language === 'hi' ? 'à¤¦à¥Œà¤°à¤¾ à¤¡à¤¾à¤¯à¤°à¥€ / à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Tour diary claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'दौरा डायरी / दावा सफलतापूर्वक प्रस्तुत किया गया!' : 'Tour diary claim successfully submitted for approval!');
                 setClaim(prev => ({ ...prev, status: 'SUBMITTED' }));
                 fetchData();
             } else {
@@ -295,9 +295,9 @@ const TourDiary = () => {
                         className="btn btn-secondary"
                         onClick={() => navigate(`/claims/${id}/bill`)}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                        title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤¦à¥‡à¤¯à¤• (à¤«à¥‰à¤°à¥à¤® 21) à¤¦à¥‡à¤–à¥‡à¤‚ / à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'View / Print Form 21 Bill'}
+                        title={language === 'hi' ? 'शासकीय प्रारूप में यात्रा देयक (फॉर्म 21) देखें / प्रिंट करें' : 'View / Print Form 21 Bill'}
                     >
-                        <Printer size={18} /> {language === 'hi' ? 'à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ (à¤«à¥‰à¤°à¥à¤® 21)' : 'Print Form 21 Bill'}
+                        <Printer size={18} /> {language === 'hi' ? 'यात्रा देयक प्रिंट (फॉर्म 21)' : 'Print Form 21 Bill'}
                     </button>
                     <button className="btn btn-primary" style={{ backgroundColor: '#217346' }} onClick={exportToExcel}>
                         <FileSpreadsheet size={18} /> {t.tourDiary.exportExcel}
@@ -345,7 +345,7 @@ const TourDiary = () => {
                     />
                     <div style={{ textAlign: 'center' }}>
                         <h2 style={{ margin: 0, fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            {language === 'hi' ? 'à¤®à¤§à¥à¤¯ à¤ªà¥à¤°à¤¦à¥‡à¤¶ à¤¸à¥à¤Ÿà¥‡à¤Ÿ à¤¸à¤¿à¤µà¤¿à¤² à¤¸à¤ªà¥à¤²à¤¾à¤‡à¤œ à¤•à¥‰à¤°à¥à¤ªà¥‹à¤°à¥‡à¤¶à¤¨ à¤²à¤¿à¤®à¤¿à¤Ÿà¥‡à¤¡' : 'M.P. State Civil Supplies Corporation Limited'}
+                            {language === 'hi' ? 'मध्य प्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड' : 'M.P. State Civil Supplies Corporation Limited'}
                         </h2>
                         <h3 style={{ margin: '3px 0 0 0', fontSize: '1rem', textTransform: 'uppercase', color: '#1e293b' }}>
                             {t.tourDiary.title} {empName}
@@ -530,7 +530,7 @@ const TourDiary = () => {
                                                             fontSize: '0.72rem'
                                                         }}>
                                                             <span style={{ color: '#0369a1', fontWeight: '600' }}>
-                                                                ðŸ”— {language === 'hi' ? `à¤ªà¤‚à¤•à¥à¤¤à¤¿ ${i + 1}â€“${i + info.rowSpan} à¤®à¤°à¥à¤œ à¤¹à¥ˆà¤‚` : `Rows ${i + 1}â€“${i + info.rowSpan} merged`}
+                                                                🔗 {language === 'hi' ? `पंक्ति ${i + 1}–${i + info.rowSpan} मर्ज हैं` : `Rows ${i + 1}–${i + info.rowSpan} merged`}
                                                             </span>
                                                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                                                                 {info.mergedIndices.map(childIdx => (
@@ -538,7 +538,7 @@ const TourDiary = () => {
                                                                         key={childIdx}
                                                                         type="button"
                                                                         onClick={() => handleMergeToggle(childIdx, false)}
-                                                                        title={language === 'hi' ? `à¤ªà¤‚à¤•à¥à¤¤à¤¿ ${childIdx + 1} à¤…à¤²à¤— à¤•à¤°à¥‡à¤‚` : `Unmerge row ${childIdx + 1}`}
+                                                                        title={language === 'hi' ? `पंक्ति ${childIdx + 1} अलग करें` : `Unmerge row ${childIdx + 1}`}
                                                                         style={{
                                                                             background: '#fee2e2',
                                                                             color: '#b91c1c',
@@ -550,7 +550,7 @@ const TourDiary = () => {
                                                                             fontWeight: '500'
                                                                         }}
                                                                     >
-                                                                        {language === 'hi' ? `à¤ªà¤‚. ${childIdx + 1} à¤…à¤²à¤— à¤•à¤°à¥‡à¤‚ âœ•` : `Row ${childIdx + 1} âœ•`}
+                                                                        {language === 'hi' ? `पं. ${childIdx + 1} अलग करें ✕` : `Row ${childIdx + 1} ✕`}
                                                                     </button>
                                                                 ))}
                                                             </div>

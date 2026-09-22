@@ -1,4 +1,4 @@
-﻿import api, { apiRequest } from '../utils/api';
+import api, { apiRequest } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { PlusCircle, ArrowLeft } from 'lucide-react';
@@ -56,7 +56,7 @@ const TransferClaims = () => {
     const handleCreate = async () => {
         if (isCreating) return;
         if (selectedEmp === 'all' || !selectedEmp) {
-            alert(language === 'hi' ? 'à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¨à¤¯à¤¾ à¤¦à¤¾à¤µà¤¾ à¤¬à¤¨à¤¾à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤¸à¥‚à¤šà¥€ à¤¸à¥‡ à¤à¤• à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤šà¥à¤¨à¥‡à¤‚à¥¤' : 'Please select a specific employee from the dropdown to create a claim.');
+            alert(language === 'hi' ? 'कृपया नया दावा बनाने के लिए सूची से एक कर्मचारी चुनें।' : 'Please select a specific employee from the dropdown to create a claim.');
             return;
         }
         setIsCreating(true);
@@ -104,7 +104,7 @@ const TransferClaims = () => {
                 body: JSON.stringify({ total_amount: claim.total_amount || 0 })
             });
             if (res.ok) {
-                alert(language === 'hi' ? 'à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Transfer claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'स्थानांतरण दावा सफलतापूर्वक स्वीकृति हेतु प्रस्तुत किया गया!' : 'Transfer claim successfully submitted for approval!');
                 fetchClaims(selectedEmp);
             } else {
                 alert(t.messages.errorSaving);
@@ -136,7 +136,7 @@ const TransferClaims = () => {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <select className="form-select" style={{ width: '300px' }}
                         value={selectedEmp} onChange={e => setSelectedEmp(e.target.value)}>
-                        <option value="all">{language === 'hi' ? 'à¤¸à¤­à¥€ à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ (All Employees)' : 'All Employees'}</option>
+                        <option value="all">{language === 'hi' ? 'सभी कर्मचारी (All Employees)' : 'All Employees'}</option>
                         {employees.map(e => (
                             <option key={e.id} value={e.id}>
                                 {language === 'hi' && e.name_hi ? e.name_hi : e.name} ({e.designation})
@@ -191,9 +191,9 @@ const TransferClaims = () => {
                                                 className="btn btn-sm btn-primary"
                                                 onClick={() => handleSubmitClaim(c)}
                                                 style={{ background: '#2563eb' }}
-                                                title={language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤°à¥‡à¤‚' : 'Submit for approval'}
+                                                title={language === 'hi' ? 'स्वीकृति हेतु प्रस्तुत करें' : 'Submit for approval'}
                                             >
-                                                {language === 'hi' ? 'à¤¸à¤¬à¤®à¤¿à¤Ÿ' : 'Submit'}
+                                                {language === 'hi' ? 'सबमिट' : 'Submit'}
                                             </button>
                                         )}
                                         <button
@@ -205,9 +205,9 @@ const TransferClaims = () => {
                                         <button
                                             className="btn btn-sm btn-outline-success"
                                             onClick={() => navigate(`/claims/${c.id}/bill`)}
-                                            title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤¦à¥‡à¤¯à¤• à¤¦à¥‡à¤–à¥‡à¤‚ / à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚ (à¤«à¥‰à¤°à¥à¤® 21)' : 'View / Print Transfer Form 21 Bill'}
+                                            title={language === 'hi' ? 'शासकीय प्रारूप में स्थानांतरण देयक देखें / प्रिंट करें (फॉर्म 21)' : 'View / Print Transfer Form 21 Bill'}
                                         >
-                                            {language === 'hi' ? 'à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ (à¤«à¥‰à¤°à¥à¤® 21)' : 'Print Bill (Form 21)'}
+                                            {language === 'hi' ? 'देयक प्रिंट (फॉर्म 21)' : 'Print Bill (Form 21)'}
                                         </button>
                                         <button
                                             className="btn btn-sm btn-outline-danger"

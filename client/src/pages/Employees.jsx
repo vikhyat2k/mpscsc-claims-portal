@@ -1,4 +1,4 @@
-﻿import api, { apiRequest } from '../utils/api';
+import api, { apiRequest } from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Save } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -246,7 +246,7 @@ const Employees = () => {
                                         <td>{emp.designation}</td>
                                         <td><span style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>{emp.category}</span></td>
                                         <td>{emp.pay_level}</td>
-                                        <td>{emp.grade_pay || 'â€”'}</td>
+                                        <td>{emp.grade_pay || '—'}</td>
                                         <td>{emp.basic_pay}</td>
                                         <td>{emp.headquarters}</td>
                                         <td>
