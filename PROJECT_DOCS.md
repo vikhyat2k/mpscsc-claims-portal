@@ -793,6 +793,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `8eda3c4` | 2026-09-22 | fix(ui): add safe null check and 404 error fallback in TADABill to prevent crash |
 | `d5a26d6` | 2026-09-22 | fix(automation): map accurate journey and itemized bill fields in headed data entry to ensure calculated claim amounts |
 | `f5f022f` | 2026-09-22 | fix(ui): define handleStartEditPayInfo in TADABill to prevent crash on bill view |
 | `7668d56` | 2026-09-22 | docs: sync PROJECT_DOCS.md and update headed UI data entry script |
@@ -800,13 +801,13 @@ This automatically launches:
 | `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
 | `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
 | `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
-| `a27a410` | 2026-09-22 | fix(db): checkpoint and commit purged clean database containing only Vikhyat Hindoliya |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Fix ReferenceError: employee is not defined in TADABill.jsx by restoring destructuring of billData |
 | **2026-09-22** | **Automated Update** | Add safe error fallback and 404 guard in TADABill.jsx to prevent ErrorBoundary crashes on missing or invalid claim bills |
 | **2026-09-22** | **Automated Update** | Fix claim zero amount calculation: update headed UI script with accurate field mapping, import TA/DA journeys into transfer claims, add doctor and medicine items to medical claims, and clean up obsolete empty drafts |
 | **2026-09-22** | **Automated Update** | Fix handleStartEditPayInfo ReferenceError in TADABill.jsx |

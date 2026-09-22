@@ -795,6 +795,8 @@ export default function TADABill() {
             </div>
         );
     }
+
+    const { claim, employee, billRows, totals } = billData;
     const b = t.bill21;
     const empDisplayName = language === 'hi' && employee?.name_hi ? employee.name_hi : (employee?.name || '');
     const billSubTitle = b.subTitleFor ? b.subTitleFor(empDisplayName) : (b.subTitle || '');
