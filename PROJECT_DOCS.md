@@ -793,6 +793,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `f5f022f` | 2026-09-22 | fix(ui): define handleStartEditPayInfo in TADABill to prevent crash on bill view |
 | `7668d56` | 2026-09-22 | docs: sync PROJECT_DOCS.md and update headed UI data entry script |
 | `f1ccc1a` | 2026-09-22 | feat: add dummy data purge endpoint, headed UI data entry, and relaxed rate limiter |
 | `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
@@ -800,13 +801,13 @@ This automatically launches:
 | `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
 | `a27a410` | 2026-09-22 | fix(db): checkpoint and commit purged clean database containing only Vikhyat Hindoliya |
 | `972b430` | 2026-09-22 | fix(yaml): quote string values in render.yaml for strict YAML schema validation |
-| `4fba562` | 2026-09-22 | fix(build): ensure vite build tools are installed in production environments |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Fix claim zero amount calculation: update headed UI script with accurate field mapping, import TA/DA journeys into transfer claims, add doctor and medicine items to medical claims, and clean up obsolete empty drafts |
 | **2026-09-22** | **Automated Update** | Fix handleStartEditPayInfo ReferenceError in TADABill.jsx |
 | **2026-09-22** | **Automated Update** | Add dummy data purge endpoint, headed UI entry script, and increased auth rate limiter |
 | **2026-09-22** | **Automated Update** | Standardize authLimiter and enhance QA runner for live server validation |

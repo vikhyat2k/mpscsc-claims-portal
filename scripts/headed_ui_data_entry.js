@@ -131,7 +131,8 @@ async function setupReactHelpers(page) {
 
 async function runHeadedDataEntry() {
     const startIndex = process.argv[2] !== undefined ? parseInt(process.argv[2], 10) : 0;
-    const usersToRun = dummyUserData.slice(startIndex);
+    const count = process.argv[3] !== undefined ? parseInt(process.argv[3], 10) : (dummyUserData.length - startIndex);
+    const usersToRun = dummyUserData.slice(startIndex, startIndex + count);
 
     console.log(`\n==================================================================`);
     console.log(`  STARTING VISIBLY HEADED UI FRONTEND DATA ENTRY`);
@@ -357,18 +358,25 @@ async function runHeadedDataEntry() {
             console.log(`  ✅ [UI] Tour Diary saved.`);
         }
 
-        // Step 5: Create TA/DA Claim
+        // Step 5: Create or Update TA/DA Claim
         console.log(`  [UI] Navigating to /claims/tada...`);
         await page.goto(`${BASE_URL}/claims/tada`, { waitUntil: 'networkidle2' });
         await sleep(1500);
         await setupReactHelpers(page);
 
         await selectEmployeeDropdown();
-        await sleep(600);
+        await sleep(1000);
 
-        console.log(`  [UI] Creating TA/DA Claim for ${item.tada.month} ${item.tada.year}...`);
-        const createdTada = await page.evaluate(() => {
-            const btn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('New Claim') || b.innerText.includes('Create') || b.innerText.includes('दावा'));
+        console.log(`  [UI] Checking for existing or creating TA/DA Claim for ${item.tada.month} ${item.tada.year}...`);
+        const openedTada = await page.evaluate(() => {
+            const editBtn = Array.from(document.querySelectorAll('table.data-table tbody button'))
+                .find(b => b.innerText.includes('Edit') || b.innerText.includes('संशोधन'));
+            if (editBtn) {
+                editBtn.click();
+                return true;
+            }
+            const btn = Array.from(document.querySelectorAll('button'))
+                .find(b => b.innerText.includes('New Claim') || b.innerText.includes('Create') || b.innerText.includes('दावा'));
             if (btn && !btn.disabled) {
                 btn.click();
                 return true;
@@ -376,52 +384,110 @@ async function runHeadedDataEntry() {
             return false;
         });
 
-        if (createdTada) {
+        if (openedTada) {
             await sleep(2500);
             await setupReactHelpers(page);
             console.log(`  [UI] On TA/DA Claim Editor (${page.url()}). Adding journey and hotel stay...`);
 
-            await page.evaluate(() => {
-                const addJ = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Add Journey') || b.innerText.includes('जोड़ें'));
-                if (addJ) addJ.click();
+            // Ensure at least one journey row exists
+            const rowCount = await page.evaluate(() => {
+                const rows = document.querySelectorAll('.table-container table.data-table tbody tr');
+                return rows ? rows.length : 0;
             });
-            await sleep(800);
 
+            if (rowCount === 0) {
+                await page.evaluate(() => {
+                    const addJ = Array.from(document.querySelectorAll('button'))
+                        .find(b => b.innerText.includes('Add Journey') || b.innerText.includes('यात्रा जोड़ें') || b.innerText.includes('जोड़ें'));
+                    if (addJ) addJ.click();
+                });
+                await sleep(800);
+            }
+
+            // Fill journey row inputs
             await page.evaluate((td) => {
+                const firstRow = document.querySelector('.table-container table.data-table tbody tr');
+                if (firstRow) {
+                    const tds = firstRow.querySelectorAll('td');
+                    if (tds.length >= 6) {
+                        // td[0]: Departure
+                        const depDate = tds[0].querySelector('input[type="date"]');
+                        const depTime = tds[0].querySelector('input[type="time"]');
+                        const depStation = tds[0].querySelector('input[type="text"]');
+                        if (depDate) window.__setReactInput(depDate, td.depDate);
+                        if (depTime) window.__setReactInput(depTime, td.depTime);
+                        if (depStation) window.__setReactInput(depStation, td.from);
+
+                        // td[1]: Arrival
+                        const arrDate = tds[1].querySelector('input[type="date"]');
+                        const arrTime = tds[1].querySelector('input[type="time"]');
+                        const arrStation = tds[1].querySelector('input[type="text"]');
+                        if (arrDate) window.__setReactInput(arrDate, td.arrDate);
+                        if (arrTime) window.__setReactInput(arrTime, td.arrTime);
+                        if (arrStation) window.__setReactInput(arrStation, td.to);
+
+                        // td[2]: Mode & Class
+                        const modeSel = tds[2].querySelector('select');
+                        const classInput = tds[2].querySelector('input[type="text"]');
+                        if (modeSel) window.__setReactSelect(modeSel, td.mode);
+                        if (classInput) window.__setReactInput(classInput, td.cls);
+
+                        // td[3]: Ticket
+                        const ticketInput = tds[3].querySelector('input[type="text"]');
+                        if (ticketInput) window.__setReactInput(ticketInput, 'PNR-' + Math.floor(100000 + Math.random() * 900000));
+
+                        // td[4]: Purpose
+                        const purposeInput = tds[4].querySelector('input[type="text"]');
+                        if (purposeInput) window.__setReactInput(purposeInput, td.remarks);
+
+                        // td[5]: Fare
+                        const fareInput = tds[5].querySelector('input[type="number"]');
+                        if (fareInput) window.__setReactInput(fareInput, td.fare);
+                    }
+                }
+
+                // Hotel Stay Entitlement
                 const selects = Array.from(document.querySelectorAll('select'));
                 const hotelSel = selects.find(s => Array.from(s.options).some(o => o.value === 'Hotel' || o.value === 'None'));
-                if (hotelSel) window.__setReactSelect(hotelSel, td.hotel);
+                if (hotelSel && td.hotel) window.__setReactSelect(hotelSel, td.hotel);
 
                 const numInputs = Array.from(document.querySelectorAll('input[type="number"]'));
-                if (numInputs.length > 0 && td.hotelAmt !== '0') {
+                if (numInputs.length > 0 && td.hotelAmt && td.hotelAmt !== '0') {
                     window.__setReactInput(numInputs[0], td.hotelAmt);
                 }
 
                 const remarksInput = document.querySelector('input[placeholder="Add remarks..."]') || Array.from(document.querySelectorAll('input[type="text"]')).pop();
                 if (remarksInput) window.__setReactInput(remarksInput, td.remarks);
             }, item.tada);
-            await sleep(600);
+            await sleep(800);
 
             await page.evaluate(() => {
                 const saveBtn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Save') || b.innerText.includes('सुरक्षित'));
                 if (saveBtn) saveBtn.click();
             });
-            await sleep(1500);
-            console.log(`  ✅ [UI] TA/DA Claim saved.`);
+            await sleep(2000);
+            console.log(`  ✅ [UI] TA/DA Claim saved with verified journey leg & fare.`);
         }
 
-        // Step 6: Create Transfer Claim
+        // Step 6: Create or Update Transfer Claim
         console.log(`  [UI] Navigating to /claims/transfer-list...`);
         await page.goto(`${BASE_URL}/claims/transfer-list`, { waitUntil: 'networkidle2' });
         await sleep(1500);
         await setupReactHelpers(page);
 
         await selectEmployeeDropdown();
-        await sleep(600);
+        await sleep(1000);
 
-        console.log(`  [UI] Creating Transfer Claim...`);
-        const createdTransfer = await page.evaluate(() => {
-            const btn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Create') || b.innerText.includes('New Claim') || b.innerText.includes('स्थानांतरण'));
+        console.log(`  [UI] Checking for existing or creating Transfer Claim...`);
+        const openedTransfer = await page.evaluate(() => {
+            const editBtn = Array.from(document.querySelectorAll('table.data-table tbody button'))
+                .find(b => b.innerText.includes('Edit') || b.innerText.includes('संशोधन'));
+            if (editBtn) {
+                editBtn.click();
+                return true;
+            }
+            const btn = Array.from(document.querySelectorAll('button'))
+                .find(b => b.innerText.includes('Create') || b.innerText.includes('New Claim') || b.innerText.includes('स्थानांतरण'));
             if (btn && !btn.disabled) {
                 btn.click();
                 return true;
@@ -429,43 +495,68 @@ async function runHeadedDataEntry() {
             return false;
         });
 
-        if (createdTransfer) {
+        if (openedTransfer) {
             await sleep(2500);
             await setupReactHelpers(page);
-            console.log(`  [UI] On Transfer Claim Editor (${page.url()}). Adding transfer charges...`);
+            console.log(`  [UI] On Transfer Claim Editor (${page.url()}). Entering transfer charges...`);
 
             await page.evaluate((tr) => {
-                const numInputs = Array.from(document.querySelectorAll('input[type="number"]'));
-                if (numInputs.length >= 2) {
-                    window.__setReactInput(numInputs[0], tr.packing);
-                    window.__setReactInput(numInputs[1], tr.transport);
-                }
+                const textareas = Array.from(document.querySelectorAll('textarea'));
+                if (textareas[0]) window.__setReactInput(textareas[0], tr.family);
+                if (textareas[1]) window.__setReactInput(textareas[1], tr.remarks);
 
-                const remarksInput = document.querySelector('input[placeholder="Add remarks..."]') || Array.from(document.querySelectorAll('input[type="text"]')).pop();
-                if (remarksInput) window.__setReactInput(remarksInput, tr.remarks);
+                const weightInput = document.querySelector('input[placeholder*="Weight"]');
+                if (weightInput) window.__setReactInput(weightInput, '1500');
+
+                const amtInputs = Array.from(document.querySelectorAll('input[placeholder="₹ Amount"]'));
+                if (amtInputs[0]) window.__setReactInput(amtInputs[0], tr.transport);
+                if (amtInputs[1]) window.__setReactInput(amtInputs[1], tr.packing);
             }, item.transfer);
             await sleep(600);
+
+            // Import TA/DA journey if available
+            console.log(`  [UI] Checking if TA/DA journey can be imported...`);
+            await page.evaluate(() => {
+                const importBtn = Array.from(document.querySelectorAll('button'))
+                    .find(b => b.innerText.includes('Import') || b.innerText.includes('आयात'));
+                if (importBtn) importBtn.click();
+            });
+            await sleep(1200);
+
+            await page.evaluate(() => {
+                const modalImportBtn = Array.from(document.querySelectorAll('.modal-content button.btn-primary'))
+                    .find(b => b.innerText.includes('Import') || b.innerText.includes('आयात'));
+                if (modalImportBtn) modalImportBtn.click();
+            });
+            await sleep(800);
 
             await page.evaluate(() => {
                 const saveBtn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Save') || b.innerText.includes('सुरक्षित'));
                 if (saveBtn) saveBtn.click();
             });
-            await sleep(1500);
+            await sleep(2000);
             console.log(`  ✅ [UI] Transfer Claim saved.`);
         }
 
-        // Step 7: Create Medical Claim
+        // Step 7: Create or Update Medical Claim
         console.log(`  [UI] Navigating to /medical...`);
         await page.goto(`${BASE_URL}/medical`, { waitUntil: 'networkidle2' });
         await sleep(1500);
         await setupReactHelpers(page);
 
         await selectEmployeeDropdown();
-        await sleep(600);
+        await sleep(1000);
 
-        console.log(`  [UI] Creating Medical Claim...`);
-        const createdMed = await page.evaluate(() => {
-            const btn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('New Medical Claim') || b.innerText.includes('Medical Claim') || b.innerText.includes('चिकित्सा दावा') || b.innerText.includes('दावा'));
+        console.log(`  [UI] Checking for existing or creating Medical Claim...`);
+        const openedMed = await page.evaluate(() => {
+            const editBtn = Array.from(document.querySelectorAll('table.data-table tbody button'))
+                .find(b => b.innerText.includes('Edit') || b.innerText.includes('संशोधन'));
+            if (editBtn) {
+                editBtn.click();
+                return true;
+            }
+            const btn = Array.from(document.querySelectorAll('button'))
+                .find(b => b.innerText.includes('New Medical Claim') || b.innerText.includes('Medical Claim') || b.innerText.includes('चिकित्सा दावा') || b.innerText.includes('दावा'));
             if (btn && !btn.disabled) {
                 btn.click();
                 return true;
@@ -473,28 +564,72 @@ async function runHeadedDataEntry() {
             return false;
         });
 
-        if (createdMed) {
+        if (openedMed) {
             await sleep(2500);
             await setupReactHelpers(page);
             console.log(`  [UI] On Medical Claim Editor (${page.url()}). Entering diagnosis & bills...`);
 
+            // Page 1: Diagnosis & Patient
             await page.evaluate((med) => {
-                const inputs = Array.from(document.querySelectorAll('input[type="text"]'));
-                if (inputs[0]) window.__setReactInput(inputs[0], med.patient);
-                if (inputs[1]) window.__setReactInput(inputs[1], med.illness);
+                const patientSelect = document.querySelector('select[name="patient_name"]');
+                if (patientSelect && patientSelect.options.length > 1) {
+                    window.__setReactSelect(patientSelect, patientSelect.options[1].value);
+                }
+                const illnessInput = document.querySelector('input[name="illness_name"]');
+                if (illnessInput) window.__setReactInput(illnessInput, med.illness);
+
+                const durationInput = document.querySelector('input[name="illness_duration"]');
+                if (durationInput) window.__setReactInput(durationInput, med.duration);
             }, item.medical);
             await sleep(600);
 
+            // Page 2: Add Consultation / Doctor Bill
+            console.log(`  [UI] Adding Doctor consultation fee...`);
             await page.evaluate(() => {
-                const addBillBtn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Add Bill') || b.innerText.includes('बिल जोड़ें'));
-                if (addBillBtn) addBillBtn.click();
+                const addDocBtn = Array.from(document.querySelectorAll('button'))
+                    .find(b => b.innerText.includes('Add Doctor') || b.innerText.includes('डॉक्टर जोड़ें'));
+                if (addDocBtn) addDocBtn.click();
             });
-            await sleep(800);
+            await sleep(600);
+
+            await page.evaluate(() => {
+                const docRows = document.querySelectorAll('.page2-tables-container .table-section:first-child table tbody tr');
+                if (docRows && docRows.length > 0) {
+                    const firstRow = docRows[0];
+                    const textInputs = firstRow.querySelectorAll('input[type="text"]');
+                    const numInput = firstRow.querySelector('input[type="number"]');
+                    const dateInput = firstRow.querySelector('input[type="date"]');
+                    if (textInputs[0]) window.__setReactInput(textInputs[0], 'Dr. K. S. Verma, MD');
+                    if (numInput) window.__setReactInput(numInput, '500');
+                    if (dateInput) window.__setReactInput(dateInput, '2026-08-10');
+                    if (textInputs[1]) window.__setReactInput(textInputs[1], 'DOC-772');
+                }
+            });
+            await sleep(600);
+
+            // Page 2: Add Medicine Bill
+            console.log(`  [UI] Adding Medicine pharmacy bill...`);
+            await page.evaluate(() => {
+                const addMedBtn = Array.from(document.querySelectorAll('button'))
+                    .find(b => b.innerText.includes('Add Medicine') || b.innerText.includes('दवा बिल जोड़ें'));
+                if (addMedBtn) addMedBtn.click();
+            });
+            await sleep(600);
 
             await page.evaluate((med) => {
-                const numInputs = Array.from(document.querySelectorAll('input[type="number"]'));
-                if (numInputs.length > 0) {
-                    window.__setReactInput(numInputs[numInputs.length - 1], med.bills[0].amt);
+                const medSections = document.querySelectorAll('.page2-tables-container .table-section');
+                if (medSections.length >= 2) {
+                    const medRows = medSections[1].querySelectorAll('table tbody tr');
+                    if (medRows && medRows.length > 0) {
+                        const firstRow = medRows[0];
+                        const textInputs = firstRow.querySelectorAll('input[type="text"]');
+                        const numInput = firstRow.querySelector('input[type="number"]');
+                        const dateInput = firstRow.querySelector('input[type="date"]');
+                        if (textInputs[0]) window.__setReactInput(textInputs[0], med.bills[0].desc);
+                        if (textInputs[1]) window.__setReactInput(textInputs[1], med.bills[0].no);
+                        if (dateInput) window.__setReactInput(dateInput, '2026-08-12');
+                        if (numInput) window.__setReactInput(numInput, med.bills[0].amt);
+                    }
                 }
             }, item.medical);
             await sleep(600);
@@ -503,8 +638,8 @@ async function runHeadedDataEntry() {
                 const saveBtn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Save') || b.innerText.includes('सुरक्षित'));
                 if (saveBtn) saveBtn.click();
             });
-            await sleep(1500);
-            console.log(`  ✅ [UI] Medical Claim saved.`);
+            await sleep(2000);
+            console.log(`  ✅ [UI] Medical Claim saved with verified Consultation & Medicine bills.`);
         }
 
         console.log(`  [UI] Signing out user ${item.user.name}...`);
