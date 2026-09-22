@@ -147,6 +147,10 @@ async function autoSeedAdmin() {
 }
 autoSeedAdmin();
 
+// Auto-seed and self-heal 10 test users, employee records, and claims
+const { autoSeedDummyUsers } = require('./autoSeedUsers');
+autoSeedDummyUsers(db);
+
 // ─────────────────────────────────────────────
 // SERVE STATIC CLIENT BUILD IN PRODUCTION
 // ─────────────────────────────────────────────

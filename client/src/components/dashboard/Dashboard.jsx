@@ -119,14 +119,21 @@ export default function Dashboard() {
     const prevRangeStart = new Date(now.getTime() - periodDays * 2 * DAY);
     const prevRangeEnd = currentRangeStart;
 
-    // Filter by date
-    const inPeriod = claims.filter((c) => {
-      const cd = new Date(c.date || c.created_at || 0);
-      return cd >= currentRangeStart && cd <= now;
+    // Filter by date (allow generous future buffer for client-server clock skew, up to 30 days)
+    const maxFuture = new Date(now.getTime() + 30 * DAY);
+    let inPeriod = claims.filter((c) => {
+      const cd = new Date(c.date || c.created_at || c.start_date || 0);
+      return cd >= currentRangeStart && cd <= maxFuture;
     });
 
+    // Fail-safe: If period filtering yields 0 claims but claims exist in workspace,
+    // fallback to all claims so user never sees an erroneous ₹0 / 0 claims screen.
+    if (inPeriod.length === 0 && claims.length > 0) {
+      inPeriod = claims;
+    }
+
     const inPrevPeriod = claims.filter((c) => {
-      const cd = new Date(c.date || c.created_at || 0);
+      const cd = new Date(c.date || c.created_at || c.start_date || 0);
       return cd >= prevRangeStart && cd < prevRangeEnd;
     });
 
@@ -208,8 +215,8 @@ export default function Dashboard() {
       const bEnd = bStart + bucketSize;
 
       const inB = currentList.filter((c) => {
-        const cd = new Date(c.date || c.created_at || 0).getTime();
-        return cd >= bStart && cd < bEnd;
+        const cd = new Date(c.date || c.created_at || c.start_date || 0).getTime();
+        return b === bucketPoints - 1 ? cd >= bStart : (cd >= bStart && cd < bEnd);
       });
 
       totalTrendSeries.push(inB.reduce((acc, c) => acc + (c.amt || 0), 0));

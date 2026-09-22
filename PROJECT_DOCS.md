@@ -795,6 +795,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `5ad2703` | 2026-09-22 | feat(seed): populate comprehensive realistic records for all 10 user accounts across all 4 modules and support total_amount in claim update |
 | `2bba7ce` | 2026-09-22 | feat(admin): implement Admin Impersonation ('Log In As This User') with persistent banner and 1-click exit |
 | `e26c085` | 2026-09-22 | fix(ui): restore destructuring of employee from billData in TADABill |
 | `8eda3c4` | 2026-09-22 | fix(ui): add safe null check and 404 error fallback in TADABill to prevent crash |
@@ -802,13 +803,13 @@ This automatically launches:
 | `f5f022f` | 2026-09-22 | fix(ui): define handleStartEditPayInfo in TADABill to prevent crash on bill view |
 | `7668d56` | 2026-09-22 | docs: sync PROJECT_DOCS.md and update headed UI data entry script |
 | `f1ccc1a` | 2026-09-22 | feat: add dummy data purge endpoint, headed UI data entry, and relaxed rate limiter |
-| `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Fix dashboard date filtering clock skew, auto-seed 10 test users on startup, and bake all user claims into claims.db |
 | **2026-09-22** | **Automated Update** | Ensure all 10 registered user accounts have realistic live dummy records across all 4 modules and support total_amount in PUT /api/claims/:id |
 | **2026-09-22** | **Automated Update** | Implement Admin User Impersonation ('Log In As This User') feature with persistent top banner and 1-click restore |
 | **2026-09-22** | **Automated Update** | Fix ReferenceError: employee is not defined in TADABill.jsx by restoring destructuring of billData |
