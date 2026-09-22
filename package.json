@@ -14,6 +14,7 @@
     "docs:sync": "node scripts/sync_docs.js",
     "docs:check": "node scripts/sync_docs.js --check",
     "docs:watch": "node scripts/watch_docs.js",
+    "push": "git push origin main",
     "prepare": "git config core.hooksPath .githooks"
   },
   "engines": {

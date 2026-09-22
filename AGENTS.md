@@ -13,3 +13,5 @@ Whenever you (the AI assistant) make any changes to this codebase:
    - If UI pages or routes were added in `client/src/`, ensure they are documented in Sections 2 and 5 of `PROJECT_DOCS.md`.
 3. **Commit Together**:
    - Always stage and commit `PROJECT_DOCS.md` alongside your code changes so the documentation is never out of sync.
+4. **Synchronize GitHub**:
+   - Ensure commits are pushed to `origin main` (automatic via `.githooks/post-commit` or by executing `git push origin main`).

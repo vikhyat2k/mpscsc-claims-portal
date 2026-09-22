@@ -1,0 +1,20 @@
+#!/bin/sh
+# .githooks/post-commit
+# Automatically push committed changes to GitHub
+
+echo "[Git Hook] Automatically pushing updates to GitHub (origin)..."
+
+# Attempt to push to current branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$BRANCH" != "HEAD" ]; then
+    git push origin "$BRANCH"
+    if [ $? -eq 0 ]; then
+        echo "[Git Hook] ✓ Project successfully updated on GitHub ($BRANCH)!"
+    else
+        echo "[Git Hook] ⚠️ Could not push to GitHub automatically."
+        echo "           Run 'push_to_github.bat' or 'npm run push' to complete authentication."
+    fi
+fi
+
+exit 0
