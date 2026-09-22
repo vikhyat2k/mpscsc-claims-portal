@@ -793,6 +793,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `f1ccc1a` | 2026-09-22 | feat: add dummy data purge endpoint, headed UI data entry, and relaxed rate limiter |
 | `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
 | `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
 | `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
@@ -800,7 +801,6 @@ This automatically launches:
 | `972b430` | 2026-09-22 | fix(yaml): quote string values in render.yaml for strict YAML schema validation |
 | `4fba562` | 2026-09-22 | fix(build): ensure vite build tools are installed in production environments |
 | `1804aac` | 2026-09-22 | chore: update server package-lock |
-| `909bd54` | 2026-09-22 | feat(deploy): prepare codebase for seamless 1-click free server deployment (Render/Railway/Docker) |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
