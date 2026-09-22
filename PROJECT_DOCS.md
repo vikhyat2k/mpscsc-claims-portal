@@ -792,6 +792,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `120f0b5` | 2026-09-22 | fix(git): make post-commit push non-interactive and fail-safe |
 | `2b2d77a` | 2026-09-22 | feat(git): add post-commit hook for automated GitHub synchronization |
 | `0b6c5d8` | 2026-09-22 | docs: sync recent commits table with docs automation commit |
 | `b9be260` | 2026-09-22 | feat(docs): establish automated multi-tier documentation synchronization system |
@@ -799,7 +800,6 @@ This automatically launches:
 | `9adf614` | 2026-09-22 | docs: sync PROJECT_DOCS.md with auth, admin suite, password reset, schema, and changelog |
 | `46c7d3a` | 2026-09-22 | feat(auth): add self-service Reset Password page and end-to-end user reset flow |
 | `d7c1fd7` | 2026-09-22 | fix(fonts): restore clean UTF-8 typography and fix Form 21 bill formatting |
-| `50de7bc` | 2026-09-22 | feat(admin): enable comprehensive claims & bills oversight across users for admin |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones

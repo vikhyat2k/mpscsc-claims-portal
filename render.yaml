@@ -15,7 +15,7 @@ services:
       - key: ADMIN_EMAIL
         value: admin@mpscsc.gov.in
       - key: ADMIN_PASSWORD
-        value: Admin@12345
+        value: Admin@123
       - key: ADMIN_NAME
         value: MPSCSC Administrator
       - key: ADMIN_MOBILE
