@@ -537,8 +537,12 @@ const MedicalClaim = () => {
                             </p>
                             <div className="sig-container">
                                 <div className="sig-block">
-                                    <span className="sig-line">__________________________</span>
+                                    <div className="sig-space" style={{ height: '24px' }}></div>
+                                    <div className="sig-rule" style={{ width: '200px', borderTop: '1.5px solid #000', margin: '0 auto 4px auto' }}></div>
                                     <strong className="sig-label">{t.medical.applicantSignature}</strong>
+                                    <span className="sig-emp-name" style={{ fontSize: '8pt', fontWeight: 'bold', color: '#000', display: 'block', marginTop: '1px' }}>
+                                        ({language === 'hi' && employee?.name_hi ? employee.name_hi : employee?.name})
+                                    </span>
                                 </div>
                             </div>
 
@@ -559,7 +563,8 @@ const MedicalClaim = () => {
                                     <div>{language === 'hi' ? 'पंजीयन क्र. / Reg. No.' : 'Reg. No.'}: ______________</div>
                                 </div>
                                 <div className="sig-block">
-                                    <span className="sig-line">__________________________</span>
+                                    <div className="sig-space" style={{ height: '24px' }}></div>
+                                    <div className="sig-rule" style={{ width: '200px', borderTop: '1.5px solid #000', margin: '0 auto 4px auto' }}></div>
                                     <strong className="sig-label">{t.medical.doctorSignature}</strong>
                                 </div>
                             </div>
@@ -1004,10 +1009,19 @@ const MedicalClaim = () => {
                         </table>
 
                         <div className="page2-signatures">
+                            <div className="sig-date-place">
+                                <div><strong>{language === 'hi' ? 'दिनांक / Date' : 'Date'}:</strong> {formatPrintDate(claim?.start_date || claim?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0])}</div>
+                                <div><strong>{language === 'hi' ? 'स्थान / Place' : 'Place'}:</strong> {employee?.headquarter || '—'}</div>
+                            </div>
                             <div className="sig-side">
-                                <span className="sig-line">_________________________________</span>
-                                <strong>{language === 'hi' ? 'आवेदक / कर्मचारी के हस्ताक्षर' : 'Signature of Applicant / Employee'}</strong>
-                                <span className="sig-emp-name" style={{ fontSize: '7.5pt', color: '#333' }}>({employee.name})</span>
+                                <div className="sig-space" style={{ height: '36px' }}></div>
+                                <div className="sig-rule" style={{ width: '240px', borderTop: '1.5px solid #000', margin: '0 auto 6px auto' }}></div>
+                                <strong className="sig-title" style={{ fontSize: '9.5pt', fontWeight: 'bold', color: '#000', display: 'block', textTransform: 'uppercase' }}>
+                                    {language === 'hi' ? 'आवेदक / कर्मचारी के हस्ताक्षर' : 'Signature of Applicant / Employee'}
+                                </strong>
+                                <span className="sig-emp-name" style={{ fontSize: '8.8pt', fontWeight: 'bold', color: '#000', display: 'block', marginTop: '2px' }}>
+                                    ({language === 'hi' && employee?.name_hi ? employee.name_hi : employee?.name}{employee?.designation ? ', ' + employee.designation : ''})
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -1249,8 +1263,15 @@ const MedicalClaim = () => {
                 }
                 .page2-signatures {
                     display: flex;
-                    justify-content: flex-end;
+                    justify-content: space-between;
+                    align-items: flex-end;
                     margin-top: 1.5rem;
+                    padding: 0 0.5rem;
+                }
+                .sig-date-place {
+                    font-size: 0.9rem;
+                    line-height: 1.6;
+                    color: #334155;
                 }
                 .sig-side {
                     display: flex;
@@ -1283,7 +1304,7 @@ const MedicalClaim = () => {
                 @media print {
                     @page {
                         size: A4 portrait;
-                        margin: 5mm 7mm 5mm 7mm;
+                        margin: 6mm 8mm 8mm 8mm;
                     }
                     * {
                         color: black !important;
@@ -1327,18 +1348,19 @@ const MedicalClaim = () => {
                         border-radius: 0 !important;
                     }
 
-                    /* Page 1: Strict 1-Page Constraint - Fills full A4 height */
+                    /* Page 1: Strict 1-Page Constraint */
                     .medical-page-1 {
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                         page-break-after: always !important;
                         break-after: page !important;
-                        min-height: 275mm !important;
-                        height: 275mm !important;
+                        min-height: auto !important;
+                        height: auto !important;
                         display: flex !important;
                         flex-direction: column !important;
                         justify-content: space-between !important;
                         margin-bottom: 0 !important;
+                        padding-bottom: 6mm !important;
                         box-sizing: border-box !important;
                     }
 
@@ -1482,24 +1504,32 @@ const MedicalClaim = () => {
                     }
                     .sig-label {
                         display: block !important;
-                        font-size: 7.6pt !important;
-                        line-height: 1.15 !important;
+                        font-size: 8.5pt !important;
+                        line-height: 1.2 !important;
                         font-weight: bold !important;
                         text-transform: uppercase !important;
+                        color: black !important;
+                    }
+                    .sig-rule {
+                        border-top: 1.5px solid black !important;
+                        display: block !important;
+                    }
+                    .sig-line {
+                        display: none !important;
                     }
 
                     /* ================= PAGE 2 ================= */
                     .medical-page-2 {
                         page-break-before: always !important;
                         break-before: page !important;
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                        min-height: 275mm !important;
-                        height: 275mm !important;
+                        page-break-inside: auto !important;
+                        min-height: auto !important;
+                        height: auto !important;
                         display: flex !important;
                         flex-direction: column !important;
-                        justify-content: space-between !important;
+                        justify-content: flex-start !important;
                         margin-top: 0 !important;
+                        padding-bottom: 8mm !important;
                         box-sizing: border-box !important;
                     }
 
@@ -1593,45 +1623,56 @@ const MedicalClaim = () => {
 
                     /* Page 2 Signatures and Summary */
                     .page2-summary-box {
-                        border-top: 1px solid black !important;
+                        border-top: 1.5px solid black !important;
                         padding-top: 6px !important;
+                        margin-top: 8px !important;
                         break-inside: avoid !important;
                         page-break-inside: avoid !important;
                     }
                     .page2-signatures {
                         display: flex !important;
-                        justify-content: flex-end !important;
+                        justify-content: space-between !important;
                         align-items: flex-end !important;
-                        margin-top: 14px !important;
-                        padding-right: 8px !important;
+                        margin-top: 24px !important;
+                        padding: 0 8px 4px 8px !important;
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
+                    }
+                    .sig-date-place {
+                        font-size: 8.5pt !important;
+                        line-height: 1.5 !important;
+                        color: black !important;
+                        text-align: left !important;
                     }
                     .sig-side {
-                        font-size: 7.8pt !important;
+                        font-size: 9.5pt !important;
                         line-height: 1.35 !important;
                         display: flex !important;
                         flex-direction: column !important;
                         align-items: center !important;
                         text-align: center !important;
-                        min-width: 240px !important;
+                        min-width: 250px !important;
                     }
-                    .sig-side .sig-line {
+                    .sig-side .sig-rule, .sig-block .sig-rule {
+                        width: 240px !important;
+                        border-top: 1.5px solid black !important;
+                        margin-bottom: 5px !important;
                         display: block !important;
-                        font-size: 7.5pt !important;
-                        line-height: 1 !important;
-                        margin-bottom: 3px !important;
                     }
-                    .sig-side strong {
+                    .sig-side strong, .sig-side .sig-title {
                         display: block !important;
-                        font-size: 7.8pt !important;
+                        font-size: 9.5pt !important;
                         font-weight: bold !important;
+                        color: black !important;
                         text-transform: uppercase !important;
-                        line-height: 1.2 !important;
+                        line-height: 1.25 !important;
                         text-align: center !important;
                     }
                     .sig-side .sig-emp-name {
                         display: block !important;
-                        font-size: 7.5pt !important;
-                        color: #222 !important;
+                        font-size: 8.8pt !important;
+                        font-weight: bold !important;
+                        color: black !important;
                         margin-top: 2px !important;
                         text-align: center !important;
                     }

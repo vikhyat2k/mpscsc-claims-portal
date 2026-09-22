@@ -796,6 +796,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `ad5b798` | 2026-09-23 | feat(auth): implement automatic inactivity logout with 60s warning modal and cross-tab sync |
 | `5850f17` | 2026-09-22 | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |
 | `e174550` | 2026-09-22 | Fix dashboard date-filter clock skew and permanently bake 10 user claims into claims.db with auto-seeding |
 | `5ad2703` | 2026-09-22 | feat(seed): populate comprehensive realistic records for all 10 user accounts across all 4 modules and support total_amount in claim update |
@@ -803,13 +804,13 @@ This automatically launches:
 | `e26c085` | 2026-09-22 | fix(ui): restore destructuring of employee from billData in TADABill |
 | `8eda3c4` | 2026-09-22 | fix(ui): add safe null check and 404 error fallback in TADABill to prevent crash |
 | `d5a26d6` | 2026-09-22 | fix(automation): map accurate journey and itemized bill fields in headed data entry to ensure calculated claim amounts |
-| `f5f022f` | 2026-09-22 | fix(ui): define handleStartEditPayInfo in TADABill to prevent crash on bill view |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Fix Medical Claim print layout: ensure applicant and doctor signature blocks are clearly visible, unclipped, and styled with solid rules |
 | **2026-09-22** | **Automated Update** | Add automatic inactivity logout (idle timeout) with 60-second warning countdown and cross-tab synchronization |
 | **2026-09-22** | **Automated Update** | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |
 | **2026-09-22** | **Automated Update** | Fix dashboard date filtering clock skew, auto-seed 10 test users on startup, and bake all user claims into claims.db |
