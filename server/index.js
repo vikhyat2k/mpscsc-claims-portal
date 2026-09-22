@@ -130,7 +130,7 @@ async function autoSeedAdmin() {
         const adminCount = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'admin'").get();
         if (adminCount.count === 0) {
             const email = process.env.ADMIN_EMAIL || 'admin@mpscsc.gov.in';
-            const password = process.env.ADMIN_PASSWORD || 'Admin@12345';
+            const password = process.env.ADMIN_PASSWORD || 'Admin@123';
             const fullName = process.env.ADMIN_NAME || 'System Administrator';
             const mobile = process.env.ADMIN_MOBILE || '9000000000';
 
