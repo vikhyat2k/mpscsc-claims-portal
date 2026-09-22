@@ -792,6 +792,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `909bd54` | 2026-09-22 | feat(deploy): prepare codebase for seamless 1-click free server deployment (Render/Railway/Docker) |
 | `120f0b5` | 2026-09-22 | fix(git): make post-commit push non-interactive and fail-safe |
 | `2b2d77a` | 2026-09-22 | feat(git): add post-commit hook for automated GitHub synchronization |
 | `0b6c5d8` | 2026-09-22 | docs: sync recent commits table with docs automation commit |
@@ -799,7 +800,6 @@ This automatically launches:
 | `f57e605` | 2026-09-22 | docs: correct admin email address to admin@mpscsc.gov.in |
 | `9adf614` | 2026-09-22 | docs: sync PROJECT_DOCS.md with auth, admin suite, password reset, schema, and changelog |
 | `46c7d3a` | 2026-09-22 | feat(auth): add self-service Reset Password page and end-to-end user reset flow |
-| `d7c1fd7` | 2026-09-22 | fix(fonts): restore clean UTF-8 typography and fix Form 21 bill formatting |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
