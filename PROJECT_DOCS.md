@@ -793,6 +793,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `d5a26d6` | 2026-09-22 | fix(automation): map accurate journey and itemized bill fields in headed data entry to ensure calculated claim amounts |
 | `f5f022f` | 2026-09-22 | fix(ui): define handleStartEditPayInfo in TADABill to prevent crash on bill view |
 | `7668d56` | 2026-09-22 | docs: sync PROJECT_DOCS.md and update headed UI data entry script |
 | `f1ccc1a` | 2026-09-22 | feat: add dummy data purge endpoint, headed UI data entry, and relaxed rate limiter |
@@ -800,13 +801,13 @@ This automatically launches:
 | `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
 | `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
 | `a27a410` | 2026-09-22 | fix(db): checkpoint and commit purged clean database containing only Vikhyat Hindoliya |
-| `972b430` | 2026-09-22 | fix(yaml): quote string values in render.yaml for strict YAML schema validation |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Add safe error fallback and 404 guard in TADABill.jsx to prevent ErrorBoundary crashes on missing or invalid claim bills |
 | **2026-09-22** | **Automated Update** | Fix claim zero amount calculation: update headed UI script with accurate field mapping, import TA/DA journeys into transfer claims, add doctor and medicine items to medical claims, and clean up obsolete empty drafts |
 | **2026-09-22** | **Automated Update** | Fix handleStartEditPayInfo ReferenceError in TADABill.jsx |
 | **2026-09-22** | **Automated Update** | Add dummy data purge endpoint, headed UI entry script, and increased auth rate limiter |

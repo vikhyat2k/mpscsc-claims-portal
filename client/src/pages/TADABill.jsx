@@ -156,6 +156,12 @@ export default function TADABill() {
     const fetchBillData = async () => {
         try {
             const res = await apiRequest(`/api/calculate-bill/${id}`);
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                setBillData({ error: errData.error || t.bill.billNotFound });
+                setLoading(false);
+                return;
+            }
             const data = await res.json();
             setBillData(data);
             setLoading(false);
@@ -167,6 +173,7 @@ export default function TADABill() {
             }
         } catch (err) {
             console.error(err);
+            setBillData({ error: t.bill.billNotFound });
             setLoading(false);
         }
     };
@@ -771,9 +778,23 @@ export default function TADABill() {
     };
 
     if (loading) return <div style={{ padding: '2rem' }}>{t.bill.loadingBill}</div>;
-    if (!billData) return <div style={{ padding: '2rem' }}>{t.bill.billNotFound}</div>;
-
-    const { claim, employee, billRows, totals } = billData;
+    if (!billData || billData.error || !billData.totals) {
+        return (
+            <div className="card" style={{ margin: '2rem auto', maxWidth: '600px', padding: '2rem', textAlign: 'center' }}>
+                <h3 style={{ color: '#dc2626', marginBottom: '1rem' }}>
+                    {billData?.error || t.bill.billNotFound}
+                </h3>
+                <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
+                    {language === 'hi'
+                        ? 'यह यात्रा देयक उपलब्ध नहीं है अथवा हटा दिया गया है।'
+                        : 'This travelling allowance bill could not be found or has been removed.'}
+                </p>
+                <button onClick={() => navigate('/claims')} className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ArrowLeft size={18} /> {t.common.back}
+                </button>
+            </div>
+        );
+    }
     const b = t.bill21;
     const empDisplayName = language === 'hi' && employee?.name_hi ? employee.name_hi : (employee?.name || '');
     const billSubTitle = b.subTitleFor ? b.subTitleFor(empDisplayName) : (b.subTitle || '');
