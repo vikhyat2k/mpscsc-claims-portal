@@ -47,6 +47,9 @@ function recordTest(module, name, passed, details = '', error = null) {
 }
 
 async function request(path, options = {}) {
+    if (!BASE_URL.includes('localhost')) {
+        await new Promise(r => setTimeout(r, 150));
+    }
     const url = `${BASE_URL}${path}`;
     const headers = {
         'Content-Type': 'application/json',

@@ -79,7 +79,7 @@ app.use(express.json());
 // ─────────────────────────────────────────────
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'test' || process.env.DISABLE_RATE_LIMIT === 'true' ? 10000 : 100,
+    max: process.env.NODE_ENV === 'test' || process.env.DISABLE_RATE_LIMIT === 'true' ? 10000 : 500,
     skip: () => process.env.NODE_ENV === 'test' || process.env.DISABLE_RATE_LIMIT === 'true',
     standardHeaders: true,
     legacyHeaders: false,
@@ -447,6 +447,67 @@ app.patch('/api/admin/users/:id/reset-password', verifyToken, requireAdmin, asyn
         const password_hash = await bcrypt.hash(new_password, 12);
         db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(password_hash, req.params.id);
         res.json({ success: true, message: 'Password reset successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/admin/purge-dummy-data — safely delete all dummy test records without affecting genuine data
+app.post('/api/admin/purge-dummy-data', verifyToken, requireAdmin, (req, res) => {
+    try {
+        const dummyUsers = db.prepare("SELECT id FROM users WHERE email LIKE '%@mpscsc.test'").all();
+        const dummyUserIds = dummyUsers.map(u => u.id);
+
+        let deletedCounts = {
+            users: dummyUserIds.length,
+            employees: 0,
+            claims: 0,
+            journeys: 0,
+            medicalBills: 0,
+            dailyAllowances: 0,
+            familyMembers: 0
+        };
+
+        if (dummyUserIds.length > 0) {
+            const userPlaceholders = dummyUserIds.map(() => '?').join(',');
+            const dummyEmployees = db.prepare(`SELECT id FROM employees WHERE user_id IN (${userPlaceholders})`).all(...dummyUserIds);
+            const dummyEmpIds = dummyEmployees.map(e => e.id);
+            deletedCounts.employees = dummyEmpIds.length;
+
+            if (dummyEmpIds.length > 0) {
+                const empPlaceholders = dummyEmpIds.map(() => '?').join(',');
+                const dummyClaims = db.prepare(`SELECT id FROM claims WHERE employee_id IN (${empPlaceholders})`).all(...dummyEmpIds);
+                const dummyClaimIds = dummyClaims.map(c => c.id);
+                deletedCounts.claims = dummyClaimIds.length;
+
+                if (dummyClaimIds.length > 0) {
+                    const claimPlaceholders = dummyClaimIds.map(() => '?').join(',');
+                    const jRes = db.prepare(`DELETE FROM journey_details WHERE claim_id IN (${claimPlaceholders})`).run(...dummyClaimIds);
+                    deletedCounts.journeys = jRes.changes;
+
+                    const mbRes = db.prepare(`DELETE FROM medical_bills WHERE claim_id IN (${claimPlaceholders})`).run(...dummyClaimIds);
+                    deletedCounts.medicalBills = mbRes.changes;
+
+                    const daRes = db.prepare(`DELETE FROM daily_allowances WHERE claim_id IN (${claimPlaceholders})`).run(...dummyClaimIds);
+                    deletedCounts.dailyAllowances = daRes.changes;
+
+                    db.prepare(`DELETE FROM claims WHERE id IN (${claimPlaceholders})`).run(...dummyClaimIds);
+                }
+
+                const famRes = db.prepare(`DELETE FROM family_members WHERE employee_id IN (${empPlaceholders})`).run(...dummyEmpIds);
+                deletedCounts.familyMembers = famRes.changes;
+
+                db.prepare(`DELETE FROM employees WHERE id IN (${empPlaceholders})`).run(...dummyEmpIds);
+            }
+
+            db.prepare(`DELETE FROM users WHERE id IN (${userPlaceholders})`).run(...dummyUserIds);
+        }
+
+        res.json({
+            success: true,
+            message: 'All dummy test data successfully purged. Genuine records preserved.',
+            deletedCounts
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

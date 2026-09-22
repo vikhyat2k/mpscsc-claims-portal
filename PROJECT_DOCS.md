@@ -27,7 +27,7 @@
 | **Database** | Better-SQLite3 (`server/claims.db`) in **WAL Mode** with 6 Performance Indexes |
 | **Active Modules** | 9 (Dashboard, Authentication & RBAC, Admin Portal, Employees, TA/DA Claims, Transfer Claims, Medical Claims, Tour Diaries, Reports) |
 | **Claim Types** | TA_DA, TRANSFER, MEDICAL |
-| **Total API Routes** | 35 REST endpoints (6 Auth, 7 Admin, 22 Core Domain) |
+| **Total API Routes** | 36 REST endpoints (6 Auth, 8 Admin, 22 Core Domain) |
 | **Authentication** | Bearer JWT (HS256), bcrypt password hashing (10 salt rounds), rate limiting (`express-rate-limit`) |
 | **Default Admin Account** | `admin@mpscsc.gov.in` / `Admin@123` |
 | **Bilingual Support** | Hindi + English (`LanguageContext`, `translations.js`, Google Font `Noto Sans Devanagari`) |
@@ -577,6 +577,7 @@ All routes run on **port 5000** under base `/api`. Protected routes require `Aut
 | `PATCH` | `/api/admin/users/:id/reset-password` | Admin Only | Direct administrative password override |
 | `GET` | `/api/admin/users/:id/employees` | Admin Only | Employees associated with specific user |
 | `GET` | `/api/admin/claims` | Admin Only | Centralized statewide cross-user claims ledger |
+| `POST` | `/api/admin/purge-dummy-data` | Admin Only | Cascade purge of all test dummy records matching `@mpscsc.test` / `[DUMMY_DATA_RECORD]` |
 
 ### 7.3 Dashboard & Analytics
 
@@ -792,6 +793,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
 | `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
 | `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
 | `a27a410` | 2026-09-22 | fix(db): checkpoint and commit purged clean database containing only Vikhyat Hindoliya |
@@ -799,13 +801,13 @@ This automatically launches:
 | `4fba562` | 2026-09-22 | fix(build): ensure vite build tools are installed in production environments |
 | `1804aac` | 2026-09-22 | chore: update server package-lock |
 | `909bd54` | 2026-09-22 | feat(deploy): prepare codebase for seamless 1-click free server deployment (Render/Railway/Docker) |
-| `120f0b5` | 2026-09-22 | fix(git): make post-commit push non-interactive and fail-safe |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Add dummy data purge endpoint, headed UI entry script, and increased auth rate limiter |
 | **2026-09-22** | **Automated Update** | Standardize authLimiter and enhance QA runner for live server validation |
 | **2026-09-22** | **Self-Service Password Reset System** | Created [ResetPassword.jsx](file:///f:/AI%20Projects/Anti%20Gravity/mpscsc-claims-portal/client/src/pages/ResetPassword.jsx), integrated with `ForgotPassword.jsx` and `/api/auth/reset-password` endpoint. Validated end-to-end token flow. |
 | **2026-09-22** | **Master Documentation Overhaul** | Comprehensive sync of `PROJECT_DOCS.md` reflecting all 37 API routes, new architecture, auth security, and admin workflows. |

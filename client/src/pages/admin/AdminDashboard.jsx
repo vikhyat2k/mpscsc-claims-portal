@@ -22,6 +22,26 @@ export default function AdminDashboard() {
         });
     }, []);
 
+    const [purging, setPurging] = useState(false);
+
+    const handlePurgeDummyData = async () => {
+        if (!window.confirm("Are you sure you want to purge all dummy test records? This will delete all users ending in @mpscsc.test and their test claims. Genuine records will NOT be affected.")) {
+            return;
+        }
+        setPurging(true);
+        try {
+            const res = await api.post("/api/admin/purge-dummy-data");
+            const data = await res.json();
+            alert(data.message || "Dummy data purged successfully!");
+            const r = await api.get("/api/admin/stats");
+            setStats(await r.json());
+        } catch (err) {
+            alert("Error purging dummy data: " + err.message);
+        } finally {
+            setPurging(false);
+        }
+    };
+
     if (loading) return <div className="page-loading">Loading admin dashboard...</div>;
     if (error) return <div className="page-error">Error: {error}</div>;
 
@@ -39,7 +59,17 @@ export default function AdminDashboard() {
                     <h1 className="admin-page-title">Admin Dashboard</h1>
                     <p className="admin-page-subtitle">Platform overview, user activity, and claims management</p>
                 </div>
-                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
+                    <button
+                        type="button"
+                        onClick={handlePurgeDummyData}
+                        disabled={purging}
+                        className="btn btn-secondary"
+                        style={{ borderColor: "#ef4444", color: "#ef4444", fontSize: "0.85rem" }}
+                        title="Safely remove all test users and test claims without affecting genuine accounts"
+                    >
+                        {purging ? "Purging..." : "🗑️ Purge Test Data"}
+                    </button>
                     <Link to="/admin/claims" className="btn btn-secondary">
                         <FileText size={15} /> All Claims Register
                     </Link>
