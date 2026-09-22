@@ -1172,7 +1172,7 @@ app.put('/api/medical-claims/:id', verifyToken, (req, res) => {
 // SPA catch-all: serve index.html for all non-API routes in production or when dist exists
 if (process.env.NODE_ENV === 'production' || fs.existsSync(clientBuildPath)) {
     app.use((req, res, next) => {
-        if (req.method === 'GET' && !req.path.startsWith('/api')) {
+        if ((req.method === 'GET' || req.method === 'HEAD') && !req.path.startsWith('/api')) {
             const indexPath = path.join(clientBuildPath, 'index.html');
             if (fs.existsSync(indexPath)) {
                 return res.sendFile(indexPath);
