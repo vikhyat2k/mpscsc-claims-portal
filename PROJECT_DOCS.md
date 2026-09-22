@@ -792,6 +792,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `b9be260` | 2026-09-22 | feat(docs): establish automated multi-tier documentation synchronization system |
 | `f57e605` | 2026-09-22 | docs: correct admin email address to admin@mpscsc.gov.in |
 | `9adf614` | 2026-09-22 | docs: sync PROJECT_DOCS.md with auth, admin suite, password reset, schema, and changelog |
 | `46c7d3a` | 2026-09-22 | feat(auth): add self-service Reset Password page and end-to-end user reset flow |
@@ -799,7 +800,6 @@ This automatically launches:
 | `50de7bc` | 2026-09-22 | feat(admin): enable comprehensive claims & bills oversight across users for admin |
 | `250de53` | 2026-09-22 | style(admin): Redesign Admin Panel with soothing light enterprise theme and fix sidebar |
 | `1fc4f2b` | 2026-09-22 | fix: Ensure apiRequest is explicitly imported and globally exposed to prevent runtime ReferenceError |
-| `8c66eb8` | 2026-09-22 | style(login): Optimize vertical geometry for 100% zero-scroll viewport fit |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
