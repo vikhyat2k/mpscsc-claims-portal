@@ -517,6 +517,16 @@ export const translations = {
             failedToDelete: "Failed to delete",
             errorUpdating: "Error updating data",
             failedToUpdate: "Failed to update"
+        },
+
+        // Inactivity & Session Timeout
+        inactivity: {
+            modalTitle: "Session Expiring Soon",
+            warningText: "You have been inactive for a while. For your security, your session will expire in",
+            secondsText: "seconds",
+            stayLoggedIn: "Stay Logged In",
+            logOutNow: "Log Out Now",
+            loggedOutNotice: "You have been logged out due to inactivity for security. Please sign in again."
         }
     },
 
@@ -1037,6 +1047,16 @@ export const translations = {
             importModalTitle: "आयात करने के लिए टीए/डीए दावा चुनें",
             importFor: "इसके लिए टीए/डीए दावे दिखा रहा है",
             noTadaFound: "इस कर्मचारी के लिए कोई पिछला टीए/डीए दावा नहीं मिला।"
+        },
+
+        // Inactivity & Session Timeout - Hindi
+        inactivity: {
+            modalTitle: "सत्र शीघ्र समाप्त हो रहा है",
+            warningText: "आप कुछ समय से निष्क्रिय हैं। आपकी सुरक्षा के लिए, आपका सत्र समाप्त हो जाएगा:",
+            secondsText: "सेकंड में",
+            stayLoggedIn: "लॉग इन रहें",
+            logOutNow: "अभी लॉग आउट करें",
+            loggedOutNotice: "सुरक्षा कारणों से निष्क्रियता के कारण आपको लॉग आउट कर दिया गया है। कृपया पुनः साइन इन करें।"
         }
     }
 };

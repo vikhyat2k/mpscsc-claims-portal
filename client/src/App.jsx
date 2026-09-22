@@ -34,6 +34,7 @@ import AdminUsers     from "./pages/admin/AdminUsers";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import AdminClaims    from "./pages/admin/AdminClaims";
 import ImpersonationBanner from "./components/ImpersonationBanner";
+import InactivityHandler from "./components/InactivityHandler";
 
 // ─────────────────────────────────────────────
 // SIDEBAR NAVBAR
@@ -176,6 +177,7 @@ export default function App() {
       <AuthProvider>
         <LanguageProvider>
           <Router basename={import.meta.env.BASE_URL || "/"}>
+            <InactivityHandler />
             <Routes>
               {/* Public routes */}
               <Route path="/login"          element={<Login />} />

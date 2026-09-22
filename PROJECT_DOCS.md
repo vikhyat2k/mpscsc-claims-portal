@@ -357,6 +357,7 @@ mpscsc-claims-portal/
 
 - **JWT Token Management:** Stored in `localStorage` under `auth_token`, validated on every API request.
 - **Auto-Logout on Expiry:** Global 401 interceptor removes credentials and broadcasts `auth:expired`.
+- **Inactivity & Idle Timeout (Enterprise Security):** Managed via `InactivityHandler.jsx`. Monitors user input across tabs. If idle for 14 minutes, triggers a 60-second advance warning countdown dialog with options to "Stay Logged In" or "Log Out Now". If 15 minutes of inactivity elapse, automatically terminates the session, clears credentials, and redirects to `/login?reason=inactivity` with a prominent security banner. Cross-tab `localStorage` synchronization prevents premature timeouts when active in parallel tabs.
 - **Role-Based Guards:** `ProtectedRoute.jsx` intercepts unauthorized routes based on role (`admin` vs `user`).
 - **Brute Force Protection:** Express rate limiter (`authLimiter`) prevents credential spraying.
 
@@ -795,6 +796,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `5850f17` | 2026-09-22 | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |
 | `e174550` | 2026-09-22 | Fix dashboard date-filter clock skew and permanently bake 10 user claims into claims.db with auto-seeding |
 | `5ad2703` | 2026-09-22 | feat(seed): populate comprehensive realistic records for all 10 user accounts across all 4 modules and support total_amount in claim update |
 | `2bba7ce` | 2026-09-22 | feat(admin): implement Admin Impersonation ('Log In As This User') with persistent banner and 1-click exit |
@@ -802,13 +804,13 @@ This automatically launches:
 | `8eda3c4` | 2026-09-22 | fix(ui): add safe null check and 404 error fallback in TADABill to prevent crash |
 | `d5a26d6` | 2026-09-22 | fix(automation): map accurate journey and itemized bill fields in headed data entry to ensure calculated claim amounts |
 | `f5f022f` | 2026-09-22 | fix(ui): define handleStartEditPayInfo in TADABill to prevent crash on bill view |
-| `7668d56` | 2026-09-22 | docs: sync PROJECT_DOCS.md and update headed UI data entry script |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Add automatic inactivity logout (idle timeout) with 60-second warning countdown and cross-tab synchronization |
 | **2026-09-22** | **Automated Update** | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |
 | **2026-09-22** | **Automated Update** | Fix dashboard date filtering clock skew, auto-seed 10 test users on startup, and bake all user claims into claims.db |
 | **2026-09-22** | **Automated Update** | Ensure all 10 registered user accounts have realistic live dummy records across all 4 modules and support total_amount in PUT /api/claims/:id |

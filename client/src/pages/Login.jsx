@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, AlertCircle, CheckCircle, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, AlertCircle, CheckCircle, ArrowRight, ShieldCheck, Sparkles, Clock } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
+import { getTranslations } from "../utils/translations";
 import logoIco from "../assets/logo.ico";
 
 export default function Login() {
     const { login } = useAuth();
+    const { language } = useLanguage();
+    const t = getTranslations(language);
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
@@ -15,6 +19,8 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const successMsg = location.state?.success;
+    const searchParams = new URLSearchParams(location.search);
+    const isInactivityLogout = location.state?.reason === 'inactivity' || searchParams.get('reason') === 'inactivity';
 
     const handleChange = (e) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -83,6 +89,18 @@ export default function Login() {
                             Sign in to access your claims &amp; reimbursement portal
                         </p>
                     </div>
+
+                    {/* Inactivity Notice */}
+                    {isInactivityLogout && (
+                        <div className="auth-alert" style={{ backgroundColor: '#fffbeb', borderColor: '#fcd34d', color: '#92400e', marginBottom: '1.25rem' }}>
+                            <Clock size={16} className="alert-icon" style={{ color: '#d97706', flexShrink: 0 }} />
+                            <div className="alert-content">
+                                <p className="alert-text" style={{ color: '#92400e', fontSize: '0.875rem', lineHeight: '1.4' }}>
+                                    {t?.inactivity?.loggedOutNotice || "You have been logged out due to inactivity for security. Please sign in again."}
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Success Notification */}
                     {successMsg && (
