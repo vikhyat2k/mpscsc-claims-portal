@@ -80,14 +80,14 @@ export default function Login() {
                     <div className="auth-welcome-block">
                         <h2 className="auth-heading enterprise-heading">Welcome back</h2>
                         <p className="auth-subheading enterprise-subheading">
-                            Sign in to access your claims, travel allowances &amp; medical reimbursement portal
+                            Sign in to access your claims &amp; reimbursement portal
                         </p>
                     </div>
 
                     {/* Success Notification */}
                     {successMsg && (
                         <div className="auth-alert auth-alert--success">
-                            <CheckCircle size={18} className="alert-icon" />
+                            <CheckCircle size={16} className="alert-icon" />
                             <div className="alert-content">
                                 <p className="alert-text">{successMsg}</p>
                             </div>
@@ -97,7 +97,7 @@ export default function Login() {
                     {/* Error Notification */}
                     {error && (
                         <div className="auth-alert auth-alert--error">
-                            <AlertCircle size={18} className="alert-icon" />
+                            <AlertCircle size={16} className="alert-icon" />
                             <div className="alert-content">
                                 <p className="alert-text">{error}</p>
                             </div>
@@ -112,7 +112,7 @@ export default function Login() {
                                 Email Address <span className="auth-required-star">*</span>
                             </label>
                             <div className="auth-input-wrap">
-                                <Mail size={18} className="auth-input-icon" />
+                                <Mail size={16} className="auth-input-icon" />
                                 <input
                                     id="login-email"
                                     type="email"
@@ -139,7 +139,7 @@ export default function Login() {
                                 </Link>
                             </div>
                             <div className="auth-input-wrap">
-                                <Lock size={18} className="auth-input-icon" />
+                                <Lock size={16} className="auth-input-icon" />
                                 <input
                                     id="login-password"
                                     type={showPassword ? "text" : "password"}
@@ -158,7 +158,7 @@ export default function Login() {
                                     onClick={() => setShowPassword(v => !v)}
                                     aria-label={showPassword ? "Hide password" : "Show password"}
                                 >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
                             </div>
                         </div>
@@ -178,7 +178,7 @@ export default function Login() {
                             ) : (
                                 <>
                                     <span>Sign In</span>
-                                    <ArrowRight size={18} className="auth-btn-arrow" />
+                                    <ArrowRight size={16} className="auth-btn-arrow" />
                                 </>
                             )}
                         </button>
@@ -202,7 +202,7 @@ export default function Login() {
                         {/* Dedicated Creator Card with Glowing Accent */}
                         <div className="creator-showcase-card" title="Architected & Developed by Vikhyat Hindoliya">
                             <div className="creator-badge-accent">
-                                <Sparkles size={18} className="creator-sparkle-icon" />
+                                <Sparkles size={16} className="creator-sparkle-icon" />
                             </div>
                             <div className="creator-info-stack">
                                 <div className="creator-eyebrow-row">
@@ -219,7 +219,7 @@ export default function Login() {
                 {/* Sub-Card Security & Compliance Guarantee */}
                 <div className="auth-page-subfooter">
                     <div className="subfooter-security-tag">
-                        <ShieldCheck size={14} className="security-icon" />
+                        <ShieldCheck size={13} className="security-icon" />
                         <span>256-Bit SSL Encrypted Enterprise System</span>
                     </div>
                 </div>
