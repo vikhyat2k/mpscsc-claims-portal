@@ -29,7 +29,7 @@
 | **Claim Types** | TA_DA, TRANSFER, MEDICAL |
 | **Total API Routes** | 37 REST endpoints (6 Auth, 7 Admin, 24 Core Domain) |
 | **Authentication** | Bearer JWT (HS256), bcrypt password hashing (10 salt rounds), rate limiting (`express-rate-limit`) |
-| **Default Admin Account** | `admin@mpscsc.mp.gov.in` / `Admin@123` |
+| **Default Admin Account** | `admin@mpscsc.gov.in` / `Admin@123` |
 | **Bilingual Support** | Hindi + English (`LanguageContext`, `translations.js`, Google Font `Noto Sans Devanagari`) |
 | **Typography & Print** | Form 21 MP TA/DA Bill layout (UTF-8 Devanagari verified), Medical Claim Hindi format, CSS `@media print` |
 | **DB Foreign Keys** | OFF (`PRAGMA foreign_keys = OFF` — cascade operations governed by atomic transactions) |
@@ -719,7 +719,7 @@ All routes run on **port 5000** under base `/api`. Protected routes require `Aut
 
 ### Credentials
 
-- **Admin Login:** `admin@mpscsc.mp.gov.in`
+- **Admin Login:** `admin@mpscsc.gov.in`
 - **Admin Password:** `Admin@123`
 
 ### Starting the Portal
@@ -817,7 +817,7 @@ This automatically launches:
    const bcrypt = require('bcryptjs');
    const { db } = require('./db');
    const hash = bcrypt.hashSync('Admin@123', 10);
-   db.prepare("UPDATE users SET password_hash = ? WHERE email = 'admin@mpscsc.mp.gov.in'").run(hash);
+   db.prepare("UPDATE users SET password_hash = ? WHERE email = 'admin@mpscsc.gov.in'").run(hash);
    console.log('Admin password reset successfully.');
    ```
 3. **Inspect Active Database State**:
