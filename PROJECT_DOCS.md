@@ -795,6 +795,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `2bba7ce` | 2026-09-22 | feat(admin): implement Admin Impersonation ('Log In As This User') with persistent banner and 1-click exit |
 | `e26c085` | 2026-09-22 | fix(ui): restore destructuring of employee from billData in TADABill |
 | `8eda3c4` | 2026-09-22 | fix(ui): add safe null check and 404 error fallback in TADABill to prevent crash |
 | `d5a26d6` | 2026-09-22 | fix(automation): map accurate journey and itemized bill fields in headed data entry to ensure calculated claim amounts |
@@ -802,13 +803,13 @@ This automatically launches:
 | `7668d56` | 2026-09-22 | docs: sync PROJECT_DOCS.md and update headed UI data entry script |
 | `f1ccc1a` | 2026-09-22 | feat: add dummy data purge endpoint, headed UI data entry, and relaxed rate limiter |
 | `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
-| `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Ensure all 10 registered user accounts have realistic live dummy records across all 4 modules and support total_amount in PUT /api/claims/:id |
 | **2026-09-22** | **Automated Update** | Implement Admin User Impersonation ('Log In As This User') feature with persistent top banner and 1-click restore |
 | **2026-09-22** | **Automated Update** | Fix ReferenceError: employee is not defined in TADABill.jsx by restoring destructuring of billData |
 | **2026-09-22** | **Automated Update** | Add safe error fallback and 404 guard in TADABill.jsx to prevent ErrorBoundary crashes on missing or invalid claim bills |

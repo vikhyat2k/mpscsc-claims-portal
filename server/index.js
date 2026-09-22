@@ -1131,7 +1131,7 @@ app.put('/api/claims/:id', verifyToken, (req, res) => {
         hotel_stay_type, hotel_amount, advance_amount, declaration_date, remarks,
         packing_charges, goods_transport_charges, family_details, baggage_weight,
         patient_name, relationship, is_regular, pay_scale, child_sl_no_dob,
-        illness_name, illness_duration, total_enclosures
+        illness_name, illness_duration, total_enclosures, total_amount
     } = req.body;
     try {
         const stmt = db.prepare(`
@@ -1158,7 +1158,8 @@ app.put('/api/claims/:id', verifyToken, (req, res) => {
                 child_sl_no_dob = COALESCE(?, child_sl_no_dob),
                 illness_name = COALESCE(?, illness_name),
                 illness_duration = COALESCE(?, illness_duration),
-                total_enclosures = COALESCE(?, total_enclosures)
+                total_enclosures = COALESCE(?, total_enclosures),
+                total_amount = COALESCE(?, total_amount)
             WHERE id = ?
         `);
         stmt.run(
@@ -1168,6 +1169,7 @@ app.put('/api/claims/:id', verifyToken, (req, res) => {
             declaration_date, remarks,
             patient_name, relationship, is_regular, pay_scale,
             child_sl_no_dob, illness_name, illness_duration, total_enclosures,
+            total_amount !== undefined ? parseFloat(total_amount) || 0 : null,
             id
         );
         res.json({ success: true });
