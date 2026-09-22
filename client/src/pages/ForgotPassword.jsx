@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import api, { apiRequest } from "../utils/api";
@@ -77,18 +77,34 @@ export default function ForgotPassword() {
                                 <CheckCircle size={16} /><span>Reset token generated successfully!</span>
                             </div>
                             <p className="auth-subheading" style={{ marginBottom: "1rem" }}>
-                                Please contact the administrator to get your reset token. They can see it in the Admin Panel.
+                                Your password reset token has been generated and is valid for 1 hour.
                             </p>
                             {resetToken && (
-                                <div className="auth-token-box">
-                                    <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-                                        Your reset token (share with admin or use below):
-                                    </p>
-                                    <code style={{ wordBreak: "break-all", fontSize: "0.7rem" }}>{resetToken}</code>
-                                </div>
+                                <>
+                                    <div className="auth-token-box" style={{ background: "rgba(255,255,255,0.7)", border: "1px solid var(--border-2, #cbd5e1)", padding: "10px", borderRadius: "8px", marginBottom: "1.25rem" }}>
+                                        <p style={{ fontSize: "0.75rem", color: "var(--text-2, #475569)", marginBottom: "0.5rem", fontWeight: "600" }}>
+                                            Your 1-Hour Reset Token:
+                                        </p>
+                                        <code style={{ wordBreak: "break-all", fontSize: "0.72rem", color: "#1e3a8a", display: "block" }}>{resetToken}</code>
+                                    </div>
+                                    <Link
+                                        to={`/reset-password?token=${encodeURIComponent(resetToken)}`}
+                                        className="auth-btn"
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            gap: "0.5rem",
+                                            textDecoration: "none",
+                                            marginBottom: "1rem"
+                                        }}
+                                    >
+                                        Proceed to Set New Password ➔
+                                    </Link>
+                                </>
                             )}
-                            <p className="auth-subheading" style={{ marginTop: "1rem" }}>
-                                Once you have the token, use the <Link to="/reset-password" className="auth-link">Reset Password</Link> page.
+                            <p className="auth-subheading" style={{ marginTop: "0.5rem", fontSize: "0.82rem" }}>
+                                If you already have a token from your administrator, you can also go to the <Link to="/reset-password" className="auth-link">Reset Password</Link> page directly.
                             </p>
                         </div>
                     )}
