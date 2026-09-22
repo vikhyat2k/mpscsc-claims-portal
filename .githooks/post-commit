@@ -1,19 +1,20 @@
 #!/bin/sh
 # .githooks/post-commit
-# Automatically push committed changes to GitHub
+# Automatically push committed changes to GitHub if credentials are ready
 
-echo "[Git Hook] Automatically pushing updates to GitHub (origin)..."
+echo "[Git Hook] Attempting automated push to GitHub (origin)..."
 
-# Attempt to push to current branch
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 if [ "$BRANCH" != "HEAD" ]; then
-    git push origin "$BRANCH"
+    # Use non-interactive mode so hooks never hang if credentials are unconfigured or network is offline
+    git -c credential.interactive=false push origin "$BRANCH" --quiet 2>/dev/null
     if [ $? -eq 0 ]; then
-        echo "[Git Hook] ✓ Project successfully updated on GitHub ($BRANCH)!"
+        echo "[Git Hook] ✓ Successfully pushed to GitHub (origin/$BRANCH)!"
     else
-        echo "[Git Hook] ⚠️ Could not push to GitHub automatically."
-        echo "           Run 'push_to_github.bat' or 'npm run push' to complete authentication."
+        echo "[Git Hook] ℹ️ Auto-push skipped: GitHub authentication required or network offline."
+        echo "           Run 'push_to_github.bat' or 'npm run push' to sign in to GitHub."
+        echo "           Once signed in, all future commits will push to GitHub automatically!"
     fi
 fi
 
