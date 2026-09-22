@@ -392,6 +392,8 @@ mpscsc-claims-portal/
   - Fully restored UTF-8 Devanagari Hindi text (heading, column labels, certificates, declaration).
   - Styled with Google Font `Noto Sans Devanagari` and `Inter`.
   - Export to Excel via SheetJS and CSS-optimized Print layout.
+  - **Passing Order Access Control:** Section 4 Controlling Officer Certificate & Passing Order ("देयक पारित आदेश") is exclusively displayed to Administrators (`isAdmin`). For individual employee logins, the passing order is hidden and the bill terminates cleanly at the Claimant's Signature.
+  - **Universal Print Orientation:** Independent A4 Landscape and A4 Portrait orientation toggles available in all user logins (Admin and Individual) with dynamic `@page` CSS and localized button labels.
 
 ### 5.6 Transfer Claims
 
@@ -407,7 +409,8 @@ mpscsc-claims-portal/
 
 - Captures patient details, relationship, illness category, and treatment dates.
 - Itemised bills table (`CONSULTATION`, `MEDICINE`, `TEST`, `OTHER`).
-- Formal bilingual medical reimbursement claim form printing.
+- Formal bilingual medical reimbursement claim form printing with distinct A4 Portrait (Recommended) and A4 Landscape print orientation toggles available across all logins.
+- Applicant / Employee signature footer formatted with page-break avoidance to ensure clear bottom visibility.
 
 ### 5.8 Reports & Analytics
 
@@ -416,6 +419,7 @@ mpscsc-claims-portal/
 - Date-range filtered claims audit.
 - Employee-wise, claim-type, and status-wise expenditure summaries.
 - Multi-sheet Excel workbook export via SheetJS.
+- Dynamic A4 Landscape (Recommended) and A4 Portrait orientation toggles for printing across all user logins.
 
 ---
 
@@ -796,6 +800,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `078b3f8` | 2026-09-23 | fix(medical-claim): ensure Applicant and Doctor signatures are clearly visible and unclipped in print |
 | `ad5b798` | 2026-09-23 | feat(auth): implement automatic inactivity logout with 60s warning modal and cross-tab sync |
 | `5850f17` | 2026-09-22 | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |
 | `e174550` | 2026-09-22 | Fix dashboard date-filter clock skew and permanently bake 10 user claims into claims.db with auto-seeding |
@@ -803,13 +808,13 @@ This automatically launches:
 | `2bba7ce` | 2026-09-22 | feat(admin): implement Admin Impersonation ('Log In As This User') with persistent banner and 1-click exit |
 | `e26c085` | 2026-09-22 | fix(ui): restore destructuring of employee from billData in TADABill |
 | `8eda3c4` | 2026-09-22 | fix(ui): add safe null check and 404 error fallback in TADABill to prevent crash |
-| `d5a26d6` | 2026-09-22 | fix(automation): map accurate journey and itemized bill fields in headed data entry to ensure calculated claim amounts |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Hide bill passing order from individual users and enable A4 Landscape and Portrait printing across all modules |
 | **2026-09-22** | **Automated Update** | Fix Medical Claim print layout: ensure applicant and doctor signature blocks are clearly visible, unclipped, and styled with solid rules |
 | **2026-09-22** | **Automated Update** | Add automatic inactivity logout (idle timeout) with 60-second warning countdown and cross-tab synchronization |
 | **2026-09-22** | **Automated Update** | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |

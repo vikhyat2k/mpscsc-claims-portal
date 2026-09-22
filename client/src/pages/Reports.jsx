@@ -20,6 +20,10 @@ const Reports = () => {
     const rt = t.reports;
 
     const [loading, setLoading] = useState(true);
+    const [printOrientation, setPrintOrientation] = useState(() => {
+        const p = new URLSearchParams(window.location.search).get('orientation');
+        return p === 'portrait' ? 'portrait' : 'landscape';
+    });
     const [claims, setClaims] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [filteredClaims, setFilteredClaims] = useState([]);
@@ -165,18 +169,18 @@ const Reports = () => {
         submitted: filteredClaims.filter(c => c.status === 'SUBMITTED').length
     };
 
-    const handlePrint = () => {
-        // Set document title for PDF filename
+    const handlePrint = (orientation = printOrientation) => {
+        setPrintOrientation(orientation);
         const originalTitle = document.title;
         const dateStr = new Date().toISOString().split('T')[0];
-        document.title = `${dateStr}_Claims Report`;
+        document.title = `${dateStr}_Claims_Report_${orientation}`;
 
-        window.print();
-
-        // Restore original title after a short delay
         setTimeout(() => {
-            document.title = originalTitle;
-        }, 100);
+            window.print();
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 100);
+        }, 80);
     };
 
     if (loading) return <div style={{ padding: '2rem' }}>{t.common.loading}</div>;
@@ -213,9 +217,59 @@ const Reports = () => {
 
             <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h1 style={{ margin: 0 }}>{rt.title}</h1>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button type="button" onClick={handlePrint} className="btn btn-secondary">
-                        <Printer size={18} /> {t.common.print}
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* Print Orientation Selector Toggle */}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #cbd5e1', gap: '3px' }}>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('landscape')}
+                            title={language === 'hi' ? 'A4 लैंडस्केप में प्रिंट करें (अनुशंसित)' : 'Print in A4 Landscape (Recommended)'}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '5px 10px',
+                                fontSize: '12.5px',
+                                fontWeight: printOrientation === 'landscape' ? '600' : '500',
+                                borderRadius: '6px',
+                                border: 'none',
+                                background: printOrientation === 'landscape' ? '#1e3a8a' : 'transparent',
+                                color: printOrientation === 'landscape' ? '#ffffff' : '#475569',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                            }}
+                        >
+                            <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
+                            <span style={{ fontSize: '10px', opacity: 0.9, background: printOrientation === 'landscape' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'landscape' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>
+                                {language === 'hi' ? 'अनुशंसित' : 'Rec.'}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('portrait')}
+                            title={language === 'hi' ? 'A4 पोर्ट्रेट में प्रिंट करें' : 'Print in A4 Portrait'}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '5px 10px',
+                                fontSize: '12.5px',
+                                fontWeight: printOrientation === 'portrait' ? '600' : '500',
+                                borderRadius: '6px',
+                                border: 'none',
+                                background: printOrientation === 'portrait' ? '#1e3a8a' : 'transparent',
+                                color: printOrientation === 'portrait' ? '#ffffff' : '#475569',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                            }}
+                        >
+                            <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
+                        </button>
+                    </div>
+                    <button type="button" onClick={() => handlePrint(printOrientation)} className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: '600' }}>
+                        <Printer size={18} /> {language === 'hi' ? `प्रिंट (A4 ${printOrientation === 'landscape' ? 'लैंडस्केप' : 'पोर्ट्रेट'})` : `Print (A4 ${printOrientation === 'landscape' ? 'Landscape' : 'Portrait'})`}
                     </button>
                     <button onClick={exportToExcel} className="btn btn-success">
                         <FileSpreadsheet size={18} /> {t.common.export}
@@ -431,7 +485,7 @@ const Reports = () => {
                 .badge-medical { background: #fce7f3; color: #9d174d; padding: 2px 6px; border-radius: 4px; }
 
                 @media print {
-                    @page { size: landscape; margin: 10mm; }
+                    @page { size: A4 ${printOrientation}; margin: ${printOrientation === 'landscape' ? '8mm 10mm' : '8mm 8mm'}; }
                     .no-print { display: none !important; }
                     .print-only-header { display: flex !important; }
                     .card { border: none !important; box-shadow: none !important; padding: 0 !important; }

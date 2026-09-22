@@ -42,6 +42,10 @@ const MedicalClaim = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [familyMembers, setFamilyMembers] = useState([]);
+    const [printOrientation, setPrintOrientation] = useState(() => {
+        const p = new URLSearchParams(window.location.search).get('orientation');
+        return p === 'landscape' ? 'landscape' : 'portrait';
+    });
 
     const popularIllnesses = [
         "Viral Fever (विषाणु ज्वर)", "Typhoid (टाइफाइड)", "Malaria (मलेरिया)", "Dengue (डेंगू)",
@@ -226,18 +230,18 @@ const MedicalClaim = () => {
         }
     };
 
-    const handlePrint = () => {
-        // Set document title for PDF filename
+    const handlePrint = (orientation = printOrientation) => {
+        setPrintOrientation(orientation);
         const originalTitle = document.title;
         const dateStr = claim?.start_date || new Date().toISOString().split('T')[0];
-        document.title = `${dateStr}_Medical Claim`;
+        document.title = `${dateStr}_Medical_Claim_${orientation}`;
 
-        window.print();
-
-        // Restore original title after a short delay
         setTimeout(() => {
-            document.title = originalTitle;
-        }, 100);
+            window.print();
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 100);
+        }, 80);
     };
 
     if (loading) return <div>Loading...</div>;
@@ -256,14 +260,64 @@ const MedicalClaim = () => {
                     <h1>{t.nav.medicalClaims}</h1>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    {/* Print Orientation Selector Toggle */}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #cbd5e1', gap: '3px' }}>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('portrait')}
+                            title={language === 'hi' ? 'चिकित्सा दावा A4 पोर्ट्रेट में प्रिंट करें (अनुशंसित)' : 'Print Medical Claim in A4 Portrait (Recommended)'}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '5px 10px',
+                                fontSize: '12.5px',
+                                fontWeight: printOrientation === 'portrait' ? '600' : '500',
+                                borderRadius: '6px',
+                                border: 'none',
+                                background: printOrientation === 'portrait' ? '#1e3a8a' : 'transparent',
+                                color: printOrientation === 'portrait' ? '#ffffff' : '#475569',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                            }}
+                        >
+                            <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
+                            <span style={{ fontSize: '10px', opacity: 0.9, background: printOrientation === 'portrait' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'portrait' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>
+                                {language === 'hi' ? 'अनुशंसित' : 'Rec.'}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('landscape')}
+                            title={language === 'hi' ? 'A4 लैंडस्केप में प्रिंट करें' : 'Print in A4 Landscape'}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '5px 10px',
+                                fontSize: '12.5px',
+                                fontWeight: printOrientation === 'landscape' ? '600' : '500',
+                                borderRadius: '6px',
+                                border: 'none',
+                                background: printOrientation === 'landscape' ? '#1e3a8a' : 'transparent',
+                                color: printOrientation === 'landscape' ? '#ffffff' : '#475569',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                            }}
+                        >
+                            <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
+                        </button>
+                    </div>
                     <button
                         type="button"
                         className="btn btn-primary"
-                        onClick={handlePrint}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                        onClick={() => handlePrint(printOrientation)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: '600' }}
                         title={language === 'hi' ? 'शासकीय प्रारूप में आवेदन पत्र / देयक प्रिंट करें' : 'Print Application Form / Bill in Govt Prescribed Format'}
                     >
-                        <Printer size={18} /> {language === 'hi' ? 'आवेदन एवं देयक प्रिंट' : 'Print Form & Bill'}
+                        <Printer size={18} /> {language === 'hi' ? `प्रिंट (A4 ${printOrientation === 'landscape' ? 'लैंडस्केप' : 'पोर्ट्रेट'})` : `Print (A4 ${printOrientation === 'landscape' ? 'Landscape' : 'Portrait'})`}
                     </button>
                     {!isReadOnly && !isSubmitted && (
                         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
@@ -1303,8 +1357,8 @@ const MedicalClaim = () => {
                    =================================================== */
                 @media print {
                     @page {
-                        size: A4 portrait;
-                        margin: 6mm 8mm 8mm 8mm;
+                        size: A4 ${printOrientation};
+                        margin: ${printOrientation === 'landscape' ? '6mm 10mm 8mm 10mm' : '6mm 8mm 8mm 8mm'};
                     }
                     * {
                         color: black !important;

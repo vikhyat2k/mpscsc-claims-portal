@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Printer, ArrowLeft, FileSpreadsheet, MousePointer2, Receipt, Edit, Check, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { getTranslations } from '../utils/translations';
 import { numberToWordsEnglish, numberToWordsHindi } from '../utils/numberToWords';
 import ExcelJS from 'exceljs';
@@ -83,8 +84,13 @@ export default function TADABill() {
     const navigate = useNavigate();
     const { language } = useLanguage();
     const t = getTranslations(language);
+    const { user, isAdmin } = useAuth();
 
     const [loading, setLoading] = useState(true);
+    const [printOrientation, setPrintOrientation] = useState(() => {
+        const p = new URLSearchParams(window.location.search).get('orientation');
+        return p === 'landscape' ? 'landscape' : 'portrait';
+    });
     const [billData, setBillData] = useState(null);
     const [fontSize, setFontSize] = useState(9); // Default 9px for 21-column official layout
     const [showSettings, setShowSettings] = useState(false);
@@ -237,17 +243,19 @@ export default function TADABill() {
         fetchBillData();
     }, [id]);
 
-    const handlePrint = () => {
+    const handlePrint = (orientation = printOrientation) => {
+        setPrintOrientation(orientation);
         const originalTitle = document.title;
         const dateStr = claim?.start_date || new Date().toISOString().split('T')[0];
         const claimTypeText = claim?.claim_type === 'TRANSFER' ? 'Transfer_TA_Bill' : 'TA_DA_Bill';
-        document.title = `${dateStr}_${employee?.name || ''}_${claimTypeText}`;
-
-        window.print();
+        document.title = `${dateStr}_${employee?.name || ''}_${claimTypeText}_${orientation}`;
 
         setTimeout(() => {
-            document.title = originalTitle;
-        }, 100);
+            window.print();
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 100);
+        }, 80);
     };
 
     const handleExportExcel = async () => {
@@ -830,8 +838,58 @@ export default function TADABill() {
                 >
                     <FileSpreadsheet size={18} /> {language === 'hi' ? 'दौरा डायरी देखें' : 'View Tour Diary'}
                 </button>
-                <button type="button" onClick={handlePrint} className="btn btn-primary">
-                    <Printer size={18} /> {t.bill.printBill}
+                {/* Print Orientation Selector Toggle */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #cbd5e1', gap: '3px' }}>
+                    <button
+                        type="button"
+                        onClick={() => setPrintOrientation('portrait')}
+                        title={language === 'hi' ? 'फॉर्म 21 देयक A4 पोर्ट्रेट में प्रिंट करें (अनुशंसित)' : 'Print Form 21 Bill in A4 Portrait (Recommended)'}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '5px 10px',
+                            fontSize: '12.5px',
+                            fontWeight: printOrientation === 'portrait' ? '600' : '500',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: printOrientation === 'portrait' ? '#1e3a8a' : 'transparent',
+                            color: printOrientation === 'portrait' ? '#ffffff' : '#475569',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                        }}
+                    >
+                        <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                        {language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
+                        <span style={{ fontSize: '10px', opacity: 0.9, background: printOrientation === 'portrait' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'portrait' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>
+                            {language === 'hi' ? 'अनुशंसित' : 'Rec.'}
+                        </span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setPrintOrientation('landscape')}
+                        title={language === 'hi' ? 'A4 लैंडस्केप में प्रिंट करें' : 'Print in A4 Landscape'}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '5px 10px',
+                            fontSize: '12.5px',
+                            fontWeight: printOrientation === 'landscape' ? '600' : '500',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: printOrientation === 'landscape' ? '#1e3a8a' : 'transparent',
+                            color: printOrientation === 'landscape' ? '#ffffff' : '#475569',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                        }}
+                    >
+                        <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                        {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
+                    </button>
+                </div>
+                <button type="button" onClick={() => handlePrint(printOrientation)} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: '600' }}>
+                    <Printer size={18} /> {language === 'hi' ? `प्रिंट (A4 ${printOrientation === 'landscape' ? 'लैंडस्केप' : 'पोर्ट्रेट'})` : `Print (A4 ${printOrientation === 'landscape' ? 'Landscape' : 'Portrait'})`}
                 </button>
                 <button onClick={handleExportExcel} className="btn btn-success">
                     <FileSpreadsheet size={18} /> {t.common.export} Excel
@@ -1328,7 +1386,7 @@ export default function TADABill() {
                 }}>
                     <span><strong>{language === 'hi' ? 'फॉर्म क्रमांक 21 (पृष्ठ 1 / 2) — यात्रा विवरण' : 'Form 21 (Page 1 of 2) — Journey Details'}</strong></span>
                     <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>
-                        {language === 'hi' ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)'}
+                        {language === 'hi' ? (isAdmin ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन एवं प्रमाण-पत्र)') : (isAdmin ? '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)' : '>> Please Turn Over: Part II (Adjustments & Certificates)')}
                     </span>
                 </div>
 
@@ -1350,7 +1408,7 @@ export default function TADABill() {
                         fontWeight: '700',
                         border: '1px solid #bfdbfe'
                     }}>
-                        📄 {language === 'hi' ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)' : 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)'}
+                        📄 {language === 'hi' ? (isAdmin ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)' : 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र एवं कटौती)') : (isAdmin ? 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)' : 'Form 21 - Page 2 (Part II: Certificates & Deductions)')}
                     </span>
                 </div>
 
@@ -1374,7 +1432,7 @@ export default function TADABill() {
                                     {language === 'hi' ? 'मध्य प्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड' : 'M.P. State Civil Supplies Corporation Limited'}
                                 </h3>
                                 <h4 style={{ margin: '2px 0 0 0', fontSize: '10.5pt', fontWeight: 'bold', color: '#1e3a8a' }}>
-                                    {language === 'hi' ? 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'Form 21 — Part II (Adjustments, Certificates & Passing Order)'}
+                                    {language === 'hi' ? (isAdmin ? 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन एवं प्रमाण-पत्र)') : (isAdmin ? 'Form 21 — Part II (Adjustments, Certificates & Passing Order)' : 'Form 21 — Part II (Adjustments & Certificates)')}
                                 </h4>
                             </div>
                             <div style={{ textAlign: 'right', fontSize: '8.8pt', lineHeight: '1.35' }}>
@@ -1477,7 +1535,8 @@ export default function TADABill() {
                         </div>
                     </div>
 
-                    {/* Section 4: Controlling Officer Certificate & Bill Sanction Order */}
+                    {/* Section 4: Controlling Officer Certificate & Bill Sanction Order (Admin Only) */}
+                    {isAdmin && (
                     <div style={{
                         border: '1.5px solid black',
                         padding: '10px 14px',
@@ -1543,6 +1602,7 @@ export default function TADABill() {
                             </div>
                         </div>
                     </div>
+                    )}
                 </div>
             </div>
 
@@ -1598,8 +1658,8 @@ export default function TADABill() {
                 }
                 @media print {
                     @page {
-                        size: A4 portrait;
-                        margin: 5mm 5mm 6mm 5mm;
+                        size: A4 ${printOrientation};
+                        margin: ${printOrientation === 'landscape' ? '5mm 7mm 6mm 7mm' : '5mm 5mm 6mm 5mm'};
                     }
                     .no-print { display: none !important; }
                     .print-only { display: block !important; }
