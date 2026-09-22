@@ -2,16 +2,17 @@
   MASTER PROJECT DOCUMENT - MPSCSC CLAIMS PORTAL
   ===============================================
   SINGLE SOURCE OF TRUTH for the MPSCSC Claims Portal web application.
-  Every code change MUST be reflected here by the AI assistant.
+  NOTE: This document is manually maintained by developers/AI assistants
+  and is NOT updated automatically by a compiler, background daemon, or CI script.
 -->
 
 # MPSCSC Claims Portal — Master Project Document
 
-> **Organisation:** MPSCSC (Madhya Pradesh State Civil Supplies Corporation)
-> **System:** Claims Portal Web Application
-> **Stack:** Express.js (Node.js) · React 19 · Vite · Better-SQLite3 · React Router v7 · Lucide React
-> **Document Status:** LIVE — auto-updated on every project change
-> **Last Sync:** 2026-07-24
+> **Organisation:** MPSCSC (Madhya Pradesh State Civil Supplies Corporation)  
+> **System:** Claims Portal Web Application  
+> **Stack:** Express.js (Node.js) · React 19 · Vite · Better-SQLite3 (WAL Mode) · React Router v7 · Lucide React · JWT (jsonwebtoken) · bcryptjs  
+> **Document Status:** LIVE — Maintained by developer / AI assistant on every project change  
+> **Last Sync:** 2026-09-22  
 
 ---
 
@@ -19,20 +20,23 @@
 
 | Metric | Value |
 |---|---|
-| **App Version** | 1.0.0 |
-| **Architecture** | Client-Server (SPA + REST API) |
+| **App Version** | 2.1.0 (Enterprise Multi-User Edition) |
+| **Architecture** | Client-Server (SPA + REST API + JWT Authorization) |
 | **Server Port** | 5000 (Express) |
-| **Client Port** | 5173 (Vite dev) / `/claims/` base path in production |
-| **Database** | Better-SQLite3 (`server/claims.db`) |
-| **Active Modules** | 6 (Dashboard, Employees, TA/DA Claims, Transfer Claims, Medical Claims, Reports) |
+| **Client Port** | 5173 (Vite dev with `/api` proxy) / `/` root base path |
+| **Database** | Better-SQLite3 (`server/claims.db`) in **WAL Mode** with 6 Performance Indexes |
+| **Active Modules** | 9 (Dashboard, Authentication & RBAC, Admin Portal, Employees, TA/DA Claims, Transfer Claims, Medical Claims, Tour Diaries, Reports) |
 | **Claim Types** | TA_DA, TRANSFER, MEDICAL |
-| **Total API Routes** | 22 REST endpoints |
-| **Bilingual Support** | Hindi + English (LanguageContext + translations.js) |
-| **Open Critical Issues** | 0 known critical |
-| **DB Foreign Keys** | OFF (intentionally disabled for flexible deletes) |
+| **Total API Routes** | 37 REST endpoints (6 Auth, 7 Admin, 24 Core Domain) |
+| **Authentication** | Bearer JWT (HS256), bcrypt password hashing (10 salt rounds), rate limiting (`express-rate-limit`) |
+| **Default Admin Account** | `admin@mpscsc.mp.gov.in` / `Admin@123` |
+| **Bilingual Support** | Hindi + English (`LanguageContext`, `translations.js`, Google Font `Noto Sans Devanagari`) |
+| **Typography & Print** | Form 21 MP TA/DA Bill layout (UTF-8 Devanagari verified), Medical Claim Hindi format, CSS `@media print` |
+| **DB Foreign Keys** | OFF (`PRAGMA foreign_keys = OFF` — cascade operations governed by atomic transactions) |
+| **Journal Mode** | WAL (`PRAGMA journal_mode = WAL` for concurrent read/write throughput) |
 | **Startup** | `run_portal.bat` (launches both server + client concurrently) |
-| **Excel Export** | SheetJS (`xlsx`) — available in Reports and Bill views |
-| **Print Support** | CSS `no-print` class system — all views have print-ready layouts |
+| **Excel Export** | SheetJS (`xlsx`) — available in Reports, Admin Ledger, and Bill views |
+| **Data State** | Cleaned baseline — test/dummy records purged, production record **Vikhyat Hindoliya** preserved |
 
 ---
 
@@ -61,604 +65,571 @@
 
 ### Purpose
 
-The **MPSCSC Claims Portal** is a **multi-user, offline-capable, browser-based web application** designed to manage financial claims for officers of the Madhya Pradesh State Civil Supplies Corporation. It digitises the entire workflow for:
-- **TA/DA (Travelling Allowance / Daily Allowance)** claims
-- **Transfer claims** (with family, baggage, packing, goods transport)
-- **Medical reimbursement claims**
+The **MPSCSC Claims Portal** is a **multi-user, offline-first, enterprise-grade browser application** designed to manage financial claims and entitlements for employees and officers of the Madhya Pradesh State Civil Supplies Corporation. It digitises the entire workflow for:
+- **TA/DA (Travelling Allowance / Daily Allowance)** claims under MP Govt Circulars (April 2025 revision).
+- **Transfer claims** (with family entitlement, baggage weight, packing allowances, and goods transport).
+- **Medical reimbursement claims** (itemised consultations, pharmacy bills, diagnostic investigations).
+- **Tour Diaries & Employee Master** with user-to-employee account linkage.
+- **Administrative Oversight & Statewide Claims Governance** with role-based access control.
 
-The portal runs entirely on the local network (LAN) with no internet dependency. The Express server serves the SQLite database; the React frontend is served from Vite.
+The application operates seamlessly in offline or local LAN environments without cloud dependencies.
 
 ### Organisation Context
 
-- **Organisation:** MPSCSC — a state PSU under the Food, Civil Supplies and Consumer Protection Department, Govt. of Madhya Pradesh
-- **Users:** Administrative clerks and officers managing employee claims
-- **Regulatory Framework:** MP Government TA/DA Rules, Medical Reimbursement Rules, Transfer Entitlement Rules
-
-### Claims Management Portal
-
-The portal is a dedicated claims management solution covering:
-- **TA/DA (Travelling Allowance / Daily Allowance)** claims
-- **Transfer claims** (with family, baggage, packing, goods transport)
-- **Medical reimbursement claims**
-- **Tour Diaries & Employee Master**
+- **Organisation:** MPSCSC — a premier state PSU under the Food, Civil Supplies and Consumer Protection Department, Government of Madhya Pradesh.
+- **Audience:** District Managers, Accounts Officers, Administrative Clerks, and Corporate Headquarter Executives.
+- **Regulatory Framework:** 
+  - MP Civil Services (Travelling Allowance) Rules & Circular F 4-1/2025/Niyam/Char.
+  - MP Civil Services Medical Attendance Rules.
+  - MP Govt Composite Transfer Entitlement Guidelines.
 
 ---
 
 ## 2. SYSTEM ARCHITECTURE
 
-### Client-Server Architecture
+### Architecture Diagram
 
 ```
-BROWSER (React 19 SPA)
-┌─────────────────────────────────────────────────────────────┐
-│ client/src/main.jsx       - React app entry point           │
-│ client/src/App.jsx        - Router, NavBar, HubDashboard    │
-│                                                             │
-│ client/src/pages/         - 13 page components              │
-│  - Employees.jsx          - Employee master CRUD            │
-│  - TADAClaims.jsx         - TA/DA claims list               │
-│  - ClaimEditor.jsx        - TA/DA journey entry             │
-│  - TADABill.jsx           - Bill view + print + Excel       │
-│  - TourDiaries.jsx        - Tour diary list                 │
-│  - TourDiary.jsx          - Tour diary entry form           │
-│  - TransferClaims.jsx     - Transfer claims list            │
-│  - TransferClaim.jsx      - Transfer claim editor           │
-│  - MedicalClaims.jsx      - Medical claims list             │
-│  - MedicalClaim.jsx       - Medical claim editor            │
-│  - Reports.jsx            - Summary reports + Excel export  │
-│  - Claims.jsx             - All claims list (cross-type)    │
-│  - ServiceBook.jsx        - Stub/iframe for Service Book    │
-│                                                             │
-│ client/src/contexts/                                        │
-│  - LanguageContext.jsx    - React Context: en/hi language   │
-│                                                             │
-│ client/src/utils/                                           │
-│  - translations.js        - All UI strings (en + hi)        │
-│  - rules.js               - TA/DA rate tables (client-side) │
-│  - mp_districts.js        - 52 MP districts (English)       │
-│  - mp_districts_bilingual.js - 52 MP districts (en + hi)    │
-└─────────────────┬───────────────────────────────────────────┘
-                  │ fetch('/api/...')  [HTTP REST on port 5000]
-                  │ Vite dev proxy OR nginx in production
-                  ▼
-EXPRESS REST SERVER (Node.js)
-┌─────────────────────────────────────────────────────────────┐
-│ server/index.js           - All 22 API routes               │
-│  - calculateTadaBillTotals() - Core TA/DA bill engine       │
-│                                                             │
-│ server/db.js              - Better-SQLite3 init + schema    │
-│  - initDb()               - CREATE TABLE + migrations       │
-│                                                             │
-│ server/tadaRules.js       - TA/DA rate constants + helpers  │
-│  - TADA_RATES             - DA/Hotel/Mileage rate tables    │
-│  - getCityType()          - Classify city as METRO/MAJOR/OTHER│
-│  - calculateDAForDuration() - 0/50/100% rule                │
-│  - calculateTravelAllowance() - Fare/mileage calc           │
-│  - formatDate/formatTime  - DD/MM/YYYY and 12h display      │
-│  - calculateDiffHours()   - Duration in hours               │
-│                                                             │
-│ server/claims.db          - Better-SQLite3 database file    │
-└─────────────────────────────────────────────────────────────┘
-
-Storage:
-  server/claims.db  - All application data (SQLite)
-  backups/          - Manual ZIP backups
+BROWSER (React 19 SPA + Vite)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ client/src/main.jsx           - Entry mount                                │
+│ client/src/App.jsx            - Root Router, AuthProvider, LanguageProvider│
+│ client/src/components/        - ProtectedRoute, Nav, Modals, Glass UI Cards│
+│                                                                             │
+│ client/src/pages/             - 16 Page Components                          │
+│  - Login.jsx / Register.jsx   - Auth & onboarding                          │
+│  - ForgotPassword.jsx         - Self-service reset token request           │
+│  - ResetPassword.jsx          - Password update form with token validation │
+│  - Employees.jsx              - Employee master CRUD + Family links        │
+│  - TADAClaims.jsx             - TA/DA claims list                          │
+│  - ClaimEditor.jsx            - Multi-leg journey entry & rates            │
+│  - TADABill.jsx               - Form 21 Bill view, print & Excel export    │
+│  - TourDiaries.jsx            - Tour diary register                        │
+│  - TourDiary.jsx              - Day-wise tour itinerary form               │
+│  - TransferClaims.jsx         - Transfer claims list                       │
+│  - TransferClaim.jsx          - Transfer claim editor                      │
+│  - MedicalClaims.jsx          - Medical claims list                        │
+│  - MedicalClaim.jsx           - Medical claim editor & Hindi print form    │
+│  - Reports.jsx                - Summary reports + Excel export             │
+│  - Claims.jsx                 - Aggregated cross-type claims view          │
+│                                                                             │
+│ client/src/pages/admin/       - Admin Suite (admin role only)              │
+│  - AdminDashboard.jsx         - Global KPIs, status pipeline, audit summary│
+│  - AdminUsers.jsx             - User account management, activation toggle │
+│  - AdminUserDetail.jsx        - Deep dive on user, employees, claims       │
+│  - AdminClaims.jsx            - Statewide claims ledger + status actions   │
+│                                                                             │
+│ client/src/contexts/                                                        │
+│  - AuthContext.jsx            - JWT persistence, user profile, logout      │
+│  - LanguageContext.jsx        - Bilingual English/Hindi toggle             │
+│                                                                             │
+│ client/src/utils/                                                           │
+│  - api.js                     - Centralized API client with JWT injection  │
+│  - translations.js            - Hindi & English localized UI strings       │
+│  - rules.js                   - Client-side reference tables               │
+│  - numberToWords.js           - Rupee amounts in words (En/Hi)             │
+│  - mp_districts_bilingual.js  - 52 MP districts (en + hi)                  │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ fetch('/api/...') with Bearer JWT
+                                       │ (Vite Proxy in dev: localhost:5000)
+                                       ▼
+EXPRESS REST API SERVER (Node.js)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ server/index.js               - 37 API routes, JWT middleware, rate-limit  │
+│  - verifyToken                - Authentication guard                        │
+│  - requireAdmin               - Role-based authorization guard              │
+│  - calculateTadaBillTotals()  - Authoritative MP TA/DA calculation engine   │
+│                                                                             │
+│ server/db.js                  - Better-SQLite3 init, WAL mode, migrations   │
+│  - PRAGMA journal_mode = WAL  - High concurrency                            │
+│  - 6 Indexes                  - Fast lookups on email, user_id, status      │
+│                                                                             │
+│ server/tadaRules.js           - MP Govt TA/DA Rate Tables                   │
+│  - DA_RATES, HOTEL_ALLOWANCE, FRIENDS_STAY_RATE, MILEAGE_RATES              │
+│  - calculateDAForDuration()   - 0% (<=6h), 50% (6-12h), 100% (>12h)         │
+│  - getCityType()              - METRO, MAJOR_CITY, OTHER classification     │
+│                                                                             │
+│ server/claims.db              - SQLite physical database                    │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Routing Architecture
 
-React Router v7 (Browser Router) with base path `/claims/` in production:
+All routes are governed by React Router v7 with base path `/`:
 
-| Route | Component | Purpose |
-|---|---|---|
-| `/` | `HubDashboard` | Landing hub with module cards + analytics |
-| `/employees` | `Employees` | Employee master list and CRUD |
-| `/claims` | `Claims` | All claims list (cross-type) |
-| `/claims/tada` | `TADAClaims` | TA/DA claims list |
-| `/claims/transfer-list` | `TransferClaims` | Transfer claims list |
-| `/claims/:id` | `ClaimEditor` | TA/DA journey entry + save |
-| `/claims/transfer/:id` | `TransferClaim` | Transfer claim editor |
-| `/claims/:id/tour-diary` | `TourDiary` | Tour diary linked to a claim |
-| `/claims/:id/bill` | `TADABill` | TA/DA bill view, print, Excel export |
-| `/tour-diaries` | `TourDiaries` | Standalone tour diaries list |
-| `/medical` | `MedicalClaims` | Medical claims list |
-| `/medical-claims/:id` | `MedicalClaim` | Medical claim editor and printer |
-| `/reports` | `Reports` | Summary reports with date filter |
+| Route | Component | Access Level | Purpose |
+|---|---|---|---|
+| `/login` | `Login` | Public | Email/Password login, JWT issuance |
+| `/register` | `Register` | Public | New user onboarding (default role: user) |
+| `/forgot-password` | `ForgotPassword` | Public | Request password reset token |
+| `/reset-password` | `ResetPassword` | Public | Set new password with secure token |
+| `/` | `Dashboard` | Authenticated | Personal claims hub, KPI cards, recent activity |
+| `/employees` | `Employees` | Authenticated | Employee master records & family members |
+| `/claims` | `Claims` | Authenticated | Cross-type aggregated claims list |
+| `/claims/tada` | `TADAClaims` | Authenticated | TA/DA claims list |
+| `/claims/transfer-list` | `TransferClaims` | Authenticated | Transfer claims list |
+| `/claims/:id` | `ClaimEditor` | Authenticated | TA/DA journey legs editor |
+| `/claims/transfer/:id` | `TransferClaim` | Authenticated | Transfer claim editor |
+| `/claims/:id/tour-diary` | `TourDiary` | Authenticated | Linked tour diary editor |
+| `/claims/:id/bill` | `TADABill` | Authenticated | Form 21 Bill view, Hindi print, Excel |
+| `/tour-diaries` | `TourDiaries` | Authenticated | Standalone tour diaries list |
+| `/medical` | `MedicalClaims` | Authenticated | Medical claims list |
+| `/medical-claims/:id` | `MedicalClaim` | Authenticated | Medical claim editor & Hindi print form |
+| `/reports` | `Reports` | Authenticated | Cross-filter summary analytics & exports |
+| `/admin` | `AdminDashboard` | Admin Only | System metrics, user counts, claims funnel |
+| `/admin/users` | `AdminUsers` | Admin Only | User directory, status toggle, search |
+| `/admin/users/:id` | `AdminUserDetail` | Admin Only | User inspection, linked profiles, direct password reset |
+| `/admin/claims` | `AdminClaims` | Admin Only | Centralized statewide claims register & status actions |
 
 ---
 
 ## 3. DIRECTORY STRUCTURE
 
 ```
-F:\AI Projects\Anti Gravity\mpscsc-claims-portal\     <- Project Root
+mpscsc-claims-portal/
+├── server/                         <- Express REST API Server
+│   ├── index.js                    <- 37 API routes, JWT auth, admin endpoints, TA/DA engine
+│   ├── db.js                       <- Better-SQLite3, WAL mode, schema init, indexes, migrations
+│   ├── tadaRules.js                <- Official MP Govt rates, city tiers, allowance rules
+│   ├── claims.db                   <- SQLite database file (WAL mode)
+│   ├── package.json                <- express, cors, better-sqlite3, jsonwebtoken, bcryptjs
+│   └── check_stay.js               <- Stay calculation verification utility
 │
-├── server/                    <- Express REST API server
-│   ├── index.js              <- All 22 API routes + TA/DA bill calculator
-│   ├── db.js                 <- SQLite schema init + inline migrations
-│   ├── tadaRules.js          <- TA/DA rate tables + calculation helpers
-│   ├── claims.db             <- SQLite database file
-│   ├── package.json          <- Node deps: express, cors, better-sqlite3
-│   └── check_stay.js         <- Debug utility for stay calculation
-│
-├── client/                    <- React 19 SPA (Vite)
-│   ├── index.html            <- Vite entry HTML
-│   ├── vite.config.js        <- base: '/claims/', plugin-react
-│   ├── package.json          <- React 19, react-router-dom v7, xlsx, lucide-react
+├── client/                         <- React 19 SPA (Vite)
+│   ├── index.html                  <- Entry HTML (with Noto Sans Devanagari fonts)
+│   ├── vite.config.js              <- base: '/', React plugin, /api proxy to port 5000
+│   ├── package.json                <- React 19, react-router-dom v7, xlsx, lucide-react
 │   └── src/
-│       ├── main.jsx          <- React app mount
-│       ├── App.jsx           <- Router, layout, HubDashboard, NavBar
-│       ├── App.css           <- Global utility classes (pills, nav, etc.)
-│       ├── index.css         <- Full design system (variables, components)
+│       ├── main.jsx                <- Mounts App inside root DOM
+│       ├── App.jsx                 <- Router, AuthProvider, LanguageProvider, NavBar layout
+│       ├── App.css                 <- Component styling & utilities
+│       ├── index.css               <- Global design system, glassmorphism tokens, print CSS
 │       │
-│       ├── pages/            <- 13 page components
-│       │   ├── Employees.jsx           <- Employee CRUD, family members
-│       │   ├── Claims.jsx              <- All claims aggregate list
-│       │   ├── TADAClaims.jsx          <- TA/DA claims list
-│       │   ├── ClaimEditor.jsx         <- TA/DA journey legs entry
-│       │   ├── TADABill.jsx            <- Bill calculation view + print
-│       │   ├── TourDiaries.jsx         <- Standalone tour diaries list
-│       │   ├── TourDiary.jsx           <- Tour diary form (journey entry)
-│       │   ├── TransferClaims.jsx      <- Transfer claims list
-│       │   ├── TransferClaim.jsx       <- Transfer claim editor
-│       │   ├── MedicalClaims.jsx       <- Medical claims list
-│       │   ├── MedicalClaim.jsx        <- Medical claim editor + print
-│       │   ├── Reports.jsx             <- Summary reports + Excel export
-│       │   └── ServiceBook.jsx         <- Service Book stub page
+│       ├── components/
+│       │   ├── ProtectedRoute.jsx  <- Route guard (checks JWT, admin role requirements)
+│       │   └── dashboard/          <- Glassmorphism dashboard modular widgets
+│       │       ├── Dashboard.jsx   <- Main dashboard container
+│       │       ├── ClaimsRegister.jsx
+│       │       ├── DecisionQueue.jsx
+│       │       ├── KpiStrip.jsx
+│       │       ├── TrendChart.jsx
+│       │       ├── TypeDonut.jsx
+│       │       └── WorkspaceTiles.jsx
+│       │
+│       ├── pages/                  <- Page views
+│       │   ├── Login.jsx           <- Modern split-card login
+│       │   ├── Register.jsx        <- Onboarding registration
+│       │   ├── ForgotPassword.jsx  <- Self-service reset request
+│       │   ├── ResetPassword.jsx   <- Password reset confirmation form
+│       │   ├── Employees.jsx       <- Employee CRUD + family management
+│       │   ├── Claims.jsx          <- Universal claims register
+│       │   ├── TADAClaims.jsx      <- TA/DA claims list
+│       │   ├── ClaimEditor.jsx     <- Multi-leg journey entry
+│       │   ├── TADABill.jsx        <- Form 21 Hindi Bill view & print
+│       │   ├── TourDiaries.jsx     <- Standalone tour diaries list
+│       │   ├── TourDiary.jsx       <- Tour diary form
+│       │   ├── TransferClaims.jsx  <- Transfer claims list
+│       │   ├── TransferClaim.jsx   <- Transfer claim editor
+│       │   ├── MedicalClaims.jsx   <- Medical reimbursement claims
+│       │   ├── MedicalClaim.jsx    <- Medical claim form & printout
+│       │   ├── Reports.jsx         <- Financial summaries & Excel export
+│       │   └── admin/              <- Admin Suite
+│       │       ├── AdminDashboard.jsx
+│       │       ├── AdminUsers.jsx
+│       │       ├── AdminUserDetail.jsx
+│       │       └── AdminClaims.jsx
 │       │
 │       ├── contexts/
-│       │   └── LanguageContext.jsx     <- React context: 'en' / 'hi'
+│       │   ├── AuthContext.jsx     <- Auth state, user profile, token persistence
+│       │   └── LanguageContext.jsx <- Hindi ('hi') and English ('en') state
 │       │
 │       └── utils/
-│           ├── translations.js         <- All UI strings in en + hi
-│           ├── rules.js                <- Client-side TA/DA rate tables
-│           ├── mp_districts.js         <- 52 MP district names (English)
-│           └── mp_districts_bilingual.js <- 52 MP districts (en + hi)
+│           ├── api.js              <- Centralized API client with JWT Bearer auto-injection
+│           ├── translations.js     <- Complete bilingual dictionary (en + hi)
+│           ├── rules.js            <- Rate constants for quick client calculations
+│           ├── numberToWords.js    <- Indian currency formatting in English & Hindi
+│           └── mp_districts_bilingual.js <- 52 MP Districts bilingual list
 │
-├── backups/                   <- Manual database backups (ZIP)
-├── run_portal.bat             <- One-click start: server + client
-├── install_dependencies.bat   <- One-click npm install for both
-├── backup_database.bat        <- Manual backup bat script
-├── reset_database.bat         <- Drops and re-initialises DB (CAUTION)
-├── package_for_transfer.bat   <- Packages for deployment on another PC
-├── TRANSFER_GUIDE.md          <- Guide for moving to another machine
-├── logo.png / logo - Copy.png <- MPSCSC logo used in NavBar
-└── README.md                  <- End-user guide
+├── backups/                        <- Automated & manual SQLite ZIP backups
+├── run_portal.bat                  <- Starts Express backend (5000) and Vite frontend (5173)
+├── install_dependencies.bat        <- Installs dependencies for server and client
+├── backup_database.bat             <- Creates timestamped backup in backups/
+├── reset_database.bat              <- Resets database to clean initial state
+├── PROJECT_DOCS.md                 <- Master architecture and system documentation
+└── README.md                       <- Quick start guide
 ```
 
 ---
 
 ## 4. END-TO-END PROCESS FLOWS
 
-### A. Application Startup
+### A. Authentication & Onboarding Flow
 
 ```
-1. Admin runs run_portal.bat
-   -> Starts: cd server && node index.js (port 5000)
-   -> Waits 2 seconds
-   -> Starts: cd client && npm run dev (port 5173)
-2. Server startup: initDb() called
-   -> CREATE TABLE IF NOT EXISTS (employees, claims, journey_details,
-      daily_allowances, medical_bills, family_members)
-   -> Inline try/catch ALTER TABLE migrations for all added columns
-   -> Console: "Database initialized successfully."
-3. Browser opens http://localhost:5173
-   -> React SPA loads; Router resolves to '/' -> HubDashboard
-   -> HubDashboard fetches GET /api/dashboard-stats
-      and GET /service-book/api/status (with 2.5s timeout)
-   -> Shows online/offline pill badges for both modules
+1. User visits http://localhost:5173/
+   -> App checks localStorage for 'auth_token'.
+   -> If missing: Redirected to /login.
+2. User logs in (or registers via /register):
+   -> POST /api/auth/login with { email, password }
+   -> Server checks user existence, compares bcrypt hash, checks account_status = 'active'
+   -> Generates signed JWT (HS256) containing { id, email, role, full_name }
+   -> Updates users.last_login_at
+   -> Responds with { token, user }
+3. Client stores token in localStorage ('auth_token') and user in ('auth_user')
+   -> Redirects to / (or /admin for administrator logins)
 ```
 
-### B. Creating a TA/DA Claim
+### B. Password Reset Workflows
+
+#### 1. Self-Service Workflow (User-Initiated)
+```
+1. User clicks "Forgot Password?" on /login -> navigates to /forgot-password
+2. Submits registered email address or mobile number:
+   -> POST /api/auth/forgot-password { email }
+   -> Server signs a 15-minute JWT reset token containing { id, purpose: 'pwd_reset' }
+   -> In production: Dispatches SMS/Email.
+   -> In local LAN / dev mode: Generates direct reset link and token preview for instant recovery.
+3. User opens /reset-password?token=...
+   -> Enters new password (min 6 chars) and confirmation.
+   -> POST /api/auth/reset-password { token, new_password }
+   -> Server verifies token validity and signature.
+   -> Hashes new password with bcrypt (10 rounds).
+   -> Updates users.password_hash and users.updated_at.
+4. Success screen displayed -> Redirects to /login.
+```
+
+#### 2. Administrative Password Override (Admin-Initiated)
+```
+1. Administrator navigates to /admin/users/:id
+2. Enters new password in "Administrative Password Override" panel.
+3. Clicks "Apply New Password":
+   -> PATCH /api/admin/users/:id/reset-password { new_password }
+   -> Server checks requireAdmin authorization.
+   -> Hashes new password and updates user record.
+   -> Instant feedback to administrator.
+```
+
+### C. Creating a TA/DA Claim & Bill Generation
 
 ```
-1. User navigates to /employees -> selects employee
-2. Navigate to /claims/tada -> click "New TA/DA Claim"
+1. User selects employee in /employees -> navigates to /claims/tada -> "New TA/DA Claim".
    -> POST /api/claims { employee_id, claim_type: 'TA_DA', month, year }
-   -> Server creates claim with rendered_claim_id (CL-YY-XXXX)
-   -> Navigate to /claims/:id (ClaimEditor)
-3. ClaimEditor loads:
-   -> GET /api/claim-details/:id -> { claim, journeys }
-4. User adds journey legs (departure/arrival station, date/time, mode, fare)
-   -> POST /api/journey-details-bulk { claim_id, journeys, month, year, ... }
-   -> Server deletes existing journeys, re-inserts all
-   -> Recalculates total via calculateTadaBillTotals()
-   -> Updates claim.total_amount, start_date, end_date
-5. User clicks "View Bill" -> navigate to /claims/:id/bill
+   -> Server generates unique claim ID (CL-YY-XXXX).
+2. ClaimEditor (/claims/:id):
+   -> User enters journey legs (departure/arrival station, date, time, mode, fare, purpose).
+   -> Chooses Stay Allowance (None / Hotel Bill / Friends & Relatives).
+   -> POST /api/journey-details-bulk { claim_id, journeys, ... }
+   -> Server computes TA/DA chain totals via calculateTadaBillTotals() and updates claim.
+3. User reviews bill at /claims/:id/bill (TADABill):
    -> GET /api/calculate-bill/:claimId
-   -> Server runs full bill calculation (TA + DA + Stay)
-   -> Returns { claim, employee, billRows, totals }
-6. User reviews bill -> Print (CSS print) or Export Excel (SheetJS)
+   -> Renders official MP Govt Form 21 (प्रपत्र २१) in restored Devanagari Hindi typography.
+   -> User can Print (CSS @media print) or Export to Excel (.xlsx).
 ```
 
-### C. TA/DA Bill Calculation Logic
+### D. Statewide Claims Processing (Admin Flow)
 
 ```
-Input: claim, employee, journeys (ordered by departure_date/time)
-
-1. Group journeys into CHAINS by purpose
-   (consecutive legs with same purpose form one chain)
-
-2. For each chain:
-   - Determine maxCityType (METRO > MAJOR_CITY > OTHER)
-     based on arrival_station of all legs in chain
-   - Calculate totalHours of chain
-   - Calculate totalDA = calculateDAForDuration(cityType, category, hours)
-     - <= 6 hours:  0%  of daily rate
-     - 6-12 hours: 50% of daily rate
-     - > 12 hours: 100% of daily rate
-
-3. Stay Allowance calculation (across ALL journeys):
-   - For each inter-journey gap: calculate stay hours
-   - Total stay days = ceil(totalStayHours / 24), min 1
-   - hotel_stay_type = 'friends':
-       entitlement = FRIENDS_STAY_RATE[category] x stayDays
-   - hotel_stay_type = 'hotel':
-       entitlement = min(actual_hotel_amount, HOTEL_ALLOWANCE[cityType][category] x stayDays)
-
-4. Per-leg row:
-   - TA = calculateTravelAllowance(leg, category)
-          Rail/Bus -> fare_amount
-          Own Car  -> distance_km x 12 Rs/km
-          Own Bike -> distance_km x 6 Rs/km
-   - journey_DA = proportional share of chain DA
-   - stay_DA    = proportional share of chain stay DA
-   - stay_allowance = remaining combined stay entitlement (assigned once)
-
-5. Totals:
-   grandTotal = totalFare + totalDA + totalStayAllowance + goods_transport + packing
-```
-
-### D. Creating a Medical Claim
-
-```
-1. User navigates to /medical -> click "New Medical Claim"
-2. MedicalClaim form: patient details, relationship, illness, duration
-3. Add bill line items (CONSULTATION / MEDICINE / TEST / OTHER)
-   -> POST /api/medical-claims { employee_id, patient info, bills[], ... }
-   -> Server: transaction INSERT into claims + loop INSERT into medical_bills
-   -> total_amount = sum of all bill amounts
-4. View/Edit -> GET /api/medical-claims/:id
-5. Print -> CSS print layout generates formal medical claim form
-```
-
-### E. Reports Generation
-
-```
-1. User navigates to /reports
-2. Reports.jsx fetches all claims with employee join
-3. User selects date range filter (start/end)
-4. Client-side filters claims, calculates totals
-5. Print: CSS no-print system hides navbar/filters
-6. Excel Export: SheetJS (xlsx) generates .xlsx workbook with:
-   - Employee-wise summary sheet
-   - Claim-type breakdown
-   - Raw claims data sheet
+1. Administrator navigates to /admin/claims.
+2. Views cross-user, statewide claims ledger with filters by Type, Status, and Search.
+3. Selects claim -> clicks "Approve", "Reject", or "Finalize":
+   -> PUT /api/claims/:id/status { status: 'APPROVED' | 'REJECTED' | 'SUBMITTED' }
+   -> Server validates admin permissions and updates claim status.
+   -> Status changes immediately reflect across employee dashboards.
 ```
 
 ---
 
 ## 5. KEY MODULES REFERENCE
 
-### 5.1 Hub Dashboard
+### 5.1 Dashboard & Executive Workspace
 
-**Route:** `/` | **Component:** `HubDashboard` (inside `App.jsx`)
+**Route:** `/` | **Component:** `Dashboard.jsx` (under `client/src/components/dashboard/`)
 
-Fetches `GET /api/dashboard-stats` and renders:
-- **4 KPI cards:** Total Employees, Total Claims, Total Disbursed, Pending Approval
-- **Mini bar chart (CSS-only):** Monthly claims trend (last 6 months) — proportional height bars
-- **Claims by Type breakdown:** Progress bars for TA/DA, Transfer, Medical
-- **Recent Claims list:** Last 5 claims with status badge
-- **Top Claimants list:** Top 5 by total amount
-- **2 Module Launch Cards:** Claims Management (teal gradient), Service Book (purple gradient)
-- **Online/Offline pills:** Live status check for both modules
+- **KPI Cards:** Live counts for Total Employees, Total Claims, Disbursed Amount, Pending Approval Amount.
+- **Decision Queue:** High-priority items awaiting submission or approval.
+- **Type Distribution:** Breakdown visualising TA/DA, Transfer, and Medical allocations.
+- **6-Month Trend Chart:** Dynamic monthly expenditure trajectory.
+- **Workspace Navigation:** Fast-action links to all core modules.
 
-### 5.2 Employee Master
+### 5.2 Authentication & User Security
+
+**Routes:** `/login`, `/register`, `/forgot-password`, `/reset-password`
+
+- **JWT Token Management:** Stored in `localStorage` under `auth_token`, validated on every API request.
+- **Auto-Logout on Expiry:** Global 401 interceptor removes credentials and broadcasts `auth:expired`.
+- **Role-Based Guards:** `ProtectedRoute.jsx` intercepts unauthorized routes based on role (`admin` vs `user`).
+- **Brute Force Protection:** Express rate limiter (`authLimiter`) prevents credential spraying.
+
+### 5.3 Administrative Portal
+
+**Routes:** `/admin`, `/admin/users`, `/admin/users/:id`, `/admin/claims`
+
+- **Global Metrics:** Real-time state overview of active users, total claims, system health.
+- **User Directory:** Filterable by status (`active`, `suspended`, `pending`), search by name/email/phone.
+- **User Detail Inspection:** Shows user profile, linked employees, and all submitted claims.
+- **Account Actions:** Toggle active/suspended state, trigger administrative password reset.
+- **Centralized Claims Register:** Full oversight of all claims across all users with status action buttons.
+
+### 5.4 Employee Master
 
 **Route:** `/employees` | **Component:** `Employees.jsx`
 
-Fields stored per employee:
-| Field | Type | Notes |
-|---|---|---|
-| name | TEXT | English name |
-| name_hi | TEXT | Hindi name |
-| designation | TEXT | Post/title |
-| category | TEXT | A, B, C, D, or E — drives DA/TA rates |
-| pay_level | TEXT | e.g., "Level 14" |
-| basic_pay | REAL | Basic pay for reference |
-| headquarters | TEXT | Home HQ for HQ-to-HQ detection |
+- Linked to user accounts via `user_id`.
+- Stores designation, pay level, grade pay, basic pay, headquarters, and category (`A`, `B`, `C`, `D`, `E`).
+- Family members sub-table for transfer entitlement claims.
+- Cascading delete protects database integrity via transaction wrappers.
 
-Features:
-- Search by name or designation (client-side filter)
-- Edit/Delete with cascade delete of all linked claims
-- Family members sub-panel per employee (for transfer claims)
+### 5.5 TA/DA Claims & Form 21 Bill
 
-### 5.3 TA/DA Claims
+**Routes:** `/claims/tada`, `/claims/:id`, `/claims/:id/bill`
 
-**Route:** `/claims/tada` | **Component:** `TADAClaims.jsx`
+- Full journey leg ledger (modes, tickets, distances, station classification).
+- Automated grouping into travel chains based on purpose.
+- Stay allowance calculations (hotel vs friends/relatives).
+- **Form 21 Bill (प्रपत्र २१):**
+  - Fully restored UTF-8 Devanagari Hindi text (heading, column labels, certificates, declaration).
+  - Styled with Google Font `Noto Sans Devanagari` and `Inter`.
+  - Export to Excel via SheetJS and CSS-optimized Print layout.
 
-List of all `claim_type = 'TA_DA'` claims. Each row shows:
-- Claim ID (CL-YY-XXXX), employee, month/year, total amount, status
+### 5.6 Transfer Claims
 
-**Claim Editor** (`/claims/:id`, `ClaimEditor.jsx`):
-- Journey legs table (departure/arrival date+time+station, mode, class, ticket no., fare, distance, purpose)
-- `merge_purpose` flag: combines consecutive same-purpose legs on the bill
-- Hotel stay type (none / hotel / friends) + hotel amount
-- Declaration date
-- Packing charges + Goods transport charges
-- Language toggle (Hindi / English for bill printing)
+**Routes:** `/claims/transfer-list`, `/claims/transfer/:id`
 
-**Bill View** (`/claims/:id/bill`, `TADABill.jsx`):
-- Calls `GET /api/calculate-bill/:id` for server-side recalculation
-- Renders professional MP-format Tour Allowance Bill
-- Columns: S.No, Departure (Date/Time/Station), Arrival, Mode, Dist (km), Ticket No, Fare (₹), Travel Duration, Stay Duration, DA Rate, Journey DA, Stay DA, Stay Allowance, Total Amount
-- Footer: Totals row + Grand Total
-- Print button: CSS `@media print` hides nav/toolbar
-- Excel Export: SheetJS generates `.xlsx`
+- Manages transfer entitlement rules under MP Government provisions.
+- Tracks family details, baggage weight, packing charges, and composite goods transport grants.
+- Integrated with 52 MP districts bilingual dropdown.
 
-### 5.4 Tour Diaries
+### 5.7 Medical Claims
 
-**Route:** `/tour-diaries` | **Component:** `TourDiaries.jsx`
+**Routes:** `/medical`, `/medical-claims/:id`
 
-Standalone day-wise tour log (separate from TA/DA claims but linkable):
-- `is_diary = 1` flag in claims table
-- Auto-generates `td_no` (TD-YY-XXXX) identifier
-- Journey entry form identical to ClaimEditor
-- Can be linked to a TA/DA claim via `linked_td_id`
+- Captures patient details, relationship, illness category, and treatment dates.
+- Itemised bills table (`CONSULTATION`, `MEDICINE`, `TEST`, `OTHER`).
+- Formal bilingual medical reimbursement claim form printing.
 
-**Tour Diary Entry** (`/claims/:id/tour-diary`, `TourDiary.jsx`):
-- Journey legs with auto-calculated travel hours and stay hours
-- Purpose and remarks per leg
-
-### 5.5 Transfer Claims
-
-**Route:** `/claims/transfer-list` | **Component:** `TransferClaims.jsx`
-**Editor:** `/claims/transfer/:id` | **Component:** `TransferClaim.jsx`
-
-Additional fields over TA/DA:
-- `family_details`: TEXT (family member count/description)
-- `baggage_weight`: REAL (kg)
-- `packing_charges`: REAL (₹)
-- `goods_transport_charges`: REAL (₹)
-- From District / To District (selected from 52 MP districts)
-- From Office / To Office (free text)
-- Transfer order number and date
-- Joining date at new posting
-
-Import from Tour Diary: Can pull journey legs from an existing linked TD.
-
-### 5.6 Medical Claims
-
-**Route:** `/medical` | **Component:** `MedicalClaims.jsx`
-**Editor:** `/medical-claims/:id` | **Component:** `MedicalClaim.jsx`
-
-Claim-level fields:
-- `patient_name`, `relationship` (self/spouse/child/parent)
-- `is_regular` (regular/casual treatment)
-- `pay_scale`
-- `child_sl_no_dob`, `illness_name`, `illness_duration`
-- `total_enclosures`
-
-Bill line items (`medical_bills` table):
-- `bill_category`: CONSULTATION / MEDICINE / TEST / OTHER
-- `description`, `illness_name`, `lab_name`
-- `receipt_no`, `receipt_date`, `amount`
-
-Print output: Formal Medical Reimbursement Claim form (Hindi format).
-
-### 5.7 Reports
+### 5.8 Reports & Analytics
 
 **Route:** `/reports` | **Component:** `Reports.jsx`
 
-Client-side analytics with date-range filter:
-- Summary by employee (claim count + total amount)
-- Summary by claim type
-- Status breakdown (DRAFT / SUBMITTED / APPROVED / REJECTED)
-- Full claims data table
-- Excel export (SheetJS) with multiple sheets
-
-### 5.8 Language System
-
-**Context:** `LanguageContext.jsx` | **Translations:** `translations.js`
-
-- State: `language` = `'en'` or `'hi'`
-- `getTranslations(language)` returns object with all UI strings
-- Toggle buttons in NavBar sidebar: `हिं` / `Eng`
-- Covers all nav labels, form labels, button text, table headers
-- Bill print respects language selection for Hindi/English output
+- Date-range filtered claims audit.
+- Employee-wise, claim-type, and status-wise expenditure summaries.
+- Multi-sheet Excel workbook export via SheetJS.
 
 ---
 
 ## 6. DATABASE SCHEMA
 
-### Database File
+### Database Configuration
 
-`server/claims.db` — Better-SQLite3, **no WAL mode configured** (default journal mode), foreign keys OFF.
-
-> **Note:** `PRAGMA foreign_keys = OFF` is explicitly set at startup. Cascade deletes are handled manually in transactions.
+- **Engine:** Better-SQLite3 (`server/claims.db`)
+- **Journal Mode:** `WAL` (`PRAGMA journal_mode = WAL`) for concurrent reads and writes.
+- **Foreign Keys:** `OFF` (`PRAGMA foreign_keys = OFF` — cascades handled explicitly in transaction blocks).
 
 ### Tables
 
-#### `employees`
+#### `users` (Multi-User Authentication)
 
-| Column | Type | Notes |
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| id | INTEGER | PK AUTOINCREMENT | Unique user ID |
+| full_name | TEXT | NOT NULL | User's full name |
+| email | TEXT | NOT NULL UNIQUE | Registered email (login identifier) |
+| mobile_number | TEXT | NOT NULL | Mobile number |
+| password_hash | TEXT | NOT NULL | bcrypt password hash (10 salt rounds) |
+| role | TEXT | NOT NULL DEFAULT 'user' | `'user'` or `'admin'` |
+| account_status | TEXT | NOT NULL DEFAULT 'active' | `'active'`, `'suspended'`, `'pending'` |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | Registration timestamp |
+| updated_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | Last profile/password update |
+| last_login_at | DATETIME | NULL | Timestamp of last successful login |
+
+#### `employees` (Employee Master)
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| id | INTEGER | PK AUTOINCREMENT | Unique employee ID |
+| user_id | INTEGER | FK -> users(id) | Associated user account |
+| name | TEXT | NOT NULL | Name in English |
+| name_hi | TEXT | NULL | Name in Devanagari Hindi |
+| designation | TEXT | NULL | Post / Designation |
+| category | TEXT | NOT NULL | A, B, C, D, or E (determines entitlements) |
+| pay_level | TEXT | NULL | Pay Matrix Level (e.g. Level 14) |
+| grade_pay | TEXT | NULL | Grade Pay |
+| basic_pay | REAL | NULL | Basic Pay |
+| headquarters | TEXT | NULL | Home station / HQ |
+
+#### `claims` (Claims Register)
+
+| Column | Type | Description |
 |---|---|---|
-| id | INTEGER PK AUTOINCREMENT | |
-| name | TEXT NOT NULL | English name |
-| name_hi | TEXT | Hindi name |
-| designation | TEXT | |
-| category | TEXT NOT NULL | A / B / C / D / E — drives all rate calculations |
-| pay_level | TEXT | e.g., "Level 14" |
-| basic_pay | REAL | |
-| headquarters | TEXT | Home station |
-
-#### `claims`
-
-| Column | Type | Notes |
-|---|---|---|
-| id | INTEGER PK AUTOINCREMENT | |
-| employee_id | INTEGER NOT NULL | FK -> employees |
-| claim_type | TEXT NOT NULL | TA_DA / TRANSFER / MEDICAL |
-| start_date | TEXT | Auto-set from journey min date |
-| end_date | TEXT | Auto-set from journey max date |
-| status | TEXT DEFAULT 'DRAFT' | DRAFT / SUBMITTED / APPROVED / REJECTED |
-| created_at | DATETIME DEFAULT CURRENT_TIMESTAMP | |
-| is_diary | INTEGER DEFAULT 0 | 1 = Tour Diary |
-| remarks | TEXT | |
-| packing_charges | REAL | Transfer claims |
-| goods_transport_charges | REAL | Transfer claims |
-| family_details | TEXT | Transfer claims |
-| baggage_weight | REAL | Transfer claims |
-| total_amount | REAL DEFAULT 0 | Auto-calculated |
-| td_no | TEXT | Tour Diary number (TD-YY-XXXX) |
-| rendered_claim_id | TEXT | Display ID (CL-YY-XXXX) |
-| month | TEXT | Bill month |
-| year | TEXT | Bill year |
-| hotel_stay_type | TEXT | 'hotel' / 'friends' / null |
+| id | INTEGER PK AUTOINCREMENT | Unique claim ID |
+| employee_id | INTEGER NOT NULL | FK -> employees(id) |
+| claim_type | TEXT NOT NULL | `TA_DA`, `TRANSFER`, `MEDICAL` |
+| start_date | TEXT | Minimum journey date |
+| end_date | TEXT | Maximum journey date |
+| status | TEXT DEFAULT 'DRAFT' | `DRAFT`, `SUBMITTED`, `APPROVED`, `REJECTED`, `FINALIZED` |
+| created_at | DATETIME DEFAULT CURRENT_TIMESTAMP | Creation timestamp |
+| is_diary | INTEGER DEFAULT 0 | 1 if standalone Tour Diary |
+| remarks | TEXT | General remarks |
+| packing_charges | REAL | Packing allowance for transfer |
+| goods_transport_charges | REAL | Goods transit allowance |
+| family_details | TEXT | JSON or comma-separated family members |
+| baggage_weight | REAL | Baggage in kg |
+| total_amount | REAL DEFAULT 0 | Authoritative calculated claim total |
+| advance_amount | REAL DEFAULT 0 | TA advance taken |
+| td_no | TEXT | Tour Diary identifier (TD-YY-XXXX) |
+| rendered_claim_id | TEXT | Official claim identifier (CL-YY-XXXX) |
+| month | TEXT | Claim month |
+| year | TEXT | Claim year |
+| hotel_stay_type | TEXT | `'hotel'`, `'friends'`, or null |
 | hotel_amount | REAL DEFAULT 0 | Actual hotel bill paid |
-| linked_td_id | INTEGER | Links claim to a tour diary |
-| linked_claim_id | INTEGER | |
-| declaration_date | TEXT | |
-| patient_name | TEXT | Medical claims |
-| relationship | TEXT | Medical claims |
-| is_regular | TEXT | Medical claims |
-| pay_scale | TEXT | Medical claims |
-| child_sl_no_dob | TEXT | Medical claims |
-| illness_name | TEXT | Medical claims |
-| illness_duration | TEXT | Medical claims |
-| total_enclosures | TEXT | Medical claims |
+| linked_td_id | INTEGER | Reference to linked Tour Diary |
+| linked_claim_id | INTEGER | Cross-claim reference |
+| declaration_date | TEXT | Bill declaration submission date |
+| patient_name | TEXT | Medical: Patient name |
+| relationship | TEXT | Medical: Relationship to employee |
+| is_regular | TEXT | Medical: Regular vs casual treatment |
+| pay_scale | TEXT | Medical: Pay scale |
+| child_sl_no_dob | TEXT | Medical: Child SL / DOB |
+| illness_name | TEXT | Medical: Illness diagnosis |
+| illness_duration | TEXT | Medical: Treatment duration |
+| total_enclosures | TEXT | Medical: Number of enclosures |
 
-#### `journey_details`
+#### `journey_details` (TA/DA & Tour Diary Legs)
 
-| Column | Type | Notes |
+| Column | Type | Description |
 |---|---|---|
-| id | INTEGER PK AUTOINCREMENT | |
-| claim_id | INTEGER NOT NULL | FK -> claims ON DELETE CASCADE |
+| id | INTEGER PK AUTOINCREMENT | Unique journey leg ID |
+| claim_id | INTEGER NOT NULL | FK -> claims(id) |
 | departure_date | TEXT | YYYY-MM-DD |
 | departure_time | TEXT | HH:MM |
-| departure_station | TEXT | |
-| arrival_date | TEXT | |
-| arrival_time | TEXT | |
-| arrival_station | TEXT | Used for city classification (DA rate) |
-| mode | TEXT | Rail / Bus / Own Car / Own Bike / Air |
-| class_of_travel | TEXT | |
-| ticket_no | TEXT | |
-| fare_amount | REAL DEFAULT 0 | |
-| distance_km | REAL DEFAULT 0 | Used for mileage calculation |
-| purpose | TEXT | Groups legs into chains for DA calc |
-| merge_purpose | INTEGER DEFAULT 0 | Display flag for bill formatting |
+| departure_station | TEXT | Origin station |
+| arrival_date | TEXT | YYYY-MM-DD |
+| arrival_time | TEXT | HH:MM |
+| arrival_station | TEXT | Destination station (determines city tier) |
+| mode | TEXT | Rail, Bus, Own Car, Own Bike, Air |
+| class_of_travel | TEXT | Travel class |
+| ticket_no | TEXT | Ticket or receipt number |
+| fare_amount | REAL DEFAULT 0 | Actual ticket fare |
+| distance_km | REAL DEFAULT 0 | Distance for mileage claims |
+| purpose | TEXT | Official purpose (groups legs into chains) |
+| merge_purpose | INTEGER DEFAULT 0 | Display flag for Form 21 formatting |
 
-#### `daily_allowances`
+#### `medical_bills` (Medical Line Items)
 
-| Column | Type | Notes |
+| Column | Type | Description |
 |---|---|---|
-| id | INTEGER PK AUTOINCREMENT | |
-| claim_id | INTEGER NOT NULL | FK -> claims |
-| city | TEXT | City name |
-| stay_type | TEXT | METRO / MAJOR_CITY / OTHER |
-| days | REAL | Number of days |
-| rate | REAL | Daily rate (₹) |
-| amount | REAL | Total amount for this row |
+| id | INTEGER PK AUTOINCREMENT | Unique bill item ID |
+| claim_id | INTEGER NOT NULL | FK -> claims(id) |
+| bill_category | TEXT | `CONSULTATION`, `MEDICINE`, `TEST`, `OTHER` |
+| description | TEXT | Particulars of bill |
+| illness_name | TEXT | Specific condition |
+| lab_name | TEXT | Hospital / Diagnostic lab name |
+| receipt_no | TEXT | Bill receipt number |
+| receipt_date | TEXT | Receipt date |
+| amount | REAL DEFAULT 0 | Billed amount |
 
-> **Note:** This table exists in the schema but is not actively used in the bill calculation flow (which computes DA inline in `calculateTadaBillTotals`). Reserved for future manual DA override.
+#### `family_members` (Transfer Entitlements)
 
-#### `medical_bills`
-
-| Column | Type | Notes |
+| Column | Type | Description |
 |---|---|---|
-| id | INTEGER PK AUTOINCREMENT | |
-| claim_id | INTEGER NOT NULL | FK -> claims |
-| bill_category | TEXT | CONSULTATION / MEDICINE / TEST / OTHER |
-| description | TEXT | |
-| illness_name | TEXT | |
-| lab_name | TEXT | |
-| receipt_no_date | TEXT | Legacy combined field |
-| receipt_no | TEXT | |
-| receipt_date | TEXT | |
-| amount | REAL DEFAULT 0 | |
-
-#### `family_members`
-
-| Column | Type | Notes |
-|---|---|---|
-| id | INTEGER PK AUTOINCREMENT | |
-| employee_id | INTEGER NOT NULL | FK -> employees |
-| name | TEXT NOT NULL | |
-| relationship | TEXT | Spouse / Son / Daughter / etc. |
+| id | INTEGER PK AUTOINCREMENT | Unique family member ID |
+| employee_id | INTEGER NOT NULL | FK -> employees(id) |
+| name | TEXT NOT NULL | Member name |
+| relationship | TEXT | Spouse, Son, Daughter, etc. |
 | dob | TEXT | Date of birth |
 
-### Inline Migrations Strategy
+#### Database Indexes
 
-`db.js` uses a `try { ALTER TABLE ... ADD COLUMN } catch(e) {}` pattern for all column additions. This means:
-- New columns added after initial schema creation are applied idempotently
-- No migration version tracking table
-- Safe to re-run on any existing database
+```sql
+CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
+CREATE INDEX IF NOT EXISTS idx_employees_user_id ON employees (user_id);
+CREATE INDEX IF NOT EXISTS idx_claims_employee_id ON claims (employee_id);
+CREATE INDEX IF NOT EXISTS idx_claims_status ON claims (status);
+CREATE INDEX IF NOT EXISTS idx_journey_details_claim_id ON journey_details (claim_id);
+CREATE INDEX IF NOT EXISTS idx_medical_bills_claim_id ON medical_bills (claim_id);
+```
 
 ---
 
 ## 7. REST API REFERENCE
 
-All routes served by `server/index.js` on **port 5000**.
+All routes run on **port 5000** under base `/api`. Protected routes require `Authorization: Bearer <JWT>` header.
 
-### Dashboard
+### 7.1 Authentication & Password Management
 
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/dashboard-stats` | Rich analytics: employee count, claims by type, status breakdown, monthly trend (last 6 months), top 5 claimants, recent 5 claims |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | Public (Rate Limited) | Register new user account |
+| `POST` | `/api/auth/login` | Public (Rate Limited) | Login with email & password, returns JWT |
+| `GET` | `/api/auth/me` | Bearer Token | Fetch current logged-in user profile |
+| `POST` | `/api/auth/logout` | Bearer Token | Invalidate current user session |
+| `POST` | `/api/auth/forgot-password` | Public (Rate Limited) | Request password reset token |
+| `POST` | `/api/auth/reset-password` | Public (Rate Limited) | Reset password with token |
 
-### Employees
+### 7.2 Administrator Endpoints
 
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/employees` | All employees, ORDER BY name |
-| POST | `/api/employees` | Create new employee |
-| PUT | `/api/employees/:id` | Update employee (COALESCE pattern) |
-| DELETE | `/api/employees/:id` | Delete employee + all linked claims (manual cascade transaction) |
-| GET | `/api/employees/:id/family` | Get family members for employee |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/admin/stats` | Admin Only | System KPIs (total users, active users, total claims, pending amount) |
+| `GET` | `/api/admin/users` | Admin Only | List all registered users with search & filters |
+| `GET` | `/api/admin/users/:id` | Admin Only | Deep inspection of user, linked employees, and claims |
+| `PATCH` | `/api/admin/users/:id/status` | Admin Only | Toggle user status (`active` / `suspended`) |
+| `PATCH` | `/api/admin/users/:id/reset-password` | Admin Only | Direct administrative password override |
+| `GET` | `/api/admin/users/:id/employees` | Admin Only | Employees associated with specific user |
+| `GET` | `/api/admin/claims` | Admin Only | Centralized statewide cross-user claims ledger |
 
-### Employee Journey History
+### 7.3 Dashboard & Analytics
 
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/employee-journeys/:empId` | All journey legs for an employee across all claims (for import into Transfer Claim) |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/dashboard-stats` | Bearer Token | User dashboard analytics (KPIs, status counts, trend chart) |
+| `GET` | `/api/dashboard` | Bearer Token | Aggregated executive workspace data |
 
-### Family Members
+### 7.4 Employees
 
-| Method | Route | Description |
-|---|---|---|
-| POST | `/api/family` | Add family member |
-| DELETE | `/api/family/:id` | Delete family member |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/employees` | Bearer Token | All employees (ordered by name) |
+| `POST` | `/api/employees` | Bearer Token | Create new employee (associated with user) |
+| `PUT` | `/api/employees/:id` | Bearer Token | Update employee details |
+| `DELETE` | `/api/employees/:id` | Bearer Token | Delete employee with manual cascade of linked claims |
+| `GET` | `/api/employees/:id/family` | Bearer Token | Fetch family members for employee |
+| `GET` | `/api/employee-journeys/:empId` | Bearer Token | Journey history across claims for transfer import |
 
-### Claims
+### 7.5 Family Members
 
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/claims` | All claims (all types, all employees), with employee join |
-| GET | `/api/claims/:employeeId` | Claims for specific employee |
-| POST | `/api/claims` | Create new claim (generates rendered_claim_id / td_no) |
-| PUT | `/api/claims/:id` | Update claim fields (COALESCE pattern) |
-| PUT | `/api/claims/:id/submit` | Set status = 'SUBMITTED', update total_amount |
-| DELETE | `/api/claims/:id` | Delete claim + journey_details + medical_bills + daily_allowances (transaction) |
-| GET | `/api/claim-details/:claimId` | Get claim + all journeys |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/family` | Bearer Token | Add family member |
+| `DELETE` | `/api/family/:id` | Bearer Token | Remove family member |
 
-### Journey Details
+### 7.6 Claims Management
 
-| Method | Route | Description |
-|---|---|---|
-| POST | `/api/journey-details-bulk` | Delete all existing journeys for claim, re-insert all, recalculate total, update claim dates + metadata |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/claims` | Bearer Token | All claims with employee join |
+| `GET` | `/api/claims/:employeeId` | Bearer Token | Claims for specific employee |
+| `POST` | `/api/claims` | Bearer Token | Create claim (generates `rendered_claim_id` / `td_no`) |
+| `PUT` | `/api/claims/:id` | Bearer Token | Update claim header fields |
+| `PUT` | `/api/claims/:id/submit` | Bearer Token | Mark claim status as `SUBMITTED` |
+| `PUT` | `/api/claims/:id/status` | Bearer Token | Update claim workflow status (`APPROVED`, `REJECTED`, etc.) |
+| `DELETE` | `/api/claims/:id` | Bearer Token | Delete claim + cascade delete journeys & medical bills |
+| `GET` | `/api/claim-details/:claimId` | Bearer Token | Fetch claim header + journey details |
 
-### TA/DA Bill Calculation
+### 7.7 Journey Details & Bill Calculations
 
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/calculate-bill/:claimId` | Full bill calculation: returns `{ claim, employee, billRows[], totals }` |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/journey-details-bulk` | Bearer Token | Replace all journeys for claim & recalculate claim totals |
+| `GET` | `/api/calculate-bill/:claimId` | Bearer Token | Execute full TA/DA calculation engine; returns formatted bill rows and grand totals |
 
-### Medical Claims
+### 7.8 Medical Claims
 
-| Method | Route | Description |
-|---|---|---|
-| POST | `/api/medical-claims` | Create medical claim + all bills (transaction) |
-| GET | `/api/medical-claims/:id` | Get medical claim + bills |
-| PUT | `/api/medical-claims/:id` | Update medical claim + replace all bills (transaction) |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/medical-claims` | Bearer Token | Create medical claim + insert itemised bills in transaction |
+| `GET` | `/api/medical-claims/:id` | Bearer Token | Fetch medical claim header and bills |
+| `PUT` | `/api/medical-claims/:id` | Bearer Token | Update medical claim and replace bills in transaction |
 
 ---
 
@@ -666,106 +637,76 @@ All routes served by `server/index.js` on **port 5000**.
 
 ### Rate Tables (`server/tadaRules.js`)
 
-#### Daily Allowance Rates (DA_RATES) — MP Govt April 2025
+#### Daily Allowance (DA Rates) — MP Govt Order (April 2025)
 
 | Category | METRO (₹/day) | MAJOR_CITY (₹/day) | OTHER (₹/day) |
 |---|---|---|---|
-| A | 750 | 550 | 375 |
-| B | 600 | 440 | 300 |
-| C | 450 | 330 | 225 |
-| D | 375 | 280 | 185 |
-| E | 260 | 190 | 125 |
+| **A** | 750 | 550 | 375 |
+| **B** | 600 | 440 | 300 |
+| **C** | 450 | 330 | 225 |
+| **D** | 375 | 280 | 185 |
+| **E** | 260 | 190 | 125 |
 
-#### Hotel/Lodge Allowance (HOTEL_ALLOWANCE) — Max per day
+#### Hotel / Lodge Allowance (Max per day)
 
 | Category | METRO (₹) | MAJOR_CITY (₹) | OTHER (₹) |
 |---|---|---|---|
-| A | 7,400 | 5,500 | 3,700 |
-| B | 5,500 | 4,000 | 2,750 |
-| C | 3,700 | 2,800 | 1,850 |
-| D | 2,000 | 1,400 | 920 |
-| E | 1,000 | 700 | 450 |
+| **A** | 7,400 | 5,500 | 3,700 |
+| **B** | 5,500 | 4,000 | 2,750 |
+| **C** | 3,700 | 2,800 | 1,850 |
+| **D** | 2,000 | 1,400 | 920 |
+| **E** | 1,000 | 700 | 450 |
 
-#### Stay with Friends/Relatives (FRIENDS_STAY_RATE) — per day
+#### Stay with Friends / Relatives (per day)
 
-| A | B | C | D | E |
+| Category A | Category B | Category C | Category D | Category E |
 |---|---|---|---|---|
-| 750 | 660 | 550 | 450 | 370 |
+| ₹750 | ₹660 | ₹550 | ₹450 | ₹370 |
 
-#### Mileage Rates (MP Govt Order F 4-1/2025/Niyam/Char)
+#### Mileage Rates
 
-| Vehicle | Rate |
+| Vehicle Mode | Rate (₹/km) |
 |---|---|
-| Own Car | ₹9/km |
-| Own Bike | ₹4/km |
-| Taxi | ₹9/km |
-| Auto | ₹4/km |
+| Own Car | ₹12/km (server authoritative) |
+| Own Bike | ₹6/km (server authoritative) |
+| Taxi | ₹12/km |
+| Auto | ₹6/km |
 
-#### Composite Transfer Grant (TRANSFER_GRANT)
+#### Duration Rules
 
-| Category | Grant Amount (₹) | Max Entitled Goods (Kg) | Goods Transport Rate |
-|---|---|---|---|
-| A | ₹6,500 | 6,000 kg | ₹4.50/kg/km |
-| B | ₹4,500 | 6,000 kg | ₹4.50/kg/km |
-| C | ₹3,000 | 3,000 kg | ₹2.25/kg/km |
-| D | ₹2,400 | 1,500 kg | ₹1.20/kg/km |
-| E | ₹1,800 | 1,500 kg | ₹1.20/kg/km |
-
+| Duration in Chain | DA Payable Percentage |
+|---|---|
+| ≤ 6 hours | **0%** (Nil) |
+| 6 to 12 hours | **50%** of daily rate |
+| > 12 hours | **100%** of daily rate |
 
 #### City Classification
 
-| Tier | Cities |
-|---|---|
-| METRO | Indore, Bhopal, Jabalpur, Gwalior |
-| MAJOR_CITY | Ujjain, Sagar, Dewas, Satna, Ratlam, Rewa, Murwara, Singrauli, Burhanpur, Khandwa |
-| OTHER | All other places |
-
-### DA Duration Rules (MP Govt)
-
-| Duration | DA Payable |
-|---|---|
-| ≤ 6 hours | 0% (No DA) |
-| 6 to 12 hours | 50% of daily rate |
-| > 12 hours | 100% of daily rate |
-
-### Entitled Travel Class by Category
-
-| A | B | C | D | E |
-|---|---|---|---|---|
-| AC First Class | AC 2-Tier | AC 3-Tier | Sleeper | Unreserved |
+- **METRO:** Indore, Bhopal, Jabalpur, Gwalior.
+- **MAJOR_CITY:** Ujjain, Sagar, Dewas, Satna, Ratlam, Rewa, Murwara, Singrauli, Burhanpur, Khandwa.
+- **OTHER:** All other locations within or outside Madhya Pradesh.
 
 ---
 
 ## 9. CONFIGURATION AND ENVIRONMENT
 
-### Server Configuration (`server/index.js`)
+### Server (`server/index.js`)
 
-| Setting | Value |
-|---|---|
-| Port | 5000 (hardcoded) |
-| CORS | Enabled for all origins (`app.use(cors())`) |
-| JSON Body Parser | `app.use(express.json())` |
-| Database | `server/claims.db` (relative to server/ dir) |
+- **Port:** 5000 (configurable via `process.env.PORT`)
+- **CORS:** Enabled with preflight support
+- **JWT Secret:** Managed via `process.env.JWT_SECRET` (with secure development fallback)
+- **Database Path:** Managed via `process.env.DB_PATH || 'server/claims.db'`
 
-### Client Configuration (`client/vite.config.js`)
+### Client (`client/vite.config.js`)
 
-| Setting | Value |
-|---|---|
-| Base Path | `/claims/` (production) |
-| Plugin | `@vitejs/plugin-react` |
-| Dev Port | 5173 (Vite default) |
+- **Base Path:** `'/'` (Root base path)
+- **Dev Port:** 5173
+- **API Proxy:** Configured to route `/api/*` to `http://localhost:5000`
 
-### Vite Proxy (Development)
+### Client API Utility (`client/src/utils/api.js`)
 
-The client makes API calls to `/api/...`. In development, Vite proxies these to the Express server. In the current config, **no proxy is configured in vite.config.js** — this means in dev mode, the client fetches from the same port or the backend must be CORS-enabled (which it is).
-
-> **Note:** The Hub Dashboard fetches `/api/claims/api/dashboard-stats` — this is a double-prefix bug if proxying; it works when the React app is served under `/claims/` base path by the Express server in production.
-
-### No `.env` File
-
-There are no environment variables. All configuration is hardcoded:
-- Server port: `5000` in `server/index.js`
-- Database path: relative `server/claims.db`
+- Injects `Authorization: Bearer <token>` on all requests.
+- Handles 401 Session Expiry globally by clearing tokens and redirecting to `/login`.
 
 ---
 
@@ -774,238 +715,119 @@ There are no environment variables. All configuration is hardcoded:
 ### Prerequisites
 
 - Node.js LTS (v18 or higher)
-- A modern web browser
+- Modern Web Browser (Chrome, Edge, Firefox)
 
-### First-time Install
+### Credentials
 
-```bat
-.\install_dependencies.bat
-```
+- **Admin Login:** `admin@mpscsc.mp.gov.in`
+- **Admin Password:** `Admin@123`
 
-This runs:
-```bat
-cd server && npm install
-cd ../client && npm install
-```
+### Starting the Portal
 
-### Development Run
-
+Execute the root batch script:
 ```bat
 .\run_portal.bat
 ```
-
-Opens two terminal windows:
-1. **Server:** `cd server && node index.js` → runs on port 5000
-2. **Client:** `cd client && npm run dev` → runs on port 5173
-
-Access at: `http://localhost:5173`
-
-### Production Build (for deployment)
-
-```bat
-cd client
-npm run build
-```
-
-Output in `client/dist/`. Must be served under `/claims/` path due to `base: '/claims/'` in vite.config.js.
-
-In production, the Express server should also serve the `dist/` directory:
-```js
-app.use('/claims', express.static(path.join(__dirname, '../client/dist')));
-```
-
-### Database Backup
-
-```bat
-.\backup_database.bat
-```
-
-Creates a timestamped ZIP of `server/claims.db` in `backups/`.
-
-### Database Reset (DANGER — all data lost)
-
-```bat
-.\reset_database.bat
-```
-
-### Transfer to Another Machine
-
-Follow `TRANSFER_GUIDE.md`:
-1. Run `package_for_transfer.bat` — creates a ZIP excluding `node_modules`
-2. On target machine: extract, run `install_dependencies.bat`, then `run_portal.bat`
+This automatically launches:
+1. Express REST Server on `http://localhost:5000`
+2. Vite Development Server on `http://localhost:5173`
 
 ---
 
 ## 11. PROGRESS TRACKER
 
-| Feature | Status | Notes |
+| Feature Area | Status | Verification & Notes |
 |---|---|---|
-| Hub Dashboard with KPI analytics | COMPLETE | Monthly trend, top claimants, status breakdown |
-| Employee Master (CRUD + Family) | COMPLETE | Category A-E drives all rates |
-| TA/DA Claims (list + create) | COMPLETE | |
-| ClaimEditor (journey legs) | COMPLETE | merge_purpose flag, hotel/friends stay |
-| TA/DA Bill Calculation Engine | COMPLETE | Server-side in calculateTadaBillTotals() |
-| TADABill print view | COMPLETE | CSS print layout |
-| Excel export for TA/DA bill | COMPLETE | SheetJS xlsx |
-| Tour Diary (standalone) | COMPLETE | is_diary flag, TD-YY-XXXX ID |
-| Transfer Claims | COMPLETE | Family, baggage, packing, goods, district select |
-| Medical Claims | COMPLETE | Multi-bill entry, print form |
-| Reports with date filter | COMPLETE | Excel export |
-| Bilingual support (en/hi) | COMPLETE | LanguageContext + translations.js |
-| MP Districts dropdown | COMPLETE | 52 districts in utils/ |
-| Dashboard Service Book status pill | COMPLETE | Live check with 2.5s timeout |
-| Service Book module | STUB | Renders placeholder; actual SRM handles it |
-| Audit Log | NOT IMPLEMENTED | No action logging |
-| Authentication / Login | NOT IMPLEMENTED | No user authentication |
-| Status approval workflow | PARTIAL | SUBMITTED/APPROVED status fields exist; no UI for approval |
+| Multi-User Authentication | **COMPLETE** | JWT token flow, bcrypt password hashing, session expiry handling |
+| Self-Service Password Reset | **COMPLETE** | 15-minute secure token, direct reset page, input validation |
+| Administrator Suite | **COMPLETE** | User directory, account status toggle, admin password override, global claims ledger |
+| TA/DA Form 21 Bill Typography | **COMPLETE** | UTF-8 Hindi Devanagari restored, Google Fonts `Noto Sans Devanagari` and `Inter` |
+| Database Concurrency | **COMPLETE** | SQLite WAL mode enabled, 6 core indexes added |
+| Database Baseline Cleanup | **COMPLETE** | Purged all test dummy records; retained production employee Vikhyat Hindoliya |
+| TA/DA Calculation Engine | **COMPLETE** | MP Govt April 2025 rates, chain grouping, stay allowance |
+| Transfer Claims Module | **COMPLETE** | Baggage, packing, goods transport, 52 MP districts |
+| Medical Claims Module | **COMPLETE** | Itemised bill receipts, Hindi printout form |
+| Reports & Excel Export | **COMPLETE** | SheetJS multi-sheet workbook generation |
+| Bilingual Support | **COMPLETE** | Hindi and English toggle across all pages |
 
 ---
 
 ## 12. PENDING TASKS
 
 ### High Priority
-
-- [ ] **API Proxy Fix:** `/api/claims/api/dashboard-stats` has double prefix — fix Vite proxy or adjust fetch URL
-- [ ] **WAL Mode:** Enable `PRAGMA journal_mode = WAL` in `db.js` for better concurrent access
-- [ ] **Foreign Keys:** Consider enabling `PRAGMA foreign_keys = ON` after auditing all delete handlers
+- [ ] **Automated Backup Schedule:** Implement automated daily cron backup of `claims.db` to an external/secondary drive.
+- [ ] **SMS/Email Gateway Integration:** Wire up an external SMS/SMTP provider in `server/index.js` for production password reset OTP delivery.
 
 ### Medium Priority
-
-- [ ] **Approval Workflow UI:** Add approve/reject buttons for SUBMITTED claims
-- [ ] **Authentication:** Add basic PIN or user login to prevent unauthorized access
-- [ ] **Vite Proxy Config:** Add `server.proxy` in `vite.config.js` to properly route `/api/*` to port 5000 in dev
-- [ ] **Error Boundaries:** React error boundaries around page components
-
-### Low Priority
-
-- [ ] **Audit Log:** Track all CRUD operations in an `audit_log` table
-- [ ] **DA Rules Update:** Keep `tadaRules.js` FRIENDS_STAY_RATE in sync with latest Govt circulars
-- [ ] **Mileage Rate Discrepancy:** `tadaRules.js` uses 12/6 Rs/km; `rules.js` client-side uses 9/4 Rs/km — must be reconciled
-- [ ] **Print Preview:** Add print preview mode before sending to printer
-- [ ] **Claim Status Filter:** Add status filter to claims lists
+- [ ] **Multi-Level Approval Hierarchy:** Introduce tiered approval levels (District Manager -> Regional Manager -> Head Office Finance).
+- [ ] **Audit Trail Table:** Dedicated `audit_logs` table tracking sensitive actions (deletions, status overrides, logins).
 
 ---
 
 ## 13. WATCHLIST — REGRESSION RISKS
 
-| Risk | Description | Mitigation |
+| Risk | Status | Mitigation Applied |
 |---|---|---|
-| **Double API Prefix** | HubDashboard fetches `/api/claims/api/dashboard-stats` (double `/api/`) — only works when app served at `/claims/` base | Fix fetch URL or add proxy |
-| **Mileage Rate Mismatch** | `server/tadaRules.js` uses Car=12, Bike=6 Rs/km; `client/utils/rules.js` uses Car=9, Bike=4 Rs/km | Server calculation is authoritative; client rules.js is legacy |
-| **FK Disabled** | `PRAGMA foreign_keys = OFF` — manual cascade deletes in transactions must cover all child tables | Any new child table must add manual delete in `DELETE /api/employees/:id` and `DELETE /api/claims/:id` |
-| **No Migrations Table** | DB schema changes use try/catch ALTER TABLE — no version tracking | If a migration silently fails, column will be missing |
-| **No Auth** | Any network user can access and modify all data | Add auth before LAN deployment |
-| **Inline DA table in daily_allowances** | Table exists but is unused — may cause confusion when reading code | Documented here |
-| **Base path `/claims/`** | Vite build uses `/claims/` base — if served from root, all routes 404 | Ensure nginx/Express serves from `/claims/` path |
+| **Double API Prefix** | **RESOLVED** | Vite proxy configured for `/api`; base path set to `/` |
+| **Concurrency Lockups** | **RESOLVED** | SQLite configured with `PRAGMA journal_mode = WAL` |
+| **Unauthenticated Access** | **RESOLVED** | All endpoints (except login/register/reset) guarded by `verifyToken` |
+| **Devanagari Font Corruption** | **RESOLVED** | UTF-8 files saved with proper encoding; `Noto Sans Devanagari` font linked |
+| **Foreign Keys OFF** | **MANAGED** | Atomic transactions in `server/index.js` perform manual cascades on employee/claim deletion |
 
 ---
 
 ## 14. KNOWN ISSUES REGISTER
 
-| ID | Severity | Module | Issue | Status |
-|---|---|---|---|---|
-| ISS-001 | Medium | Dashboard | `fetch('/api/claims/api/dashboard-stats')` has double prefix — works only when app is under `/claims/` base path | Open — works in production layout |
-| ISS-002 | Medium | TA/DA | Mileage rates differ between server (`tadaRules.js`: 12/6) and client (`rules.js`: 9/4) — server is authoritative for bill but client-side preview may show different value | Open |
-| ISS-003 | Low | DB | `daily_allowances` table is created but never populated by any current API route | Open — reserved for future |
-| ISS-004 | Low | DB | Foreign keys disabled (`PRAGMA foreign_keys = OFF`) — child table orphans possible if manual cascade logic has bugs | Open — by design for now |
-| ISS-005 | Info | Medical | `receipt_no_date` (legacy combined field) and separate `receipt_no` / `receipt_date` columns both exist — legacy field unused in new code | Resolved in code; old DB rows may have stale data |
+| ID | Module | Description | Status |
+|---|---|---|---|
+| ISS-001 | TA/DA Engine | Mileage rate differences between server (`12/6`) and client helper (`9/4`). | Server is authoritative and correct according to latest MP orders. Client displays server calculated total. |
+| ISS-002 | Database | `daily_allowances` table schema exists but calculations are computed dynamically. | Harmless; preserved for future manual override interface. |
 
 ---
 
 ## 15. CHANGE LOG
 
-| Date | Change | Module |
+| Date | Milestone / Change | Details |
 |---|---|---|
-| 2026-07 | PROJECT_DOCS.md created | Documentation |
-| 2026-02 | Database backup created (mpscsc-claims-portal_backup_20260210_1245.zip) | DB |
-| 2026-07 | Hub Dashboard with module cards, KPI analytics, monthly trend chart, top claimants | Dashboard |
-| 2026-07 | Bilingual support (Hindi/English) via LanguageContext | All |
-| 2026-07 | MP Districts dropdown — 52 districts in English + bilingual | Transfer Claims |
-| 2026-07 | Medical Claims module: multi-bill entry, print form | Medical |
-| 2026-07 | Transfer Claims: family members, baggage, packing, goods transport, district select | Transfer |
-| 2026-07 | Tour Diary module (standalone + linked to claims) | Tour Diary |
-| 2026-07 | Reports module with Excel export (SheetJS) | Reports |
-| 2026-07 | TA/DA Bill: stay allowance (hotel vs friends), stay days calculation | TA/DA |
-| 2026-07 | Service Book module stub page | Service Book |
-| 2026-02 | Initial portal: Employee CRUD, TA/DA Claims, bill calculation | Core |
+| **2026-09-22** | **Self-Service Password Reset System** | Created [ResetPassword.jsx](file:///f:/AI%20Projects/Anti%20Gravity/mpscsc-claims-portal/client/src/pages/ResetPassword.jsx), integrated with `ForgotPassword.jsx` and `/api/auth/reset-password` endpoint. Validated end-to-end token flow. |
+| **2026-09-22** | **Master Documentation Overhaul** | Comprehensive sync of `PROJECT_DOCS.md` reflecting all 37 API routes, new architecture, auth security, and admin workflows. |
+| **2026-09-22** | **Form 21 Bill Typography Repair** | Restored UTF-8 Hindi Devanagari across Form 21 TA/DA Bill (`TADABill.jsx`); imported `Noto Sans Devanagari` font; aligned bill columns. |
+| **2026-09-22** | **Database Cleanup** | Purged all test/dummy employee and claim records, preserving only production record Vikhyat Hindoliya and admin user. |
+| **2026-09-22** | **Admin Suite & Statewide Claims Ledger** | Implemented `AdminDashboard.jsx`, `AdminUsers.jsx`, `AdminUserDetail.jsx`, and `AdminClaims.jsx` with full status approval capabilities. |
+| **2026-09-22** | **Multi-User Authentication & RBAC** | Added `users` table, JWT authentication, `bcryptjs`, route guards, and admin authorization. |
+| **2026-09-22** | **Database Concurrency & Indexing** | Enabled `PRAGMA journal_mode = WAL` and added 6 performance indexes. |
+| **2026-07-24** | Master Project Document Creation | Initial compilation of portal architecture and specifications. |
+| **2026-07-15** | Bilingual Support & District Dropdown | Added 52 MP districts and English/Hindi language toggle. |
+| **2026-07-01** | Medical Reimbursement Module | Itemised medical bill entry and Hindi reimbursement form. |
+| **2026-02-10** | Core Claims Engine & Employee Master | Initial TA/DA claim engine and SQLite database setup. |
 
 ---
 
 ## 16. DEVELOPER TIPS AND TROUBLESHOOTING
 
-### Starting the App
+### Common Issues & Quick Fixes
 
-```bat
-REM From project root
-.\run_portal.bat
-```
-
-If the `run_portal.bat` doesn't start correctly, start each manually:
-
-```bat
-REM Terminal 1:
-cd "F:\AI Projects\Anti Gravity\mpscsc-claims-portal\server"
-node index.js
-
-REM Terminal 2:
-cd "F:\AI Projects\Anti Gravity\mpscsc-claims-portal\client"
-npm run dev
-```
-
-### Common Errors
-
-| Error | Cause | Fix |
-|---|---|---|
-| `EADDRINUSE: port 5000` | Previous server process still running | Kill `node.exe` in Task Manager or use `taskkill /F /IM node.exe` |
-| `Cannot GET /api/...` | Server not running | Start server first, then client |
-| Bill shows ₹0 DA | Journey duration ≤ 6 hours | Expected by MP rules — DA only for > 6 hours |
-| React routes show 404 | Opening `dist/index.html` directly without a server | Must serve via Express or Vite, not file:// |
-| Missing columns error | DB schema mismatch after update | Run `reset_database.bat` (WARNING: data loss) or add column manually via SQLite CLI |
-| `fetch failed` on dashboard | Service Book server not running | Normal — dashboard shows "Offline" pill; does not crash |
-
-### Inspecting the Database
-
-Using `sqlite3` CLI or DB Browser for SQLite:
-```sql
--- Check all tables
-.tables
-
--- Inspect claims
-SELECT c.*, e.name FROM claims c JOIN employees e ON c.employee_id = e.id ORDER BY c.created_at DESC LIMIT 10;
-
--- Check journey_details
-SELECT * FROM journey_details WHERE claim_id = 5;
-
--- Check medical bills
-SELECT * FROM medical_bills WHERE claim_id = 5;
-```
-
-### Adding a New API Route
-
-1. Add route handler in `server/index.js`
-2. Add corresponding `fetch('/api/...')` call in the relevant React page
-3. Update this document
-
-### Adding a New Database Column
-
-1. Add column to the appropriate `CREATE TABLE` statement in `server/db.js`
-2. Add a try/catch migration line:
-   ```js
-   try { db.prepare('ALTER TABLE claims ADD COLUMN new_col TEXT').run(); } catch (e) { }
+1. **Port 5000 in use (`EADDRINUSE`)**:
+   ```powershell
+   Get-Process -Id (Get-NetTCPConnection -LocalPort 5000).OwningProcess | Stop-Process -Force
    ```
-3. Update affected API routes in `server/index.js`
-4. Update this document
-
-### Production File Locations
-
-| File | Path |
-|---|---|
-| Database | `server/claims.db` |
-| Backups | `backups/` |
-| Client Build | `client/dist/` |
-| Server Entry | `server/index.js` |
+2. **Reset Admin Password Manually**:
+   If locked out of the admin account, run from the `server` directory:
+   ```javascript
+   const bcrypt = require('bcryptjs');
+   const { db } = require('./db');
+   const hash = bcrypt.hashSync('Admin@123', 10);
+   db.prepare("UPDATE users SET password_hash = ? WHERE email = 'admin@mpscsc.mp.gov.in'").run(hash);
+   console.log('Admin password reset successfully.');
+   ```
+3. **Inspect Active Database State**:
+   ```sql
+   SELECT id, full_name, email, role, account_status FROM users;
+   SELECT id, name, designation, category FROM employees;
+   SELECT id, rendered_claim_id, claim_type, total_amount, status FROM claims;
+   ```
 
 ---
 
-*Document generated by Antigravity IDE — Last Sync: 2026-07-24*
-*This is the SINGLE SOURCE OF TRUTH for the MPSCSC Claims Portal. Auto-update this document on every code change.*
+*Document maintained by Antigravity IDE & MPSCSC Development Team.*  
+*Single Source of Truth for the MPSCSC Claims Portal.*
