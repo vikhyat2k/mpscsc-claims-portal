@@ -10,7 +10,11 @@
     "build:client": "npm run build --prefix client",
     "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",
     "start": "node server/index.js",
-    "seed": "node server/seed_admin.js"
+    "seed": "node server/seed_admin.js",
+    "docs:sync": "node scripts/sync_docs.js",
+    "docs:check": "node scripts/sync_docs.js --check",
+    "docs:watch": "node scripts/watch_docs.js",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "engines": {
     "node": ">=18.0.0"

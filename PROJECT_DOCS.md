@@ -27,7 +27,7 @@
 | **Database** | Better-SQLite3 (`server/claims.db`) in **WAL Mode** with 6 Performance Indexes |
 | **Active Modules** | 9 (Dashboard, Authentication & RBAC, Admin Portal, Employees, TA/DA Claims, Transfer Claims, Medical Claims, Tour Diaries, Reports) |
 | **Claim Types** | TA_DA, TRANSFER, MEDICAL |
-| **Total API Routes** | 37 REST endpoints (6 Auth, 7 Admin, 24 Core Domain) |
+| **Total API Routes** | 35 REST endpoints (6 Auth, 7 Admin, 22 Core Domain) |
 | **Authentication** | Bearer JWT (HS256), bcrypt password hashing (10 salt rounds), rate limiting (`express-rate-limit`) |
 | **Default Admin Account** | `admin@mpscsc.gov.in` / `Admin@123` |
 | **Bilingual Support** | Hindi + English (`LanguageContext`, `translations.js`, Google Font `Noto Sans Devanagari`) |
@@ -786,6 +786,23 @@ This automatically launches:
 ---
 
 ## 15. CHANGE LOG
+
+<!-- AUTO-GENERATED-COMMITS-START -->
+### Recent Git Commits (Auto-Synced)
+
+| Commit | Date | Summary |
+|---|---|---|
+| `f57e605` | 2026-09-22 | docs: correct admin email address to admin@mpscsc.gov.in |
+| `9adf614` | 2026-09-22 | docs: sync PROJECT_DOCS.md with auth, admin suite, password reset, schema, and changelog |
+| `46c7d3a` | 2026-09-22 | feat(auth): add self-service Reset Password page and end-to-end user reset flow |
+| `d7c1fd7` | 2026-09-22 | fix(fonts): restore clean UTF-8 typography and fix Form 21 bill formatting |
+| `50de7bc` | 2026-09-22 | feat(admin): enable comprehensive claims & bills oversight across users for admin |
+| `250de53` | 2026-09-22 | style(admin): Redesign Admin Panel with soothing light enterprise theme and fix sidebar |
+| `1fc4f2b` | 2026-09-22 | fix: Ensure apiRequest is explicitly imported and globally exposed to prevent runtime ReferenceError |
+| `8c66eb8` | 2026-09-22 | style(login): Optimize vertical geometry for 100% zero-scroll viewport fit |
+<!-- AUTO-GENERATED-COMMITS-END -->
+
+### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|

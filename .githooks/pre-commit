@@ -1,0 +1,13 @@
+#!/bin/sh
+# .githooks/pre-commit
+# Automatically sync PROJECT_DOCS.md before creating any commit
+
+echo "[Git Hook] Automatically checking and syncing PROJECT_DOCS.md..."
+node scripts/sync_docs.js
+
+if git status --porcelain | grep -q "PROJECT_DOCS.md"; then
+    echo "[Git Hook] Staging updated PROJECT_DOCS.md into current commit..."
+    git add PROJECT_DOCS.md
+fi
+
+exit 0
