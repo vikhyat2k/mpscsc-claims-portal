@@ -27,6 +27,30 @@ const TourDiary = () => {
     const [diaryYear, setDiaryYear] = useState('2026');
     const [declarationDate, setDeclarationDate] = useState(new Date().toISOString().split('T')[0]);
 
+    // Print Orientation State ('landscape' by default for wide Tour Diary table)
+    const [printOrientation, setPrintOrientation] = useState(() => {
+        const p = new URLSearchParams(window.location.search).get('orientation');
+        return p === 'portrait' ? 'portrait' : 'landscape';
+    });
+
+    const formatDateForPrint = (d) => {
+        if (!d) return '-';
+        const parts = String(d).split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return d;
+    };
+
+    const getModeLabel = (mode) => {
+        if (!mode) return '-';
+        if (mode === 'Rail') return t.tourDiary.modeOptions.rail;
+        if (mode === 'Bus') return t.tourDiary.modeOptions.bus;
+        if (mode === 'Own Car') return t.tourDiary.modeOptions.ownCar;
+        if (mode === 'Own Bike') return t.tourDiary.modeOptions.ownBike;
+        return mode;
+    };
+
     const monthsEng = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const years = ["2024", "2025", "2026", "2027"];
 
@@ -88,9 +112,13 @@ const TourDiary = () => {
             setEmployee(emp);
             setLoading(false);
             const searchParams = new URLSearchParams(window.location.search);
-            if (searchParams.get('print') === 'true' || searchParams.get('print') === '1') {
+            const orientParam = searchParams.get('orientation');
+            const targetOrient = orientParam === 'portrait' ? 'portrait' : 'landscape';
+            setPrintOrientation(targetOrient);
+            if (searchParams.get('print') === 'true' || searchParams.get('print') === '1' || searchParams.get('print') === 'landscape' || searchParams.get('print') === 'portrait') {
+                const finalOrient = searchParams.get('print') === 'portrait' ? 'portrait' : targetOrient;
                 setTimeout(() => {
-                    handlePrint();
+                    handlePrint(finalOrient);
                 }, 600);
             }
         } catch (err) {
@@ -244,18 +272,18 @@ const TourDiary = () => {
         XLSX.writeFile(wb, `Tour_Diary_${employee?.name || 'Employee'}_${claim?.id || 'Claim'}.xlsx`);
     };
 
-    const handlePrint = () => {
-        // Set document title for PDF filename
+    const handlePrint = (orientation = printOrientation) => {
+        setPrintOrientation(orientation);
         const originalTitle = document.title;
         const dateStr = claim?.start_date || new Date().toISOString().split('T')[0];
-        document.title = `${dateStr}_Tour Diary`;
+        document.title = `${dateStr}_Tour_Diary_${orientation}`;
 
-        window.print();
-
-        // Restore original title after a short delay
         setTimeout(() => {
-            document.title = originalTitle;
-        }, 100);
+            window.print();
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 100);
+        }, 80);
     };
 
     const handleDelete = async () => {
@@ -281,11 +309,11 @@ const TourDiary = () => {
 
     return (
         <div className="page-transition">
-            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
                 <button className="btn btn-secondary" onClick={() => navigate(`/tour-diaries`)}>
                     <ArrowLeft size={18} /> {t.tourDiary.backToList}
                 </button>
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     {!isSubmitted && (
                         <button className="btn btn-primary" onClick={handleSave} disabled={isSaving}>
                             <Save size={18} /> {isSaving ? t.common.saving : t.common.save}
@@ -302,9 +330,72 @@ const TourDiary = () => {
                     <button className="btn btn-primary" style={{ backgroundColor: '#217346' }} onClick={exportToExcel}>
                         <FileSpreadsheet size={18} /> {t.tourDiary.exportExcel}
                     </button>
-                    <button type="button" className="btn btn-secondary" onClick={handlePrint}>
-                        <Printer size={18} /> {t.tourDiary.printPDF}
+
+                    {/* Print Orientation Selector Toggle */}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #cbd5e1', gap: '3px' }}>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('landscape')}
+                            title={language === 'hi' ? 'दौरा दैनन्दिनी A4 लैंडस्केप में प्रिंट करें (अनुशंसित)' : 'Print Tour Diary in A4 Landscape (Recommended)'}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '5px 10px',
+                                fontSize: '12.5px',
+                                fontWeight: printOrientation === 'landscape' ? '600' : '500',
+                                borderRadius: '6px',
+                                border: 'none',
+                                background: printOrientation === 'landscape' ? '#1e3a8a' : 'transparent',
+                                color: printOrientation === 'landscape' ? '#ffffff' : '#475569',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                            }}
+                        >
+                            <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
+                            <span style={{ fontSize: '10px', opacity: 0.9, background: printOrientation === 'landscape' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'landscape' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>
+                                {language === 'hi' ? 'अनुशंसित' : 'Rec.'}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('portrait')}
+                            title={language === 'hi' ? 'A4 पोर्ट्रेट में प्रिंट करें' : 'Print in A4 Portrait'}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '5px 10px',
+                                fontSize: '12.5px',
+                                fontWeight: printOrientation === 'portrait' ? '600' : '500',
+                                borderRadius: '6px',
+                                border: 'none',
+                                background: printOrientation === 'portrait' ? '#1e3a8a' : 'transparent',
+                                color: printOrientation === 'portrait' ? '#ffffff' : '#475569',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                            }}
+                        >
+                            <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
+                        </button>
+                    </div>
+
+                    {/* Print Button */}
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => handlePrint(printOrientation)}
+                        title={printOrientation === 'landscape' ? 'Print Tour Diary (A4 Landscape)' : 'Print Tour Diary (A4 Portrait)'}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: '600' }}
+                    >
+                        <Printer size={18} />
+                        {printOrientation === 'landscape'
+                            ? (t.tourDiary.printLandscape || (language === 'hi' ? 'प्रिंट (A4 लैंडस्केप)' : 'Print (A4 Landscape)'))
+                            : (t.tourDiary.printPortrait || (language === 'hi' ? 'प्रिंट (A4 पोर्ट्रेट)' : 'Print (A4 Portrait)'))}
                     </button>
+
                     {!isSubmitted ? (
                         <button
                             className="btn btn-primary"
@@ -353,37 +444,55 @@ const TourDiary = () => {
                     </div>
                 </div>
                 <div style={{ textAlign: 'center', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '800px', margin: '0 auto', alignItems: 'center' }}>
+                    <div className="tour-meta-row" style={{ display: 'flex', justifyContent: 'space-between', maxWidth: printOrientation === 'landscape' ? '100%' : '800px', margin: '0 auto', alignItems: 'center' }}>
                         <span>
                             <strong>{t.tourDiary.district}</strong> {employee?.headquarters}
                         </span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <strong>{t.tourDiary.forMonth}</strong>
-                            <select
-                                className="print-input"
-                                style={{ width: '130px', fontWeight: 'bold' }}
-                                value={diaryMonth}
-                                onChange={e => setDiaryMonth(e.target.value)}
-                            >
-                                {monthsEng.map((m, idx) => (
-                                    <option key={m} value={m}>{t.tourDiary.months[idx]}</option>
-                                ))}
-                            </select>
-                            <select
-                                className="print-input"
-                                style={{ width: '80px', fontWeight: 'bold' }}
-                                value={diaryYear}
-                                onChange={e => setDiaryYear(e.target.value)}
-                            >
-                                {years.map(y => (
-                                    <option key={y} value={y}>{y}</option>
-                                ))}
-                            </select>
+                            <span className="print-only" style={{ fontWeight: 'bold' }}>
+                                {t.tourDiary.months[monthsEng.indexOf(diaryMonth)] || diaryMonth} {diaryYear}
+                            </span>
+                            <span className="no-print" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <select
+                                    className="print-input"
+                                    style={{ width: '130px', fontWeight: 'bold' }}
+                                    value={diaryMonth}
+                                    onChange={e => setDiaryMonth(e.target.value)}
+                                >
+                                    {monthsEng.map((m, idx) => (
+                                        <option key={m} value={m}>{t.tourDiary.months[idx]}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    className="print-input"
+                                    style={{ width: '80px', fontWeight: 'bold' }}
+                                    value={diaryYear}
+                                    onChange={e => setDiaryYear(e.target.value)}
+                                >
+                                    {years.map(y => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                            </span>
                         </span>
                     </div>
                 </div>
 
                 <table className="print-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid black' }}>
+                    <colgroup>
+                        <col style={{ width: '4%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '12%' : '11%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '10%' : '10%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '8%' : '8%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '12%' : '11%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '10%' : '10%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '8%' : '8%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '9%' : '8%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '7%' : '7%' }} />
+                        <col style={{ width: printOrientation === 'landscape' ? '20%' : '23%' }} />
+                        <col className="no-print" style={{ width: '60px' }} />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th rowSpan="2" style={{ border: '1px solid black' }}>{t.tourDiary.srNo}</th>
@@ -413,21 +522,24 @@ const TourDiary = () => {
                                         <td style={{ border: '1px solid black', textAlign: 'center' }}>{i + 1}</td>
 
                                         {/* Departure */}
-                                        <td style={{ border: '1px solid black', padding: '0' }}>
-                                            <input type="text" list="districts" className="print-input"
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center' }}>
+                                            <span className="print-only">{j.departure_station || '-'}</span>
+                                            <input type="text" list="districts" className="print-input no-print"
                                                 value={j.departure_station}
                                                 onChange={e => handleJourneyChange(i, 'departure_station', e.target.value)}
                                             />
                                         </td>
-                                        <td style={{ border: '1px solid black', padding: '0' }}>
-                                            <input type="date" className="print-input"
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                            <span className="print-only">{formatDateForPrint(j.departure_date)}</span>
+                                            <input type="date" className="print-input no-print"
                                                 value={j.departure_date}
                                                 onChange={e => handleJourneyChange(i, 'departure_date', e.target.value)}
                                                 style={{ width: '98%', fontSize: '0.9rem' }}
                                             />
                                         </td>
-                                        <td style={{ border: '1px solid black', padding: '0' }}>
-                                            <input type="time" className="print-input"
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                            <span className="print-only">{j.departure_time || '-'}</span>
+                                            <input type="time" className="print-input no-print"
                                                 value={j.departure_time}
                                                 onChange={e => handleJourneyChange(i, 'departure_time', e.target.value)}
                                                 style={{ width: '98%', fontSize: '0.9rem' }}
@@ -435,21 +547,24 @@ const TourDiary = () => {
                                         </td>
 
                                         {/* Arrival */}
-                                        <td style={{ border: '1px solid black', padding: '0' }}>
-                                            <input type="text" list="districts" className="print-input"
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center' }}>
+                                            <span className="print-only">{j.arrival_station || '-'}</span>
+                                            <input type="text" list="districts" className="print-input no-print"
                                                 value={j.arrival_station}
                                                 onChange={e => handleJourneyChange(i, 'arrival_station', e.target.value)}
                                             />
                                         </td>
-                                        <td style={{ border: '1px solid black', padding: '0' }}>
-                                            <input type="date" className="print-input"
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                            <span className="print-only">{formatDateForPrint(j.arrival_date)}</span>
+                                            <input type="date" className="print-input no-print"
                                                 value={j.arrival_date}
                                                 onChange={e => handleJourneyChange(i, 'arrival_date', e.target.value)}
                                                 style={{ width: '98%', fontSize: '0.9rem' }}
                                             />
                                         </td>
-                                        <td style={{ border: '1px solid black', padding: '0' }}>
-                                            <input type="time" className="print-input"
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                            <span className="print-only">{j.arrival_time || '-'}</span>
+                                            <input type="time" className="print-input no-print"
                                                 value={j.arrival_time}
                                                 onChange={e => handleJourneyChange(i, 'arrival_time', e.target.value)}
                                                 style={{ width: '98%', fontSize: '0.9rem' }}
@@ -457,8 +572,9 @@ const TourDiary = () => {
                                         </td>
 
                                         {/* Mode */}
-                                        <td style={{ border: '1px solid black', padding: '0' }}>
-                                            <select className="print-input" value={j.mode} onChange={e => handleJourneyChange(i, 'mode', e.target.value)}>
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center' }}>
+                                            <span className="print-only">{getModeLabel(j.mode)}</span>
+                                            <select className="print-input no-print" value={j.mode} onChange={e => handleJourneyChange(i, 'mode', e.target.value)}>
                                                 <option value="Rail">{t.tourDiary.modeOptions.rail}</option>
                                                 <option value="Bus">{t.tourDiary.modeOptions.bus}</option>
                                                 <option value="Own Car">{t.tourDiary.modeOptions.ownCar}</option>
@@ -467,8 +583,9 @@ const TourDiary = () => {
                                         </td>
 
                                         {/* Distance */}
-                                        <td style={{ border: '1px solid black', padding: '0', textAlign: 'center' }}>
-                                            <input type="number" className="print-input"
+                                        <td style={{ border: '1px solid black', padding: '2px 4px', textAlign: 'center' }}>
+                                            <span className="print-only">{j.distance_km != null && j.distance_km !== '' ? j.distance_km : '-'}</span>
+                                            <input type="number" className="print-input no-print"
                                                 value={j.distance_km}
                                                 onChange={e => handleJourneyChange(i, 'distance_km', e.target.value)}
                                                 style={{ width: '60px', textAlign: 'center' }}
@@ -596,8 +713,10 @@ const TourDiary = () => {
                     <p style={{ margin: '5px 0', fontSize: '9.5pt' }}>{t.tourDiary.declaration}</p>
                     <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'space-between' }}>
                         <div>
-                            <strong>{t.tourDiary.declarationDate}:</strong>
+                            <strong>{t.tourDiary.declarationDate}</strong>
+                            <span className="print-only" style={{ marginLeft: '6px', borderBottom: '1px solid #000', paddingBottom: '1px' }}>{formatDateForPrint(declarationDate)}</span>
                             <input type="date" value={declarationDate} onChange={e => setDeclarationDate(e.target.value)}
+                                className="no-print"
                                 style={{ border: 'none', borderBottom: '1px solid #000', marginLeft: '5px', outline: 'none' }} />
                         </div>
                         <div style={{ textAlign: 'center', marginRight: '50px' }}>
@@ -636,8 +755,8 @@ const TourDiary = () => {
                 }
                 @media print {
                     @page {
-                        size: A4 portrait;
-                        margin: 8mm 8mm 10mm 8mm;
+                        size: A4 ${printOrientation};
+                        margin: ${printOrientation === 'landscape' ? '8mm 10mm 10mm 10mm' : '8mm 8mm 10mm 8mm'};
                     }
                     * {
                         color: black !important;
@@ -653,6 +772,7 @@ const TourDiary = () => {
                         font-family: 'Times New Roman', serif;
                     }
                     .print-only { display: block !important; }
+                    span.print-only { display: inline !important; }
                     .no-print { display: none !important; }
                     body {
                         background: white !important;
@@ -660,6 +780,18 @@ const TourDiary = () => {
                         font-family: 'Times New Roman', Times, serif;
                         margin: 0 !important;
                         padding: 0 !important;
+                    }
+                    .tour-diary-container {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        padding: 0 !important;
+                        margin: 0 auto !important;
+                        box-shadow: none !important;
+                        min-height: auto !important;
+                    }
+                    .tour-meta-row {
+                        max-width: 100% !important;
+                        width: 100% !important;
                     }
                     .card {
                         border: none !important;
@@ -677,7 +809,7 @@ const TourDiary = () => {
                     .print-table th, .print-table td, .data-table th, .data-table td {
                         border: 1px solid black !important;
                         padding: 3px 4px !important;
-                        vertical-align: top !important;
+                        vertical-align: middle !important;
                         word-break: break-word !important;
                     }
                     .print-table th, .data-table th {
