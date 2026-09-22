@@ -33,6 +33,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers     from "./pages/admin/AdminUsers";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import AdminClaims    from "./pages/admin/AdminClaims";
+import ImpersonationBanner from "./components/ImpersonationBanner";
 
 // ─────────────────────────────────────────────
 // SIDEBAR NAVBAR
@@ -137,31 +138,34 @@ function MainLayout() {
   return (
     <div className="app-container">
       <NavBar />
-      <main className="main-content">
-        <Routes>
-          <Route path="/"                          element={<Dashboard />} />
-          <Route path="/employees"                 element={<Employees />} />
-          <Route path="/claims"                    element={<Claims />} />
-          <Route path="/claims/tada"               element={<TADAClaims />} />
-          <Route path="/claims/transfer-list"      element={<TransferClaims />} />
-          <Route path="/claims/:id"                element={<ClaimEditor />} />
-          <Route path="/claims/transfer/:id"       element={<TransferClaim />} />
-          <Route path="/claims/:id/tour-diary"     element={<TourDiary />} />
-          <Route path="/claims/:id/bill"           element={<TADABill />} />
-          <Route path="/tour-diaries"              element={<TourDiaries />} />
-          <Route path="/medical"                   element={<MedicalClaims />} />
-          <Route path="/medical-claims/:id"        element={<MedicalClaim />} />
-          <Route path="/reports"                   element={<Reports />} />
-          {/* Admin routes */}
-          <Route path="/admin"                     element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/users"               element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
-          <Route path="/admin/users/:id"           element={<ProtectedRoute adminOnly><AdminUserDetail /></ProtectedRoute>} />
-          <Route path="/admin/claims"              element={<ProtectedRoute adminOnly><AdminClaims /></ProtectedRoute>} />
-          {/* Compat */}
-          <Route path="/claims/claims/*"           element={<ClaimCompatibilityRedirect />} />
-          <Route path="*"                          element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+      <div className="main-viewport" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <ImpersonationBanner />
+        <main className="main-content" style={{ flex: 1, maxWidth: "100%" }}>
+          <Routes>
+            <Route path="/"                          element={<Dashboard />} />
+            <Route path="/employees"                 element={<Employees />} />
+            <Route path="/claims"                    element={<Claims />} />
+            <Route path="/claims/tada"               element={<TADAClaims />} />
+            <Route path="/claims/transfer-list"      element={<TransferClaims />} />
+            <Route path="/claims/:id"                element={<ClaimEditor />} />
+            <Route path="/claims/transfer/:id"       element={<TransferClaim />} />
+            <Route path="/claims/:id/tour-diary"     element={<TourDiary />} />
+            <Route path="/claims/:id/bill"           element={<TADABill />} />
+            <Route path="/tour-diaries"              element={<TourDiaries />} />
+            <Route path="/medical"                   element={<MedicalClaims />} />
+            <Route path="/medical-claims/:id"        element={<MedicalClaim />} />
+            <Route path="/reports"                   element={<Reports />} />
+            {/* Admin routes */}
+            <Route path="/admin"                     element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/users"               element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/users/:id"           element={<ProtectedRoute adminOnly><AdminUserDetail /></ProtectedRoute>} />
+            <Route path="/admin/claims"              element={<ProtectedRoute adminOnly><AdminClaims /></ProtectedRoute>} />
+            {/* Compat */}
+            <Route path="/claims/claims/*"           element={<ClaimCompatibilityRedirect />} />
+            <Route path="*"                          element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+      </div>
     </div>
   );
 }

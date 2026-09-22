@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     ArrowLeft, User, Mail, Phone, Calendar, Shield,
     UserCheck, UserX, KeyRound, Clock, CheckCircle2,
-    Briefcase
+    Briefcase, LogIn
 } from "lucide-react";
 import api, { apiRequest } from "../../utils/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function AdminUserDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { impersonateUser } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [impersonating, setImpersonating] = useState(false);
     const [error, setError] = useState("");
     const [resetPw, setResetPw] = useState("");
     const [resetMsg, setResetMsg] = useState("");
@@ -85,6 +89,20 @@ export default function AdminUserDetail() {
         return <span className="admin-badge admin-badge--draft">Draft</span>;
     };
 
+    const handleImpersonate = async () => {
+        if (!window.confirm(`Log into the portal as ${user.full_name} (${user.email})?\n\nYou will be able to review, view, and test exactly what this user sees. You can return to Admin at any time via the top banner.`)) {
+            return;
+        }
+        setImpersonating(true);
+        try {
+            await impersonateUser(user.id);
+            navigate('/');
+        } catch (err) {
+            alert(err.message || 'Failed to impersonate user');
+            setImpersonating(false);
+        }
+    };
+
     return (
         <div className="admin-page">
             <Link to="/admin/users" className="admin-back-link">
@@ -107,13 +125,37 @@ export default function AdminUserDetail() {
                     </div>
                 </div>
                 {user.role !== "admin" && (
-                    <button
-                        type="button"
-                        className={`btn ${user.account_status === "active" ? "btn-danger" : "btn-success"}`}
-                        onClick={toggleStatus}
-                    >
-                        {user.account_status === "active" ? <><UserX size={15} /> Suspend Account</> : <><UserCheck size={15} /> Activate Account</>}
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.45rem",
+                                backgroundColor: "#4f46e5",
+                                borderColor: "#4338ca",
+                                padding: "0.55rem 1.15rem",
+                                fontWeight: 600,
+                                borderRadius: "8px",
+                                opacity: user.account_status !== "active" ? 0.6 : 1,
+                                cursor: user.account_status !== "active" ? "not-allowed" : "pointer"
+                            }}
+                            onClick={handleImpersonate}
+                            disabled={impersonating || user.account_status !== "active"}
+                            title={user.account_status !== "active" ? "Cannot log in as a suspended user" : "Log into portal as this user"}
+                        >
+                            <LogIn size={15} />
+                            {impersonating ? "Logging In..." : "Log In As This User"}
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn ${user.account_status === "active" ? "btn-danger" : "btn-success"}`}
+                            onClick={toggleStatus}
+                        >
+                            {user.account_status === "active" ? <><UserX size={15} /> Suspend Account</> : <><UserCheck size={15} /> Activate Account</>}
+                        </button>
+                    </div>
                 )}
             </div>
 

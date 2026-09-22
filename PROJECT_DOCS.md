@@ -27,7 +27,7 @@
 | **Database** | Better-SQLite3 (`server/claims.db`) in **WAL Mode** with 6 Performance Indexes |
 | **Active Modules** | 9 (Dashboard, Authentication & RBAC, Admin Portal, Employees, TA/DA Claims, Transfer Claims, Medical Claims, Tour Diaries, Reports) |
 | **Claim Types** | TA_DA, TRANSFER, MEDICAL |
-| **Total API Routes** | 36 REST endpoints (6 Auth, 8 Admin, 22 Core Domain) |
+| **Total API Routes** | 37 REST endpoints (6 Auth, 9 Admin, 22 Core Domain) |
 | **Authentication** | Bearer JWT (HS256), bcrypt password hashing (10 salt rounds), rate limiting (`express-rate-limit`) |
 | **Default Admin Account** | `admin@mpscsc.gov.in` / `Admin@123` |
 | **Bilingual Support** | Hindi + English (`LanguageContext`, `translations.js`, Google Font `Noto Sans Devanagari`) |
@@ -368,6 +368,7 @@ mpscsc-claims-portal/
 - **User Directory:** Filterable by status (`active`, `suspended`, `pending`), search by name/email/phone.
 - **User Detail Inspection:** Shows user profile, linked employees, and all submitted claims.
 - **Account Actions:** Toggle active/suspended state, trigger administrative password reset.
+- **User Impersonation ("Log In As This User"):** Administrators can safely assume the identity of any active user account with a single click. A scoped 4-hour impersonation JWT is issued without revealing passwords. A persistent top warning banner remains pinned throughout the portal while impersonating, with an instant 1-click "Exit & Return to Admin" action restoring the original admin session.
 - **Centralized Claims Register:** Full oversight of all claims across all users with status action buttons.
 
 ### 5.4 Employee Master
@@ -575,6 +576,7 @@ All routes run on **port 5000** under base `/api`. Protected routes require `Aut
 | `GET` | `/api/admin/users/:id` | Admin Only | Deep inspection of user, linked employees, and claims |
 | `PATCH` | `/api/admin/users/:id/status` | Admin Only | Toggle user status (`active` / `suspended`) |
 | `PATCH` | `/api/admin/users/:id/reset-password` | Admin Only | Direct administrative password override |
+| `POST` | `/api/admin/impersonate/:userId` | Admin Only | Issue scoped JWT impersonation session for target user account |
 | `GET` | `/api/admin/users/:id/employees` | Admin Only | Employees associated with specific user |
 | `GET` | `/api/admin/claims` | Admin Only | Centralized statewide cross-user claims ledger |
 | `POST` | `/api/admin/purge-dummy-data` | Admin Only | Cascade purge of all test dummy records matching `@mpscsc.test` / `[DUMMY_DATA_RECORD]` |
@@ -793,6 +795,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `e26c085` | 2026-09-22 | fix(ui): restore destructuring of employee from billData in TADABill |
 | `8eda3c4` | 2026-09-22 | fix(ui): add safe null check and 404 error fallback in TADABill to prevent crash |
 | `d5a26d6` | 2026-09-22 | fix(automation): map accurate journey and itemized bill fields in headed data entry to ensure calculated claim amounts |
 | `f5f022f` | 2026-09-22 | fix(ui): define handleStartEditPayInfo in TADABill to prevent crash on bill view |
@@ -800,13 +803,13 @@ This automatically launches:
 | `f1ccc1a` | 2026-09-22 | feat: add dummy data purge endpoint, headed UI data entry, and relaxed rate limiter |
 | `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
 | `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
-| `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Implement Admin User Impersonation ('Log In As This User') feature with persistent top banner and 1-click restore |
 | **2026-09-22** | **Automated Update** | Fix ReferenceError: employee is not defined in TADABill.jsx by restoring destructuring of billData |
 | **2026-09-22** | **Automated Update** | Add safe error fallback and 404 guard in TADABill.jsx to prevent ErrorBoundary crashes on missing or invalid claim bills |
 | **2026-09-22** | **Automated Update** | Fix claim zero amount calculation: update headed UI script with accurate field mapping, import TA/DA journeys into transfer claims, add doctor and medicine items to medical claims, and clean up obsolete empty drafts |

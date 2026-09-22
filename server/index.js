@@ -247,6 +247,10 @@ app.get('/api/auth/me', verifyToken, (req, res) => {
     try {
         const user = db.prepare('SELECT id, full_name, email, mobile_number, role, account_status, created_at, last_login_at FROM users WHERE id = ?').get(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
+        if (req.user.is_impersonated) {
+            user.is_impersonated = true;
+            user.impersonated_by = req.user.impersonated_by;
+        }
         res.json(user);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -448,6 +452,71 @@ app.patch('/api/admin/users/:id/reset-password', verifyToken, requireAdmin, asyn
         db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(password_hash, req.params.id);
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/admin/impersonate/:userId — admin logs in as specific user without needing their password
+app.post('/api/admin/impersonate/:userId', verifyToken, requireAdmin, (req, res) => {
+    try {
+        const targetUserId = parseInt(req.params.userId, 10);
+        if (!targetUserId || isNaN(targetUserId)) {
+            return res.status(400).json({ error: 'Valid user ID is required' });
+        }
+
+        if (targetUserId === req.user.id) {
+            return res.status(400).json({ error: 'Cannot impersonate your own administrator account' });
+        }
+
+        const targetUser = db.prepare('SELECT id, full_name, email, mobile_number, role, account_status FROM users WHERE id = ?').get(targetUserId);
+        if (!targetUser) {
+            return res.status(404).json({ error: 'Target user not found' });
+        }
+
+        if (targetUser.account_status !== 'active') {
+            return res.status(400).json({ error: `Cannot impersonate an account with status '${targetUser.account_status}'` });
+        }
+
+        if (targetUser.role === 'admin') {
+            return res.status(403).json({ error: 'Cannot impersonate another administrator' });
+        }
+
+        const impersonatorInfo = {
+            id: req.user.id,
+            email: req.user.email,
+            full_name: req.user.full_name || 'Administrator'
+        };
+
+        const token = jwt.sign(
+            {
+                id: targetUser.id,
+                email: targetUser.email,
+                role: targetUser.role,
+                full_name: targetUser.full_name,
+                is_impersonated: true,
+                impersonated_by: impersonatorInfo
+            },
+            JWT_SECRET,
+            { expiresIn: '4h' }
+        );
+
+        console.log(`[Admin Impersonation] Admin "${req.user.email}" (ID: ${req.user.id}) is now impersonating user "${targetUser.email}" (ID: ${targetUser.id})`);
+
+        res.json({
+            success: true,
+            message: `Now logged in as ${targetUser.full_name}`,
+            token,
+            user: {
+                id: targetUser.id,
+                full_name: targetUser.full_name,
+                email: targetUser.email,
+                role: targetUser.role,
+                mobile_number: targetUser.mobile_number
+            },
+            impersonator: impersonatorInfo
+        });
+    } catch (err) {
+        console.error('[Admin Impersonation Error]', err);
         res.status(500).json({ error: err.message });
     }
 });

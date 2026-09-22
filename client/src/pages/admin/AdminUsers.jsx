@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Search, UserCheck, UserX, Eye, ShieldCheck, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, UserCheck, UserX, Eye, ShieldCheck, X, LogIn } from "lucide-react";
 import api, { apiRequest } from "../../utils/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function AdminUsers() {
+    const navigate = useNavigate();
+    const { impersonateUser } = useAuth();
     const [users, setUsers] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
@@ -43,6 +46,18 @@ export default function AdminUsers() {
             if (res.ok) fetchUsers(search);
         } catch (err) {
             alert("Failed to update status: " + err.message);
+        }
+    };
+
+    const handleImpersonate = async (u) => {
+        if (!window.confirm(`Log into the portal as ${u.full_name} (${u.email})?\n\nYou will be able to review and view exactly what this user sees. You can return to Admin at any time via the top banner.`)) {
+            return;
+        }
+        try {
+            await impersonateUser(u.id);
+            navigate('/');
+        } catch (err) {
+            alert(err.message || 'Failed to impersonate user');
         }
     };
 
@@ -138,14 +153,26 @@ export default function AdminUsers() {
                                                 <Eye size={15} />
                                             </Link>
                                             {u.role !== "admin" && (
-                                                <button
-                                                    type="button"
-                                                    className={`admin-icon-btn ${u.account_status === "active" ? "admin-icon-btn--suspend" : "admin-icon-btn--activate"}`}
-                                                    onClick={() => toggleStatus(u.id, u.account_status)}
-                                                    title={u.account_status === "active" ? "Suspend Account" : "Activate Account"}
-                                                >
-                                                    {u.account_status === "active" ? <UserX size={15} /> : <UserCheck size={15} />}
-                                                </button>
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        className="admin-icon-btn admin-icon-btn--impersonate"
+                                                        onClick={() => handleImpersonate(u)}
+                                                        disabled={u.account_status !== "active"}
+                                                        title={u.account_status !== "active" ? "Cannot log in as a suspended user" : "Log In As This User"}
+                                                        style={{ opacity: u.account_status !== "active" ? 0.45 : 1, cursor: u.account_status !== "active" ? "not-allowed" : "pointer" }}
+                                                    >
+                                                        <LogIn size={15} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className={`admin-icon-btn ${u.account_status === "active" ? "admin-icon-btn--suspend" : "admin-icon-btn--activate"}`}
+                                                        onClick={() => toggleStatus(u.id, u.account_status)}
+                                                        title={u.account_status === "active" ? "Suspend Account" : "Activate Account"}
+                                                    >
+                                                        {u.account_status === "active" ? <UserX size={15} /> : <UserCheck size={15} />}
+                                                    </button>
+                                                </>
                                             )}
                                         </div>
                                     </td>
