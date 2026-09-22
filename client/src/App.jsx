@@ -1,4 +1,4 @@
-﻿import React, { Component } from "react";
+import React, { Component } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import {
   Users, FileText, FileSpreadsheet,
@@ -52,7 +52,7 @@ const NavBar = () => {
         <span>{t.nav.brand}</span>
       </Link>
 
-      <div className="nav-links" style={{ flex: 1 }}>
+      <div className="nav-links nav-links-scrollable">
         <Link to="/" className={isActive("/")} style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
           <LayoutDashboard size={15} /> {language === "hi" ? "डैशबोर्ड" : "Dashboard"}
         </Link>
@@ -69,19 +69,19 @@ const NavBar = () => {
         {isAdmin && (
           <>
             <div className="nav-divider" />
-            <div className="nav-section-label">Admin</div>
+            <div className="nav-section-label">Admin Control</div>
             <Link to="/admin" className={isActive("/admin")}><ShieldCheck size={14} /> Admin Dashboard</Link>
             <Link to="/admin/users" className={isActivePrefix("/admin/users")}><UserCog size={14} /> User Management</Link>
           </>
         )}
       </div>
 
-      <div style={{ paddingTop: "0.75rem", width: "100%", borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: "0.5rem" }}>
+      <div className="nav-footer">
         {user && (
           <div className="nav-user-info">
             <div className="nav-user-avatar">{user.full_name?.charAt(0)?.toUpperCase() || "U"}</div>
             <div className="nav-user-details">
-              <span className="nav-user-name">{user.full_name}</span>
+              <span className="nav-user-name" title={user.full_name}>{user.full_name}</span>
               <span className="nav-user-role">{user.role === "admin" ? "Administrator" : "User"}</span>
             </div>
           </div>
