@@ -1,3 +1,4 @@
+﻿import api from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PlusCircle } from 'lucide-react';
@@ -19,16 +20,16 @@ const Claims = () => {
 
     const fetchClaims = (empId) => {
         const url = empId && empId !== 'all'
-            ? `http://localhost:5000/api/claims/${empId}?t=${Date.now()}`
-            : `http://localhost:5000/api/claims?t=${Date.now()}`;
-        fetch(url)
+            ? `/api/claims/${empId}?t=${Date.now()}`
+            : `/api/claims?t=${Date.now()}`;
+        apiRequest(url)
             .then(res => res.json())
             .then(data => setClaims(data))
             .catch(err => console.error(err));
     };
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/employees')
+        apiRequest('/api/employees')
             .then(res => res.json())
             .then(data => {
                 setEmployees(data);
@@ -46,7 +47,7 @@ const Claims = () => {
     const handleCreate = async () => {
         if (isCreating) return;
         if (selectedEmp === 'all' || !selectedEmp) {
-            alert(language === 'hi' ? 'कृपया नया दावा बनाने के लिए सूची से एक कर्मचारी चुनें।' : 'Please select a specific employee from the dropdown to create a claim.');
+            alert(language === 'hi' ? 'à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¨à¤¯à¤¾ à¤¦à¤¾à¤µà¤¾ à¤¬à¤¨à¤¾à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤¸à¥‚à¤šà¥€ à¤¸à¥‡ à¤à¤• à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤šà¥à¤¨à¥‡à¤‚à¥¤' : 'Please select a specific employee from the dropdown to create a claim.');
             return;
         }
 
@@ -58,7 +59,7 @@ const Claims = () => {
                 "July", "August", "September", "October", "November", "December"
             ];
 
-            const res = await fetch('http://localhost:5000/api/claims', {
+            const res = await apiRequest('/api/claims', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -86,7 +87,7 @@ const Claims = () => {
     const handleUpdateRemarks = async () => {
         if (!editingClaim) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${editingClaim.id}`, {
+            const res = await apiRequest(`/api/claims/${editingClaim.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -108,7 +109,7 @@ const Claims = () => {
     const handleDelete = async (id) => {
         if (!window.confirm(t.tourDiariesList.deleteConfirm)) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${id}`, {
+            const res = await apiRequest(`/api/claims/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -124,13 +125,13 @@ const Claims = () => {
     const handleSubmitClaim = async (claim) => {
         if (!window.confirm(t.common.confirmSubmit)) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${claim.id}/submit`, {
+            const res = await apiRequest(`/api/claims/${claim.id}/submit`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ total_amount: claim.total_amount || 0 })
             });
             if (res.ok) {
-                alert(language === 'hi' ? 'दावा सफलतापूर्वक स्वीकृति हेतु प्रस्तुत किया गया!' : 'Claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Claim successfully submitted for approval!');
                 fetchClaims(selectedEmp);
             } else {
                 alert(t.messages.errorSaving);
@@ -149,7 +150,7 @@ const Claims = () => {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <select className="form-select" style={{ width: '300px' }}
                         value={selectedEmp} onChange={e => setSelectedEmp(e.target.value)}>
-                        <option value="all">{language === 'hi' ? 'सभी कर्मचारी (All Employees)' : 'All Employees'}</option>
+                        <option value="all">{language === 'hi' ? 'à¤¸à¤­à¥€ à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ (All Employees)' : 'All Employees'}</option>
                         {employees.map(e => (
                             <option key={e.id} value={e.id}>
                                 {language === 'hi' && e.name_hi ? e.name_hi : e.name} ({e.designation})
@@ -179,7 +180,7 @@ const Claims = () => {
                         {claims.map(c => (
                             <tr key={c.id}>
                                 <td style={{ fontWeight: 'bold' }}>{c.rendered_claim_id || `#${c.id}`}</td>
-                                <td>{c.claim_type === 'TA_DA' ? (language === 'hi' ? 'टीए/डीए दावा' : 'TA/DA Claim') : (c.claim_type === 'TRANSFER' ? t.claims.transfer : (c.claim_type === 'MEDICAL' ? t.claims.medical : c.claim_type))}</td>
+                                <td>{c.claim_type === 'TA_DA' ? (language === 'hi' ? 'à¤Ÿà¥€à¤/à¤¡à¥€à¤ à¤¦à¤¾à¤µà¤¾' : 'TA/DA Claim') : (c.claim_type === 'TRANSFER' ? t.claims.transfer : (c.claim_type === 'MEDICAL' ? t.claims.medical : c.claim_type))}</td>
                                 <td>{new Date(c.created_at).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-US')}</td>
                                 <td>{c.start_date} {t.bill.to} {c.end_date}</td>
                                 <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -206,9 +207,9 @@ const Claims = () => {
                                                 className="btn btn-sm btn-primary"
                                                 onClick={() => handleSubmitClaim(c)}
                                                 style={{ background: '#2563eb' }}
-                                                title={language === 'hi' ? 'स्वीकृति हेतु प्रस्तुत करें' : 'Submit for approval'}
+                                                title={language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤°à¥‡à¤‚' : 'Submit for approval'}
                                             >
-                                                {language === 'hi' ? 'सबमिट' : 'Submit'}
+                                                {language === 'hi' ? 'à¤¸à¤¬à¤®à¤¿à¤Ÿ' : 'Submit'}
                                             </button>
                                         )}
                                         <button
@@ -227,24 +228,24 @@ const Claims = () => {
                                                 className="btn btn-sm btn-outline-info"
                                                 onClick={() => navigate(`/claims/${c.id}/tour-diary`)}
                                             >
-                                                {language === 'hi' ? 'दौरा डायरी' : 'Tour Diary'}
+                                                {language === 'hi' ? 'à¤¦à¥Œà¤°à¤¾ à¤¡à¤¾à¤¯à¤°à¥€' : 'Tour Diary'}
                                             </button>
                                         )}
                                         {c.claim_type !== 'MEDICAL' ? (
                                             <button
                                                 className="btn btn-sm btn-outline-success"
                                                 onClick={() => navigate(`/claims/${c.id}/bill`)}
-                                                title={language === 'hi' ? 'शासकीय प्रारूप में देयक देखें / प्रिंट करें (फॉर्म 21)' : 'View / Print Form 21 Bill'}
+                                                title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¦à¥‡à¤¯à¤• à¤¦à¥‡à¤–à¥‡à¤‚ / à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚ (à¤«à¥‰à¤°à¥à¤® 21)' : 'View / Print Form 21 Bill'}
                                             >
-                                                {language === 'hi' ? 'देयक प्रिंट (फॉर्म 21)' : 'Print Bill (Form 21)'}
+                                                {language === 'hi' ? 'à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ (à¤«à¥‰à¤°à¥à¤® 21)' : 'Print Bill (Form 21)'}
                                             </button>
                                         ) : (
                                             <button
                                                 className="btn btn-sm btn-outline-success"
                                                 onClick={() => navigate(`/medical-claims/${c.id}?print=1`)}
-                                                title={language === 'hi' ? 'शासकीय प्रारूप में आवेदन पत्र / देयक प्रिंट करें' : 'Print Application Form / Bill in Govt Prescribed Format'}
+                                                title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤†à¤µà¥‡à¤¦à¤¨ à¤ªà¤¤à¥à¤° / à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'Print Application Form / Bill in Govt Prescribed Format'}
                                             >
-                                                {language === 'hi' ? 'आवेदन एवं देयक प्रिंट' : 'Print Form & Bill'}
+                                                {language === 'hi' ? 'à¤†à¤µà¥‡à¤¦à¤¨ à¤à¤µà¤‚ à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ' : 'Print Form & Bill'}
                                             </button>
                                         )}
                                         <button
@@ -263,7 +264,7 @@ const Claims = () => {
                 {isEditingRemarks && (
                     <div className="modal-overlay">
                         <div className="modal-content" style={{ maxWidth: '500px' }}>
-                            <h3>{language === 'hi' ? 'विशेष अपडेट करें' : 'Update Remarks'}</h3>
+                            <h3>{language === 'hi' ? 'à¤µà¤¿à¤¶à¥‡à¤· à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'Update Remarks'}</h3>
                             <div className="form-group">
                                 <label className="form-label">{t.bill21.remarks}</label>
                                 <textarea

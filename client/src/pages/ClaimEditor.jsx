@@ -1,3 +1,4 @@
+﻿import api from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Save, Plus, Trash, Printer, ArrowLeft, FileSpreadsheet, Send, CheckCircle2 } from 'lucide-react';
@@ -36,7 +37,7 @@ const ClaimEditor = () => {
     // Fetch authoritative totals from server
     const fetchLiveTotals = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/calculate-bill/${id}`);
+            const res = await apiRequest(`/api/calculate-bill/${id}`);
             if (!res.ok) return;
             const data = await res.json();
             const liveTotals = data.totals || {};
@@ -52,7 +53,7 @@ const ClaimEditor = () => {
 
     const fetchData = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/claim-details/${id}`);
+            const res = await apiRequest(`/api/claim-details/${id}`);
             const data = await res.json();
             setClaim(data.claim);
             setJourneys(data.journeys || []);
@@ -64,7 +65,7 @@ const ClaimEditor = () => {
             setHotelAmount(data.claim.hotel_amount || 0);
             setAdvanceAmount(data.claim.advance_amount || 0);
 
-            const empRes = await fetch('http://localhost:5000/api/employees');
+            const empRes = await apiRequest('/api/employees');
             const emps = await empRes.json();
             const emp = emps.find(e => e.id === data.claim.employee_id);
             setEmployee(emp);
@@ -108,7 +109,7 @@ const ClaimEditor = () => {
             return;
         }
         try {
-            const res = await fetch('http://localhost:5000/api/journey-details-bulk', {
+            const res = await apiRequest('/api/journey-details-bulk', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -150,7 +151,7 @@ const ClaimEditor = () => {
 
     const fetchAvailable = async () => {
         if (!claim?.employee_id) return;
-        const res = await fetch(`http://localhost:5000/api/employee-journeys/${claim.employee_id}`);
+        const res = await apiRequest(`/api/employee-journeys/${claim.employee_id}`);
         const data = await res.json();
         setAvailableJourneys(data.filter(j => j.claim_id !== parseInt(id)));
         setShowImportModal(true);
@@ -159,7 +160,7 @@ const ClaimEditor = () => {
     const handleImport = async () => {
         const selected = availableJourneys.filter(j => selectedJourneyIds.includes(j.id));
         try {
-            const res = await fetch('http://localhost:5000/api/journey-details-bulk', {
+            const res = await apiRequest('/api/journey-details-bulk', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -197,7 +198,7 @@ const ClaimEditor = () => {
     const handleDelete = async () => {
         if (!window.confirm(t.tourDiariesList.deleteConfirm)) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${id}`, {
+            const res = await apiRequest(`/api/claims/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -215,7 +216,7 @@ const ClaimEditor = () => {
         setIsSubmitting(true);
         try {
             // Save journeys & claim details first
-            await fetch('http://localhost:5000/api/journey-details-bulk', {
+            await apiRequest('/api/journey-details-bulk', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -237,14 +238,14 @@ const ClaimEditor = () => {
             });
 
             // Submit claim
-            const res = await fetch(`http://localhost:5000/api/claims/${id}/submit`, {
+            const res = await apiRequest(`/api/claims/${id}/submit`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ total_amount: totals.total })
             });
 
             if (res.ok) {
-                alert(language === 'hi' ? 'दावा सफलतापूर्वक स्वीकृति हेतु प्रस्तुत किया गया!' : 'Claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Claim successfully submitted for approval!');
                 setClaim(prev => ({ ...prev, status: 'SUBMITTED' }));
                 fetchData();
             } else {
@@ -277,10 +278,10 @@ const ClaimEditor = () => {
                         type="button"
                         className="btn btn-secondary"
                         onClick={() => navigate(`/claims/${id}/bill`)}
-                        title={language === 'hi' ? 'शासकीय प्रारूप में यात्रा देयक (फॉर्म 21) देखें / प्रिंट करें' : 'View / Print Form 21 Bill'}
+                        title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤¦à¥‡à¤¯à¤• (à¤«à¥‰à¤°à¥à¤® 21) à¤¦à¥‡à¤–à¥‡à¤‚ / à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'View / Print Form 21 Bill'}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                     >
-                        <Printer size={18} /> {language === 'hi' ? 'यात्रा देयक प्रिंट (फॉर्म 21)' : 'Print Form 21 Bill'}
+                        <Printer size={18} /> {language === 'hi' ? 'à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ (à¤«à¥‰à¤°à¥à¤® 21)' : 'Print Form 21 Bill'}
                     </button>
                     {!isReadOnly && !isSubmitted && (
                         <button className="btn btn-primary" onClick={saveClaims}>
@@ -365,20 +366,20 @@ const ClaimEditor = () => {
                             </select>
                         </div>
                         <div className="form-group">
-                            <label className="form-label">{t.tourDiary.stayAmount || 'Hotel/Stay Amount'} (₹)</label>
+                            <label className="form-label">{t.tourDiary.stayAmount || 'Hotel/Stay Amount'} (â‚¹)</label>
                             <input type="number" className="form-input" value={hotelAmount} onChange={e => setHotelAmount(e.target.value)} disabled={hotelStayType === 'None' || isReadOnly} />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">{language === 'hi' ? 'अग्रिम राशि (₹)' : 'Advance Amount (₹)'}</label>
+                            <label className="form-label">{language === 'hi' ? 'à¤…à¤—à¥à¤°à¤¿à¤® à¤°à¤¾à¤¶à¤¿ (â‚¹)' : 'Advance Amount (â‚¹)'}</label>
                             <input type="number" className="form-input" value={advanceAmount} onChange={e => setAdvanceAmount(e.target.value)} disabled={isReadOnly} placeholder="0.00" />
                         </div>
                         <div className="form-group" style={{ display: 'flex', alignItems: 'center', background: 'rgba(240, 253, 244, 0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', padding: '0.75rem', borderRadius: '8px', border: '1px dashed #4ade80' }}>
                             <p style={{ margin: 0, fontSize: '0.85rem', color: '#166534' }}>
                                 <strong>Guidance:</strong><br />
                                 {hotelStayType === 'Friends' ? (
-                                    `Fixed Entitlement: ₹${{ A: 750, B: 660, C: 550, D: 450, E: 370 }[getEmpCat()]} / day`
+                                    `Fixed Entitlement: â‚¹${{ A: 750, B: 660, C: 550, D: 450, E: 370 }[getEmpCat()]} / day`
                                 ) : hotelStayType === 'Hotel' ? (
-                                    `Max Entitlement: ₹${{ A: 7400, B: 5500, C: 3700, D: 2000, E: 1000 }[getEmpCat()]} (Metros)`
+                                    `Max Entitlement: â‚¹${{ A: 7400, B: 5500, C: 3700, D: 2000, E: 1000 }[getEmpCat()]} (Metros)`
                                 ) : 'Select stay type to see rates.'}
                             </p>
                         </div>
@@ -416,7 +417,7 @@ const ClaimEditor = () => {
                     {!isReadOnly && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button className="btn btn-outline-primary btn-sm no-print" onClick={handleAddJourney}>
-                                <Plus size={16} /> {language === 'hi' ? 'यात्रा जोड़ें' : 'Add Journey'}
+                                <Plus size={16} /> {language === 'hi' ? 'à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤œà¥‹à¤¡à¤¼à¥‡à¤‚' : 'Add Journey'}
                             </button>
                             <button className="btn btn-success btn-sm no-print" onClick={fetchAvailable}>
                                 <Plus size={16} /> Import from Tour Diary
@@ -433,7 +434,7 @@ const ClaimEditor = () => {
                             <th>{t.tourDiary.mode} / Class</th>
                             <th>Ticket / PNR No.</th>
                             <th>{t.tourDiary.purpose}</th>
-                            <th>Actual Fare (₹)</th>
+                            <th>Actual Fare (â‚¹)</th>
                             {!isReadOnly && <th className="no-print">{t.tourDiary.action}</th>}
                         </tr>
                     </thead>
@@ -564,7 +565,7 @@ const ClaimEditor = () => {
             {showImportModal && (
                 <div className="modal-overlay">
                     <div className="modal-content" style={{ maxWidth: '800px', width: '90%' }}>
-                        <h3>{language === 'hi' ? 'आयात करने के लिए यात्राएं चुनें' : 'Select Journeys to Import'}</h3>
+                        <h3>{language === 'hi' ? 'à¤†à¤¯à¤¾à¤¤ à¤•à¤°à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤¯à¤¾à¤¤à¥à¤°à¤¾à¤à¤‚ à¤šà¥à¤¨à¥‡à¤‚' : 'Select Journeys to Import'}</h3>
                         <p>Showing recorded journeys for {empName}</p>
                         <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '1rem' }}>
                             <table className="data-table">
@@ -613,15 +614,15 @@ const ClaimEditor = () => {
                     padding: '0.6rem 1rem', marginBottom: '0.5rem',
                     display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#92400e'
                 }}>
-                    <span>⚠️</span>
+                    <span>âš ï¸</span>
                     <span>You have unsaved changes. The totals below reflect the <strong>last saved</strong> state. Click <strong>Save</strong> to update.</span>
                 </div>
             )}
 
             <div className="card">
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '2rem', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                    <div>{t.bill.actualFare}: ₹{totals.fare}</div>
-                    <div style={{ color: 'var(--primary-color)' }}>{t.bill.totalAmount}: ₹{totals.total}</div>
+                    <div>{t.bill.actualFare}: â‚¹{totals.fare}</div>
+                    <div style={{ color: 'var(--primary-color)' }}>{t.bill.totalAmount}: â‚¹{totals.total}</div>
                 </div>
             </div>
 

@@ -1,3 +1,4 @@
+﻿import api from '../../utils/api';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -57,7 +58,7 @@ export default function Dashboard() {
   // Fetch Dashboard Data
   const fetchDashboardData = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/dashboard');
+      const res = await apiRequest('/api/dashboard');
       if (!res.ok) throw new Error('API failed');
       const data = await res.json();
       setClaims(data.claims || []);
@@ -67,7 +68,7 @@ export default function Dashboard() {
     } catch {
       // Fallback to /api/claims
       try {
-        const resClaims = await fetch('http://localhost:5000/api/claims');
+        const resClaims = await apiRequest('/api/claims');
         const rawClaims = await resClaims.json();
         const norm = rawClaims.map((c) => {
           let normType = 'ta';
@@ -79,7 +80,7 @@ export default function Dashboard() {
             id: c.rendered_claim_id || (c.td_no || `CL-${c.id}`),
             raw_id: c.id,
             emp: c.employee_name || 'Unknown',
-            emp_hi: c.employee_name_hi || c.employee_name || 'अज्ञात',
+            emp_hi: c.employee_name_hi || c.employee_name || 'à¤…à¤œà¥à¤žà¤¾à¤¤',
             emp_id: c.employee_id,
             designation: c.designation || '',
             headquarters: c.headquarters || '',
@@ -270,14 +271,14 @@ export default function Dashboard() {
 
   // Workflow Action: Approve
   const handleApprove = (claim) => {
-    if (claim.amt === 0) return; // Guard: Disabled for ₹0 claims
+    if (claim.amt === 0) return; // Guard: Disabled for â‚¹0 claims
     const displayName = (language === 'hi' && claim.emp_hi) ? claim.emp_hi : claim.emp;
-    const formattedAmt = '₹' + Math.round(claim.amt).toLocaleString('en-IN');
+    const formattedAmt = 'â‚¹' + Math.round(claim.amt).toLocaleString('en-IN');
 
     setConfirmModal({
       isOpen: true,
       title: t.dashboard.confirm_approve_title,
-      message: `${language === 'hi' ? 'क्या आप' : 'Are you sure you want to approve claim'} ${claim.id} (${displayName}, ${formattedAmt}) ${language === 'hi' ? 'स्वीकृत करना चाहते हैं?' : '?' }`,
+      message: `${language === 'hi' ? 'à¤•à¥à¤¯à¤¾ à¤†à¤ª' : 'Are you sure you want to approve claim'} ${claim.id} (${displayName}, ${formattedAmt}) ${language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤ à¤•à¤°à¤¨à¤¾ à¤šà¤¾à¤¹à¤¤à¥‡ à¤¹à¥ˆà¤‚?' : '?' }`,
       type: 'approve',
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
@@ -289,7 +290,7 @@ export default function Dashboard() {
         );
 
         try {
-          const res = await fetch(`http://localhost:5000/api/claims/${claim.raw_id}/status`, {
+          const res = await apiRequest(`/api/claims/${claim.raw_id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'APPROVED' })
@@ -297,10 +298,10 @@ export default function Dashboard() {
           if (!res.ok) throw new Error('Update failed');
 
           showToast(
-            `${language === 'hi' ? 'स्वीकृत किया' : 'Approved'} ${claim.id} · ${displayName}`,
+            `${language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤ à¤•à¤¿à¤¯à¤¾' : 'Approved'} ${claim.id} Â· ${displayName}`,
             async () => {
               // Undo
-              await fetch(`http://localhost:5000/api/claims/${claim.raw_id}/status`, {
+              await apiRequest(`/api/claims/${claim.raw_id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: prevStatus })
@@ -328,7 +329,7 @@ export default function Dashboard() {
     setConfirmModal({
       isOpen: true,
       title: t.dashboard.confirm_return_title,
-      message: `${language === 'hi' ? 'क्या आप' : 'Return claim'} ${claim.id} (${displayName}) ${language === 'hi' ? 'सुधार हेतु ड्राफ्ट स्थिति में वापस करना चाहते हैं?' : 'to Draft status for corrections?' }`,
+      message: `${language === 'hi' ? 'à¤•à¥à¤¯à¤¾ à¤†à¤ª' : 'Return claim'} ${claim.id} (${displayName}) ${language === 'hi' ? 'à¤¸à¥à¤§à¤¾à¤° à¤¹à¥‡à¤¤à¥ à¤¡à¥à¤°à¤¾à¤«à¥à¤Ÿ à¤¸à¥à¤¥à¤¿à¤¤à¤¿ à¤®à¥‡à¤‚ à¤µà¤¾à¤ªà¤¸ à¤•à¤°à¤¨à¤¾ à¤šà¤¾à¤¹à¤¤à¥‡ à¤¹à¥ˆà¤‚?' : 'to Draft status for corrections?' }`,
       type: 'return',
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
@@ -340,7 +341,7 @@ export default function Dashboard() {
         );
 
         try {
-          const res = await fetch(`http://localhost:5000/api/claims/${claim.raw_id}/status`, {
+          const res = await apiRequest(`/api/claims/${claim.raw_id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'Draft' })
@@ -348,10 +349,10 @@ export default function Dashboard() {
           if (!res.ok) throw new Error('Update failed');
 
           showToast(
-            `${language === 'hi' ? 'वापस किया' : 'Returned'} ${claim.id} to ${displayName}`,
+            `${language === 'hi' ? 'à¤µà¤¾à¤ªà¤¸ à¤•à¤¿à¤¯à¤¾' : 'Returned'} ${claim.id} to ${displayName}`,
             async () => {
               // Undo
-              await fetch(`http://localhost:5000/api/claims/${claim.raw_id}/status`, {
+              await apiRequest(`/api/claims/${claim.raw_id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: prevStatus })
@@ -375,14 +376,14 @@ export default function Dashboard() {
   // Workflow Action: Submit (Draft -> Submitted)
   const handleSubmitClaim = (claim) => {
     const displayName = (language === 'hi' && claim.emp_hi) ? claim.emp_hi : claim.emp;
-    const formattedAmt = '₹' + Math.round(claim.amt || 0).toLocaleString('en-IN');
+    const formattedAmt = 'â‚¹' + Math.round(claim.amt || 0).toLocaleString('en-IN');
 
     setConfirmModal({
       isOpen: true,
-      title: t.dashboard.confirm_submit_title || (language === 'hi' ? 'दावा सबमिट करें' : 'Submit Claim for Approval'),
-      message: `${language === 'hi' ? 'क्या आप' : 'Are you sure you want to submit claim'} ${claim.id} (${displayName}, ${formattedAmt}) ${language === 'hi' ? 'स्वीकृति हेतु प्रस्तुत करना चाहते हैं? सबमिट करने के बाद यह निर्णय हेतु जिला प्रबंधक को प्रेषित कर दिया जाएगा।' : 'for approval? Once submitted, it will be forwarded to the District Manager for decision.'}`,
+      title: t.dashboard.confirm_submit_title || (language === 'hi' ? 'à¤¦à¤¾à¤µà¤¾ à¤¸à¤¬à¤®à¤¿à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'Submit Claim for Approval'),
+      message: `${language === 'hi' ? 'à¤•à¥à¤¯à¤¾ à¤†à¤ª' : 'Are you sure you want to submit claim'} ${claim.id} (${displayName}, ${formattedAmt}) ${language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤°à¤¨à¤¾ à¤šà¤¾à¤¹à¤¤à¥‡ à¤¹à¥ˆà¤‚? à¤¸à¤¬à¤®à¤¿à¤Ÿ à¤•à¤°à¤¨à¥‡ à¤•à¥‡ à¤¬à¤¾à¤¦ à¤¯à¤¹ à¤¨à¤¿à¤°à¥à¤£à¤¯ à¤¹à¥‡à¤¤à¥ à¤œà¤¿à¤²à¤¾ à¤ªà¥à¤°à¤¬à¤‚à¤§à¤• à¤•à¥‹ à¤ªà¥à¤°à¥‡à¤·à¤¿à¤¤ à¤•à¤° à¤¦à¤¿à¤¯à¤¾ à¤œà¤¾à¤à¤—à¤¾à¥¤' : 'for approval? Once submitted, it will be forwarded to the District Manager for decision.'}`,
       type: 'submit',
-      confirmLabel: language === 'hi' ? 'सबमिट करें' : 'Submit Claim',
+      confirmLabel: language === 'hi' ? 'à¤¸à¤¬à¤®à¤¿à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'Submit Claim',
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         const prevStatus = claim.status;
@@ -393,7 +394,7 @@ export default function Dashboard() {
         );
 
         try {
-          const res = await fetch(`http://localhost:5000/api/claims/${claim.raw_id}/submit`, {
+          const res = await apiRequest(`/api/claims/${claim.raw_id}/submit`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ total_amount: claim.amt })
@@ -401,10 +402,10 @@ export default function Dashboard() {
           if (!res.ok) throw new Error('Submission failed');
 
           showToast(
-            `${language === 'hi' ? 'प्रस्तुत किया गया' : 'Submitted'} ${claim.id} · ${displayName}`,
+            `${language === 'hi' ? 'à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾' : 'Submitted'} ${claim.id} Â· ${displayName}`,
             async () => {
               // Undo
-              await fetch(`http://localhost:5000/api/claims/${claim.raw_id}/status`, {
+              await apiRequest(`/api/claims/${claim.raw_id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: prevStatus })
@@ -570,7 +571,7 @@ export default function Dashboard() {
                 setToast((prev) => ({ ...prev, visible: false }));
               }}
             >
-              {language === 'hi' ? 'पूर्ववत' : 'Undo'}
+              {language === 'hi' ? 'à¤ªà¥‚à¤°à¥à¤µà¤µà¤¤' : 'Undo'}
             </button>
           )}
         </div>

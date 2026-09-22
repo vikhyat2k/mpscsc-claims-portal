@@ -1,3 +1,4 @@
+﻿import api from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Save, Printer, ArrowLeft, Plus, Trash2, Send, CheckCircle2 } from 'lucide-react';
@@ -7,7 +8,7 @@ import { numberToWordsEnglish, numberToWordsHindi } from '../utils/numberToWords
 import logoIco from '../assets/logo.ico';
 
 const formatPrintDate = (d) => {
-    if (!d) return '—';
+    if (!d) return 'â€”';
     const parts = d.split('-');
     if (parts.length === 3) {
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -17,7 +18,7 @@ const formatPrintDate = (d) => {
 
 const formatRupees = (val) => {
     const num = parseFloat(val) || 0;
-    return '₹ ' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return 'â‚¹ ' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 const MedicalClaim = () => {
@@ -43,15 +44,15 @@ const MedicalClaim = () => {
     const [familyMembers, setFamilyMembers] = useState([]);
 
     const popularIllnesses = [
-        "Viral Fever (विषाणु ज्वर)", "Typhoid (टाइफाइड)", "Malaria (मलेरिया)", "Dengue (डेंगू)",
-        "Kidney Stones (गुर्दे की पथरी)", "Diabetes (मधुमेह)", "Hypertension (उच्च रक्तचाप)",
-        "Heart Disease (हृदय रोग)", "Cancer (कैंसर)", "Arthritis (गठिया)", "Asthma (अस्थमा)",
-        "Tuberculosis (तपेदिक/टीबी)", "Eye Treatment (नेत्र उपचार)", "COVID-19",
-        "Jaundice (पीलिया)", "Pneumonia (निमोनिया)", "Gastroenteritis (जठरांत्र शोथ)",
-        "Skin Disease (चर्म रोग)", "Fracture (अस्थि भंग)", "Dental Treatment (दंत चिकित्सा)",
-        "Gynecological Problem (स्त्री रोग संबंधी समस्या)", "Neurological Disorder (तंत्रिका संबंधी विकार)",
-        "ENT Problem (नाक, कान, गला समस्या)", "Surgery (Minor/Major)", "Health Checkup",
-        "Pregnancy (गर्भावस्था)", "Maternity (प्रसूति / मातृत्व)"
+        "Viral Fever (à¤µà¤¿à¤·à¤¾à¤£à¥ à¤œà¥à¤µà¤°)", "Typhoid (à¤Ÿà¤¾à¤‡à¤«à¤¾à¤‡à¤¡)", "Malaria (à¤®à¤²à¥‡à¤°à¤¿à¤¯à¤¾)", "Dengue (à¤¡à¥‡à¤‚à¤—à¥‚)",
+        "Kidney Stones (à¤—à¥à¤°à¥à¤¦à¥‡ à¤•à¥€ à¤ªà¤¥à¤°à¥€)", "Diabetes (à¤®à¤§à¥à¤®à¥‡à¤¹)", "Hypertension (à¤‰à¤šà¥à¤š à¤°à¤•à¥à¤¤à¤šà¤¾à¤ª)",
+        "Heart Disease (à¤¹à¥ƒà¤¦à¤¯ à¤°à¥‹à¤—)", "Cancer (à¤•à¥ˆà¤‚à¤¸à¤°)", "Arthritis (à¤—à¤ à¤¿à¤¯à¤¾)", "Asthma (à¤…à¤¸à¥à¤¥à¤®à¤¾)",
+        "Tuberculosis (à¤¤à¤ªà¥‡à¤¦à¤¿à¤•/à¤Ÿà¥€à¤¬à¥€)", "Eye Treatment (à¤¨à¥‡à¤¤à¥à¤° à¤‰à¤ªà¤šà¤¾à¤°)", "COVID-19",
+        "Jaundice (à¤ªà¥€à¤²à¤¿à¤¯à¤¾)", "Pneumonia (à¤¨à¤¿à¤®à¥‹à¤¨à¤¿à¤¯à¤¾)", "Gastroenteritis (à¤œà¤ à¤°à¤¾à¤‚à¤¤à¥à¤° à¤¶à¥‹à¤¥)",
+        "Skin Disease (à¤šà¤°à¥à¤® à¤°à¥‹à¤—)", "Fracture (à¤…à¤¸à¥à¤¥à¤¿ à¤­à¤‚à¤—)", "Dental Treatment (à¤¦à¤‚à¤¤ à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤¾)",
+        "Gynecological Problem (à¤¸à¥à¤¤à¥à¤°à¥€ à¤°à¥‹à¤— à¤¸à¤‚à¤¬à¤‚à¤§à¥€ à¤¸à¤®à¤¸à¥à¤¯à¤¾)", "Neurological Disorder (à¤¤à¤‚à¤¤à¥à¤°à¤¿à¤•à¤¾ à¤¸à¤‚à¤¬à¤‚à¤§à¥€ à¤µà¤¿à¤•à¤¾à¤°)",
+        "ENT Problem (à¤¨à¤¾à¤•, à¤•à¤¾à¤¨, à¤—à¤²à¤¾ à¤¸à¤®à¤¸à¥à¤¯à¤¾)", "Surgery (Minor/Major)", "Health Checkup",
+        "Pregnancy (à¤—à¤°à¥à¤­à¤¾à¤µà¤¸à¥à¤¥à¤¾)", "Maternity (à¤ªà¥à¤°à¤¸à¥‚à¤¤à¤¿ / à¤®à¤¾à¤¤à¥ƒà¤¤à¥à¤µ)"
     ];
 
     const popularTests = [
@@ -67,7 +68,7 @@ const MedicalClaim = () => {
     useEffect(() => {
         const fetchAll = async () => {
             try {
-                const res = await fetch(`http://localhost:5000/api/medical-claims/${id}`);
+                const res = await apiRequest(`/api/medical-claims/${id}`);
                 const data = await res.json();
                 setClaim(data.claim);
 
@@ -80,12 +81,12 @@ const MedicalClaim = () => {
                 };
                 setBills(grouped);
 
-                const empRes = await fetch(`http://localhost:5000/api/employees`);
+                const empRes = await apiRequest(`/api/employees`);
                 const emps = await empRes.json();
                 const emp = emps.find(e => e.id === data.claim.employee_id);
                 setEmployee(emp);
 
-                const familyRes = await fetch(`http://localhost:5000/api/employees/${data.claim.employee_id}/family`);
+                const familyRes = await apiRequest(`/api/employees/${data.claim.employee_id}/family`);
                 const familyData = await familyRes.json();
                 setFamilyMembers(familyData);
 
@@ -150,7 +151,7 @@ const MedicalClaim = () => {
             // Flatten bills array
             const allBills = Object.values(bills).flat();
 
-            const res = await fetch(`http://localhost:5000/api/medical-claims/${id}`, {
+            const res = await apiRequest(`/api/medical-claims/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -178,7 +179,7 @@ const MedicalClaim = () => {
         try {
             // Save bills & claim details first
             const allBills = Object.values(bills).flat();
-            await fetch(`http://localhost:5000/api/medical-claims/${id}`, {
+            await apiRequest(`/api/medical-claims/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -189,14 +190,14 @@ const MedicalClaim = () => {
 
             // Submit claim
             const grandTotal = calculateGrandTotal();
-            const res = await fetch(`http://localhost:5000/api/claims/${id}/submit`, {
+            const res = await apiRequest(`/api/claims/${id}/submit`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ total_amount: grandTotal })
             });
 
             if (res.ok) {
-                alert(language === 'hi' ? 'चिकित्सा दावा सफलतापूर्वक स्वीकृति हेतु प्रस्तुत किया गया!' : 'Medical claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤¾ à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Medical claim successfully submitted for approval!');
                 setClaim(prev => ({ ...prev, status: 'SUBMITTED' }));
             } else {
                 alert(t.messages.errorSaving);
@@ -212,7 +213,7 @@ const MedicalClaim = () => {
     const handleDelete = async () => {
         if (!window.confirm(t.tourDiariesList.deleteConfirm)) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${id}`, {
+            const res = await apiRequest(`/api/claims/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -260,9 +261,9 @@ const MedicalClaim = () => {
                         className="btn btn-primary"
                         onClick={handlePrint}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                        title={language === 'hi' ? 'शासकीय प्रारूप में आवेदन पत्र / देयक प्रिंट करें' : 'Print Application Form / Bill in Govt Prescribed Format'}
+                        title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤†à¤µà¥‡à¤¦à¤¨ à¤ªà¤¤à¥à¤° / à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚' : 'Print Application Form / Bill in Govt Prescribed Format'}
                     >
-                        <Printer size={18} /> {language === 'hi' ? 'आवेदन एवं देयक प्रिंट' : 'Print Form & Bill'}
+                        <Printer size={18} /> {language === 'hi' ? 'à¤†à¤µà¥‡à¤¦à¤¨ à¤à¤µà¤‚ à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ' : 'Print Form & Bill'}
                     </button>
                     {!isReadOnly && !isSubmitted && (
                         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
@@ -320,10 +321,10 @@ const MedicalClaim = () => {
                         />
                         <div style={{ textAlign: 'center' }}>
                             <h2 className="medical-header-title">
-                                {language === 'hi' ? 'मध्य प्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड, भोपाल' : 'M.P. STATE CIVIL SUPPLIES CORPORATION LIMITED, BHOPAL'}
+                                {language === 'hi' ? 'à¤®à¤§à¥à¤¯ à¤ªà¥à¤°à¤¦à¥‡à¤¶ à¤¸à¥à¤Ÿà¥‡à¤Ÿ à¤¸à¤¿à¤µà¤¿à¤² à¤¸à¤ªà¥à¤²à¤¾à¤‡à¤œ à¤•à¥‰à¤°à¥à¤ªà¥‹à¤°à¥‡à¤¶à¤¨ à¤²à¤¿à¤®à¤¿à¤Ÿà¥‡à¤¡, à¤­à¥‹à¤ªà¤¾à¤²' : 'M.P. STATE CIVIL SUPPLIES CORPORATION LIMITED, BHOPAL'}
                             </h2>
                             <h3 className="medical-header-subtitle">
-                                {language === 'hi' ? '(चिकित्सा व्यय प्रतिपूर्ति हेतु आवेदन पत्र)' : '(APPLICATION FOR MEDICAL EXPENDITURE REIMBURSEMENT)'}
+                                {language === 'hi' ? '(à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤¾ à¤µà¥à¤¯à¤¯ à¤ªà¥à¤°à¤¤à¤¿à¤ªà¥‚à¤°à¥à¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤†à¤µà¥‡à¤¦à¤¨ à¤ªà¤¤à¥à¤°)' : '(APPLICATION FOR MEDICAL EXPENDITURE REIMBURSEMENT)'}
                             </h3>
                         </div>
                     </div>
@@ -333,7 +334,7 @@ const MedicalClaim = () => {
                         <div className="no-print">
                             <div className="medical-form-grid">
                                 <div className="form-group">
-                                    <label className="form-label">01. {t.medical.doctorName.includes('Doctor') ? 'Name of employee & designation' : 'कर्मचारी का नाम और पदनाम'}</label>
+                                    <label className="form-label">01. {t.medical.doctorName.includes('Doctor') ? 'Name of employee & designation' : 'à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤•à¤¾ à¤¨à¤¾à¤® à¤”à¤° à¤ªà¤¦à¤¨à¤¾à¤®'}</label>
                                     <input className="form-input" value={`${language === 'hi' && employee.name_hi ? employee.name_hi : employee.name} (${employee.designation})`} disabled />
                                 </div>
                                 <div className="form-group">
@@ -348,7 +349,7 @@ const MedicalClaim = () => {
                                             <option value="Probation">Probation</option>
                                             <option value="Contract">Contract</option>
                                         </select>
-                                        <input className="form-input" name="pay_scale" value={claim.pay_scale || ''} onChange={handleClaimChange} placeholder={language === 'hi' ? "वेतन स्तर / ग्रेड वेतन (उदा. Level 14 / GP 7600)" : "Pay Level / Grade Pay (e.g. Level 14 / GP 7600)"} />
+                                        <input className="form-input" name="pay_scale" value={claim.pay_scale || ''} onChange={handleClaimChange} placeholder={language === 'hi' ? "à¤µà¥‡à¤¤à¤¨ à¤¸à¥à¤¤à¤° / à¤—à¥à¤°à¥‡à¤¡ à¤µà¥‡à¤¤à¤¨ (à¤‰à¤¦à¤¾. Level 14 / GP 7600)" : "Pay Level / Grade Pay (e.g. Level 14 / GP 7600)"} />
                                     </div>
                                 </div>
                                 <div className="form-group">
@@ -379,7 +380,7 @@ const MedicalClaim = () => {
                                     <input className="form-input" list="relationship-list" name="relationship" value={claim.relationship || ''} onChange={handleClaimChange} placeholder="e.g. Self, Wife, Son" />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">05. {language === 'hi' ? 'बच्चे का क्र.सं. / जन्म तिथि' : 'Sl. No. of child / Date of birth'}</label>
+                                    <label className="form-label">05. {language === 'hi' ? 'à¤¬à¤šà¥à¤šà¥‡ à¤•à¤¾ à¤•à¥à¤°.à¤¸à¤‚. / à¤œà¤¨à¥à¤® à¤¤à¤¿à¤¥à¤¿' : 'Sl. No. of child / Date of birth'}</label>
                                     <input className="form-input" name="child_sl_no_dob" value={claim.child_sl_no_dob || ''} onChange={handleClaimChange} />
                                 </div>
                                 <div className="form-group">
@@ -434,48 +435,48 @@ const MedicalClaim = () => {
                             <tbody>
                                 <tr>
                                     <td style={{ width: '50%' }}>
-                                        <div className="table-field-label">01. {language === 'hi' ? 'कर्मचारी का नाम एवं पदनाम' : 'Name of Employee & Designation'}:</div>
+                                        <div className="table-field-label">01. {language === 'hi' ? 'à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤•à¤¾ à¤¨à¤¾à¤® à¤à¤µà¤‚ à¤ªà¤¦à¤¨à¤¾à¤®' : 'Name of Employee & Designation'}:</div>
                                         <div className="table-field-value text-wrap">
                                             {language === 'hi' && employee.name_hi ? employee.name_hi : employee.name} ({employee.designation})
                                         </div>
                                     </td>
                                     <td style={{ width: '50%' }}>
-                                        <div className="table-field-label">02. {language === 'hi' ? 'मुख्यालय' : 'Headquarter'}:</div>
-                                        <div className="table-field-value text-wrap">{employee.headquarters || '—'}</div>
+                                        <div className="table-field-label">02. {language === 'hi' ? 'à¤®à¥à¤–à¥à¤¯à¤¾à¤²à¤¯' : 'Headquarter'}:</div>
+                                        <div className="table-field-value text-wrap">{employee.headquarters || 'â€”'}</div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <div className="table-field-label">02a. {language === 'hi' ? 'क्या पद नियमित है / वेतन स्तर' : 'Whether Regular or Not / Pay Scale'}:</div>
+                                        <div className="table-field-label">02a. {language === 'hi' ? 'à¤•à¥à¤¯à¤¾ à¤ªà¤¦ à¤¨à¤¿à¤¯à¤®à¤¿à¤¤ à¤¹à¥ˆ / à¤µà¥‡à¤¤à¤¨ à¤¸à¥à¤¤à¤°' : 'Whether Regular or Not / Pay Scale'}:</div>
                                         <div className="table-field-value text-wrap">
-                                            {claim.is_regular || 'Regular'} {claim.pay_scale ? `— ${claim.pay_scale}` : ''}
+                                            {claim.is_regular || 'Regular'} {claim.pay_scale ? `â€” ${claim.pay_scale}` : ''}
                                         </div>
                                     </td>
                                     <td>
-                                        <div className="table-field-label">03. {language === 'hi' ? 'रोगी का नाम' : 'Patient Name'}:</div>
-                                        <div className="table-field-value text-wrap">{claim.patient_name || '—'}</div>
+                                        <div className="table-field-label">03. {language === 'hi' ? 'à¤°à¥‹à¤—à¥€ à¤•à¤¾ à¤¨à¤¾à¤®' : 'Patient Name'}:</div>
+                                        <div className="table-field-value text-wrap">{claim.patient_name || 'â€”'}</div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <div className="table-field-label">04. {language === 'hi' ? 'कर्मचारी से संबंध' : 'Relationship with Employee'}:</div>
-                                        <div className="table-field-value text-wrap">{claim.relationship || '—'}</div>
+                                        <div className="table-field-label">04. {language === 'hi' ? 'à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤¸à¥‡ à¤¸à¤‚à¤¬à¤‚à¤§' : 'Relationship with Employee'}:</div>
+                                        <div className="table-field-value text-wrap">{claim.relationship || 'â€”'}</div>
                                     </td>
                                     <td>
-                                        <div className="table-field-label">05. {language === 'hi' ? 'बच्चे का क्र.सं. / जन्म तिथि' : 'Sl. No. of Child / Date of Birth'}:</div>
-                                        <div className="table-field-value text-wrap">{claim.child_sl_no_dob || '—'}</div>
+                                        <div className="table-field-label">05. {language === 'hi' ? 'à¤¬à¤šà¥à¤šà¥‡ à¤•à¤¾ à¤•à¥à¤°.à¤¸à¤‚. / à¤œà¤¨à¥à¤® à¤¤à¤¿à¤¥à¤¿' : 'Sl. No. of Child / Date of Birth'}:</div>
+                                        <div className="table-field-value text-wrap">{claim.child_sl_no_dob || 'â€”'}</div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <div className="table-field-label">06. {language === 'hi' ? 'बीमारी का नाम एवं उपचार अवधि' : 'Name of Illness & Duration'}:</div>
+                                        <div className="table-field-label">06. {language === 'hi' ? 'à¤¬à¥€à¤®à¤¾à¤°à¥€ à¤•à¤¾ à¤¨à¤¾à¤® à¤à¤µà¤‚ à¤‰à¤ªà¤šà¤¾à¤° à¤…à¤µà¤§à¤¿' : 'Name of Illness & Duration'}:</div>
                                         <div className="table-field-value text-wrap">
-                                            {claim.illness_name || '—'} {claim.illness_duration ? `(${claim.illness_duration})` : ''}
+                                            {claim.illness_name || 'â€”'} {claim.illness_duration ? `(${claim.illness_duration})` : ''}
                                         </div>
                                     </td>
                                     <td>
-                                        <div className="table-field-label">09. {language === 'hi' ? 'संलग्नकों की कुल संख्या' : 'Total Number of Enclosures'}:</div>
-                                        <div className="table-field-value text-wrap">{claim.total_enclosures || '—'}</div>
+                                        <div className="table-field-label">09. {language === 'hi' ? 'à¤¸à¤‚à¤²à¤—à¥à¤¨à¤•à¥‹à¤‚ à¤•à¥€ à¤•à¥à¤² à¤¸à¤‚à¤–à¥à¤¯à¤¾' : 'Total Number of Enclosures'}:</div>
+                                        <div className="table-field-value text-wrap">{claim.total_enclosures || 'â€”'}</div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -485,35 +486,35 @@ const MedicalClaim = () => {
                         <table className="med-border-table" style={{ marginTop: '4px' }}>
                             <thead>
                                 <tr style={{ background: '#f1f5f9' }}>
-                                    <th style={{ width: '10%', textAlign: 'center' }}>{language === 'hi' ? 'मद' : 'Item'}</th>
-                                    <th style={{ width: '65%', textAlign: 'left' }}>07. {language === 'hi' ? 'व्यय का शीर्ष / मद का विवरण' : 'DETAILS OF EXPENDITURE INCURRED / CLAIMED'}</th>
-                                    <th style={{ width: '25%', textAlign: 'right' }}>{language === 'hi' ? 'दावा राशि (₹)' : 'Amount Claimed (₹)'}</th>
+                                    <th style={{ width: '10%', textAlign: 'center' }}>{language === 'hi' ? 'à¤®à¤¦' : 'Item'}</th>
+                                    <th style={{ width: '65%', textAlign: 'left' }}>07. {language === 'hi' ? 'à¤µà¥à¤¯à¤¯ à¤•à¤¾ à¤¶à¥€à¤°à¥à¤· / à¤®à¤¦ à¤•à¤¾ à¤µà¤¿à¤µà¤°à¤£' : 'DETAILS OF EXPENDITURE INCURRED / CLAIMED'}</th>
+                                    <th style={{ width: '25%', textAlign: 'right' }}>{language === 'hi' ? 'à¤¦à¤¾à¤µà¤¾ à¤°à¤¾à¤¶à¤¿ (â‚¹)' : 'Amount Claimed (â‚¹)'}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td style={{ textAlign: 'center' }}>A.</td>
-                                    <td>{language === 'hi' ? 'चिकित्सक परामर्श शुल्क (Consultation Charges)' : 'Consultation Charges'}</td>
+                                    <td>{language === 'hi' ? 'à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤• à¤ªà¤°à¤¾à¤®à¤°à¥à¤¶ à¤¶à¥à¤²à¥à¤• (Consultation Charges)' : 'Consultation Charges'}</td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRupees(calculateCategoryTotal('CONSULTATION'))}</td>
                                 </tr>
                                 <tr>
                                     <td style={{ textAlign: 'center' }}>B.</td>
-                                    <td>{language === 'hi' ? 'दवाइयों का क्रय मूल्य (Cost of Medicines)' : 'Cost of Medicines'}</td>
+                                    <td>{language === 'hi' ? 'à¤¦à¤µà¤¾à¤‡à¤¯à¥‹à¤‚ à¤•à¤¾ à¤•à¥à¤°à¤¯ à¤®à¥‚à¤²à¥à¤¯ (Cost of Medicines)' : 'Cost of Medicines'}</td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRupees(calculateCategoryTotal('MEDICINE'))}</td>
                                 </tr>
                                 <tr>
                                     <td style={{ textAlign: 'center' }}>C.</td>
-                                    <td>{language === 'hi' ? 'जांच एवं परीक्षण शुल्क (Tests & Investigations)' : 'Test/and investigations'}</td>
+                                    <td>{language === 'hi' ? 'à¤œà¤¾à¤‚à¤š à¤à¤µà¤‚ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤¶à¥à¤²à¥à¤• (Tests & Investigations)' : 'Test/and investigations'}</td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRupees(calculateCategoryTotal('TEST'))}</td>
                                 </tr>
                                 <tr>
                                     <td style={{ textAlign: 'center' }}>D.</td>
-                                    <td>{language === 'hi' ? 'अन्य अनुषंगिक व्यय (Other Charges)' : 'Other charges'}</td>
+                                    <td>{language === 'hi' ? 'à¤…à¤¨à¥à¤¯ à¤…à¤¨à¥à¤·à¤‚à¤—à¤¿à¤• à¤µà¥à¤¯à¤¯ (Other Charges)' : 'Other charges'}</td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatRupees(calculateCategoryTotal('OTHER'))}</td>
                                 </tr>
                                 <tr style={{ background: '#f8fafc', fontWeight: 'bold' }}>
                                     <td colSpan={2} style={{ textAlign: 'right' }}>
-                                        08. {language === 'hi' ? 'कुल दावाकृत राशि (TOTAL AMOUNT CLAIMED):' : 'TOTAL AMOUNT CLAIMED:'}
+                                        08. {language === 'hi' ? 'à¤•à¥à¤² à¤¦à¤¾à¤µà¤¾à¤•à¥ƒà¤¤ à¤°à¤¾à¤¶à¤¿ (TOTAL AMOUNT CLAIMED):' : 'TOTAL AMOUNT CLAIMED:'}
                                     </td>
                                     <td style={{ textAlign: 'right', fontSize: '8.8pt', fontWeight: 'bold' }}>
                                         {formatRupees(calculateGrandTotal())}
@@ -521,7 +522,7 @@ const MedicalClaim = () => {
                                 </tr>
                                 <tr style={{ background: '#fff' }}>
                                     <td colSpan={3} style={{ fontSize: '7.2pt' }}>
-                                        <strong>{language === 'hi' ? 'राशि अक्षरी:' : 'Amount in Words:'}</strong> {language === 'hi' ? numberToWordsHindi(calculateGrandTotal()) : numberToWordsEnglish(calculateGrandTotal())}
+                                        <strong>{language === 'hi' ? 'à¤°à¤¾à¤¶à¤¿ à¤…à¤•à¥à¤·à¤°à¥€:' : 'Amount in Words:'}</strong> {language === 'hi' ? numberToWordsHindi(calculateGrandTotal()) : numberToWordsEnglish(calculateGrandTotal())}
                                     </td>
                                 </tr>
                             </tbody>
@@ -532,7 +533,7 @@ const MedicalClaim = () => {
                     <div className="medical-cert-section">
                         <div className="medical-cert-box">
                             <p className="cert-p">
-                                <strong>10. {language === 'hi' ? 'घोषणा / DECLARATION' : 'DECLARATION'}:</strong> {t.medical.declaration}
+                                <strong>10. {language === 'hi' ? 'à¤˜à¥‹à¤·à¤£à¤¾ / DECLARATION' : 'DECLARATION'}:</strong> {t.medical.declaration}
                             </p>
                             <div className="sig-container">
                                 <div className="sig-block">
@@ -544,18 +545,18 @@ const MedicalClaim = () => {
                             <div className="cert-divider"></div>
 
                             <p className="cert-p cert-doctor-heading">
-                                <strong>11. {language === 'hi' ? 'चिकित्सक द्वारा प्रमाण-पत्र / CERTIFICATION BY DOCTOR' : 'CERTIFICATION BY DOCTOR'}:</strong>
+                                <strong>11. {language === 'hi' ? 'à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤• à¤¦à¥à¤µà¤¾à¤°à¤¾ à¤ªà¥à¤°à¤®à¤¾à¤£-à¤ªà¤¤à¥à¤° / CERTIFICATION BY DOCTOR' : 'CERTIFICATION BY DOCTOR'}:</strong>
                             </p>
                             <p className="cert-p">
                                 {language === 'hi'
-                                    ? `प्रमाणित किया जाता है कि उपर्युक्त विवरण में दावा किए गए प्रभार मेरे द्वारा दिए गए परामर्श व पर्चे पर आधारित हैं तथा दवाइयां/जांचें उक्त रोगी के उपचार हेतु नितांत आवश्यक थीं, जो कि रोगी को ${claim.illness_name || 'उपचार'} हेतु विहित की गई थीं।`
+                                    ? `à¤ªà¥à¤°à¤®à¤¾à¤£à¤¿à¤¤ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾à¤¤à¤¾ à¤¹à¥ˆ à¤•à¤¿ à¤‰à¤ªà¤°à¥à¤¯à¥à¤•à¥à¤¤ à¤µà¤¿à¤µà¤°à¤£ à¤®à¥‡à¤‚ à¤¦à¤¾à¤µà¤¾ à¤•à¤¿à¤ à¤—à¤ à¤ªà¥à¤°à¤­à¤¾à¤° à¤®à¥‡à¤°à¥‡ à¤¦à¥à¤µà¤¾à¤°à¤¾ à¤¦à¤¿à¤ à¤—à¤ à¤ªà¤°à¤¾à¤®à¤°à¥à¤¶ à¤µ à¤ªà¤°à¥à¤šà¥‡ à¤ªà¤° à¤†à¤§à¤¾à¤°à¤¿à¤¤ à¤¹à¥ˆà¤‚ à¤¤à¤¥à¤¾ à¤¦à¤µà¤¾à¤‡à¤¯à¤¾à¤‚/à¤œà¤¾à¤‚à¤šà¥‡à¤‚ à¤‰à¤•à¥à¤¤ à¤°à¥‹à¤—à¥€ à¤•à¥‡ à¤‰à¤ªà¤šà¤¾à¤° à¤¹à¥‡à¤¤à¥ à¤¨à¤¿à¤¤à¤¾à¤‚à¤¤ à¤†à¤µà¤¶à¥à¤¯à¤• à¤¥à¥€à¤‚, à¤œà¥‹ à¤•à¤¿ à¤°à¥‹à¤—à¥€ à¤•à¥‹ ${claim.illness_name || 'à¤‰à¤ªà¤šà¤¾à¤°'} à¤¹à¥‡à¤¤à¥ à¤µà¤¿à¤¹à¤¿à¤¤ à¤•à¥€ à¤—à¤ˆ à¤¥à¥€à¤‚à¥¤`
                                     : `Certified that the charges claimed in aforesaid statement are based upon the prescription given by me and such medicines/tests/investigations/other charges were absolutely essential for the treatment of the said patient, which have been prescribed for ${claim.illness_name || '________________'} during the period of treatment.`}
                             </p>
                             <div className="doctor-sig-row">
                                 <div className="doctor-meta">
-                                    <div>{language === 'hi' ? 'दिनांक / Date' : 'Date'}: __________________</div>
-                                    <div>{language === 'hi' ? 'स्थान / Place' : 'Place'}: __________________</div>
-                                    <div>{language === 'hi' ? 'पंजीयन क्र. / Reg. No.' : 'Reg. No.'}: ______________</div>
+                                    <div>{language === 'hi' ? 'à¤¦à¤¿à¤¨à¤¾à¤‚à¤• / Date' : 'Date'}: __________________</div>
+                                    <div>{language === 'hi' ? 'à¤¸à¥à¤¥à¤¾à¤¨ / Place' : 'Place'}: __________________</div>
+                                    <div>{language === 'hi' ? 'à¤ªà¤‚à¤œà¥€à¤¯à¤¨ à¤•à¥à¤°. / Reg. No.' : 'Reg. No.'}: ______________</div>
                                 </div>
                                 <div className="sig-block">
                                     <span className="sig-line">__________________________</span>
@@ -587,7 +588,7 @@ const MedicalClaim = () => {
                         alignItems: 'center',
                         gap: '6px'
                     }}>
-                        📄 {language === 'hi' ? 'चिकित्सा देयक — पृष्ठ 2 (भाग - 2 : खर्चों का विस्तृत विवरण)' : 'Medical Claim — Page 2 (Part - II : Itemized Details of Charges)'}
+                        ðŸ“„ {language === 'hi' ? 'à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤¾ à¤¦à¥‡à¤¯à¤• â€” à¤ªà¥ƒà¤·à¥à¤  2 (à¤­à¤¾à¤— - 2 : à¤–à¤°à¥à¤šà¥‹à¤‚ à¤•à¤¾ à¤µà¤¿à¤¸à¥à¤¤à¥ƒà¤¤ à¤µà¤¿à¤µà¤°à¤£)' : 'Medical Claim â€” Page 2 (Part - II : Itemized Details of Charges)'}
                     </span>
                 </div>
 
@@ -595,11 +596,11 @@ const MedicalClaim = () => {
                 <div className="medical-print-page medical-page-2">
                     <div className="details-charges-header">
                         <h3 className="details-charges-title">
-                            {language === 'hi' ? 'भाग - 2 : खर्चों का विस्तृत विवरण' : 'PART - II : ITEMIZED DETAILS OF CHARGES'}
+                            {language === 'hi' ? 'à¤­à¤¾à¤— - 2 : à¤–à¤°à¥à¤šà¥‹à¤‚ à¤•à¤¾ à¤µà¤¿à¤¸à¥à¤¤à¥ƒà¤¤ à¤µà¤¿à¤µà¤°à¤£' : 'PART - II : ITEMIZED DETAILS OF CHARGES'}
                         </h3>
                         <div className="details-charges-sub">
-                            <span><strong>{language === 'hi' ? 'कर्मचारी' : 'Employee'}:</strong> {employee.name} ({employee.designation})</span>
-                            <span><strong>{language === 'hi' ? 'रोगी' : 'Patient'}:</strong> {claim.patient_name || '—'} ({claim.relationship || 'Self'})</span>
+                            <span><strong>{language === 'hi' ? 'à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€' : 'Employee'}:</strong> {employee.name} ({employee.designation})</span>
+                            <span><strong>{language === 'hi' ? 'à¤°à¥‹à¤—à¥€' : 'Patient'}:</strong> {claim.patient_name || 'â€”'} ({claim.relationship || 'Self'})</span>
                         </div>
                     </div>
 
@@ -609,7 +610,7 @@ const MedicalClaim = () => {
                         <div className="table-section">
                             <div className="table-section-header">
                                 <h4 className="table-section-title">
-                                    01. {language === 'hi' ? 'परामर्श शुल्क' : 'CONSULTATION CHARGES'}
+                                    01. {language === 'hi' ? 'à¤ªà¤°à¤¾à¤®à¤°à¥à¤¶ à¤¶à¥à¤²à¥à¤•' : 'CONSULTATION CHARGES'}
                                 </h4>
                                 {!isReadOnly && (
                                     <button className="btn btn-sm btn-outline-primary no-print" onClick={() => addBillRow('CONSULTATION')}>
@@ -620,18 +621,18 @@ const MedicalClaim = () => {
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'क्र.' : 'S.No.'}</th>
-                                        <th style={{ width: '43%' }}>{language === 'hi' ? 'चिकित्सक का नाम एवं पद' : 'Name of Doctor'}</th>
-                                        <th style={{ width: '16%', textAlign: 'right' }}>{language === 'hi' ? 'परामर्श शुल्क (₹)' : 'Fee Paid (₹)'}</th>
-                                        <th style={{ width: '17%', textAlign: 'center' }}>{language === 'hi' ? 'भुगतान दिनांक' : 'Payment Date'}</th>
-                                        <th style={{ width: '17%', textAlign: 'center' }}>{language === 'hi' ? 'रसीद क्र.' : 'Receipt No.'}</th>
+                                        <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'à¤•à¥à¤°.' : 'S.No.'}</th>
+                                        <th style={{ width: '43%' }}>{language === 'hi' ? 'à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤• à¤•à¤¾ à¤¨à¤¾à¤® à¤à¤µà¤‚ à¤ªà¤¦' : 'Name of Doctor'}</th>
+                                        <th style={{ width: '16%', textAlign: 'right' }}>{language === 'hi' ? 'à¤ªà¤°à¤¾à¤®à¤°à¥à¤¶ à¤¶à¥à¤²à¥à¤• (â‚¹)' : 'Fee Paid (â‚¹)'}</th>
+                                        <th style={{ width: '17%', textAlign: 'center' }}>{language === 'hi' ? 'à¤­à¥à¤—à¤¤à¤¾à¤¨ à¤¦à¤¿à¤¨à¤¾à¤‚à¤•' : 'Payment Date'}</th>
+                                        <th style={{ width: '17%', textAlign: 'center' }}>{language === 'hi' ? 'à¤°à¤¸à¥€à¤¦ à¤•à¥à¤°.' : 'Receipt No.'}</th>
                                         {!isReadOnly && <th className="no-print" style={{ width: '70px' }}>{t.common.actions}</th>}
                                     </tr>
                                 </thead>
                             <tbody>
                                 {bills.CONSULTATION.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'कोई विवरण नहीं' : 'No bills entered'}</td>
+                                        <td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'à¤•à¥‹à¤ˆ à¤µà¤¿à¤µà¤°à¤£ à¤¨à¤¹à¥€à¤‚' : 'No bills entered'}</td>
                                         {!isReadOnly && <td className="no-print"></td>}
                                     </tr>
                                 ) : (
@@ -640,11 +641,11 @@ const MedicalClaim = () => {
                                             <td style={{ textAlign: 'center' }}>{i + 1}</td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap">{b.description || '—'}</div>
+                                                    <div className="text-wrap">{b.description || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" value={b.description} onChange={(e) => updateBillRow('CONSULTATION', i, 'description', e.target.value)} placeholder="Doctor Name" />
-                                                        <div className="print-only text-wrap">{b.description || '—'}</div>
+                                                        <div className="print-only text-wrap">{b.description || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
@@ -670,11 +671,11 @@ const MedicalClaim = () => {
                                             </td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" value={b.receipt_no || ''} onChange={(e) => updateBillRow('CONSULTATION', i, 'receipt_no', e.target.value)} />
-                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
@@ -684,7 +685,7 @@ const MedicalClaim = () => {
                                 )}
                                 <tr className="subtotal-row">
                                     <td colSpan={2} style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                                        {language === 'hi' ? 'उप-योग (A) परामर्श शुल्क:' : 'Sub-Total (A) Consultation:'}
+                                        {language === 'hi' ? 'à¤‰à¤ª-à¤¯à¥‹à¤— (A) à¤ªà¤°à¤¾à¤®à¤°à¥à¤¶ à¤¶à¥à¤²à¥à¤•:' : 'Sub-Total (A) Consultation:'}
                                     </td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
                                         {formatRupees(calculateCategoryTotal('CONSULTATION'))}
@@ -700,7 +701,7 @@ const MedicalClaim = () => {
                     <div className="table-section">
                         <div className="table-section-header">
                             <h4 className="table-section-title">
-                                02. {language === 'hi' ? 'दवाइयों का क्रय मूल्य' : 'COST OF MEDICINES'}
+                                02. {language === 'hi' ? 'à¤¦à¤µà¤¾à¤‡à¤¯à¥‹à¤‚ à¤•à¤¾ à¤•à¥à¤°à¤¯ à¤®à¥‚à¤²à¥à¤¯' : 'COST OF MEDICINES'}
                             </h4>
                             {!isReadOnly && (
                                 <button className="btn btn-sm btn-outline-primary no-print" onClick={() => addBillRow('MEDICINE')}>
@@ -711,18 +712,18 @@ const MedicalClaim = () => {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'क्र.' : 'S.No.'}</th>
-                                    <th style={{ width: '43%' }}>{language === 'hi' ? 'दुकान / दवाइयों का विवरण' : 'Name of Shop / Medicines'}</th>
-                                    <th style={{ width: '18%', textAlign: 'center' }}>{language === 'hi' ? 'कैश मेमो क्र.' : 'Cash Memo No.'}</th>
-                                    <th style={{ width: '16%', textAlign: 'center' }}>{language === 'hi' ? 'दिनांक' : 'Date'}</th>
-                                    <th style={{ width: '16%', textAlign: 'right' }}>{language === 'hi' ? 'राशि (₹)' : 'Amount (₹)'}</th>
+                                    <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'à¤•à¥à¤°.' : 'S.No.'}</th>
+                                    <th style={{ width: '43%' }}>{language === 'hi' ? 'à¤¦à¥à¤•à¤¾à¤¨ / à¤¦à¤µà¤¾à¤‡à¤¯à¥‹à¤‚ à¤•à¤¾ à¤µà¤¿à¤µà¤°à¤£' : 'Name of Shop / Medicines'}</th>
+                                    <th style={{ width: '18%', textAlign: 'center' }}>{language === 'hi' ? 'à¤•à¥ˆà¤¶ à¤®à¥‡à¤®à¥‹ à¤•à¥à¤°.' : 'Cash Memo No.'}</th>
+                                    <th style={{ width: '16%', textAlign: 'center' }}>{language === 'hi' ? 'à¤¦à¤¿à¤¨à¤¾à¤‚à¤•' : 'Date'}</th>
+                                    <th style={{ width: '16%', textAlign: 'right' }}>{language === 'hi' ? 'à¤°à¤¾à¤¶à¤¿ (â‚¹)' : 'Amount (â‚¹)'}</th>
                                     {!isReadOnly && <th className="no-print" style={{ width: '70px' }}>{t.common.actions}</th>}
                                 </tr>
                             </thead>
                             <tbody>
                                 {bills.MEDICINE.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'कोई विवरण नहीं' : 'No bills entered'}</td>
+                                        <td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'à¤•à¥‹à¤ˆ à¤µà¤¿à¤µà¤°à¤£ à¤¨à¤¹à¥€à¤‚' : 'No bills entered'}</td>
                                         {!isReadOnly && <td className="no-print"></td>}
                                     </tr>
                                 ) : (
@@ -731,21 +732,21 @@ const MedicalClaim = () => {
                                             <td style={{ textAlign: 'center' }}>{i + 1}</td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap">{b.description || '—'}</div>
+                                                    <div className="text-wrap">{b.description || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" value={b.description} onChange={(e) => updateBillRow('MEDICINE', i, 'description', e.target.value)} />
-                                                        <div className="print-only text-wrap">{b.description || '—'}</div>
+                                                        <div className="print-only text-wrap">{b.description || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" value={b.receipt_no || ''} onChange={(e) => updateBillRow('MEDICINE', i, 'receipt_no', e.target.value)} />
-                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
@@ -775,7 +776,7 @@ const MedicalClaim = () => {
                                 )}
                                 <tr className="subtotal-row">
                                     <td colSpan={4} style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                                        {language === 'hi' ? 'उप-योग (B) दवाइयों का व्यय:' : 'Sub-Total (B) Medicines:'}
+                                        {language === 'hi' ? 'à¤‰à¤ª-à¤¯à¥‹à¤— (B) à¤¦à¤µà¤¾à¤‡à¤¯à¥‹à¤‚ à¤•à¤¾ à¤µà¥à¤¯à¤¯:' : 'Sub-Total (B) Medicines:'}
                                     </td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
                                         {formatRupees(calculateCategoryTotal('MEDICINE'))}
@@ -790,7 +791,7 @@ const MedicalClaim = () => {
                     <div className="table-section">
                         <div className="table-section-header">
                             <h4 className="table-section-title">
-                                03. {language === 'hi' ? 'जांच एवं परीक्षण शुल्क' : 'TESTS & INVESTIGATIONS'}
+                                03. {language === 'hi' ? 'à¤œà¤¾à¤‚à¤š à¤à¤µà¤‚ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤¶à¥à¤²à¥à¤•' : 'TESTS & INVESTIGATIONS'}
                             </h4>
                             {!isReadOnly && (
                                 <button className="btn btn-sm btn-outline-primary no-print" onClick={() => addBillRow('TEST')}>
@@ -801,19 +802,19 @@ const MedicalClaim = () => {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'क्र.' : 'S.No.'}</th>
-                                    <th style={{ width: '33%' }}>{language === 'hi' ? 'जांच का नाम' : 'Name of Test'}</th>
-                                    <th style={{ width: '27%' }}>{language === 'hi' ? 'पैथोलॉजी / प्रयोगशाला' : 'Pathology / Lab Name'}</th>
-                                    <th style={{ width: '12%', textAlign: 'center' }}>{language === 'hi' ? 'रसीद क्र.' : 'Receipt No.'}</th>
-                                    <th style={{ width: '10%', textAlign: 'center' }}>{language === 'hi' ? 'दिनांक' : 'Date'}</th>
-                                    <th style={{ width: '11%', textAlign: 'right' }}>{language === 'hi' ? 'राशि (₹)' : 'Amount (₹)'}</th>
+                                    <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'à¤•à¥à¤°.' : 'S.No.'}</th>
+                                    <th style={{ width: '33%' }}>{language === 'hi' ? 'à¤œà¤¾à¤‚à¤š à¤•à¤¾ à¤¨à¤¾à¤®' : 'Name of Test'}</th>
+                                    <th style={{ width: '27%' }}>{language === 'hi' ? 'à¤ªà¥ˆà¤¥à¥‹à¤²à¥‰à¤œà¥€ / à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾' : 'Pathology / Lab Name'}</th>
+                                    <th style={{ width: '12%', textAlign: 'center' }}>{language === 'hi' ? 'à¤°à¤¸à¥€à¤¦ à¤•à¥à¤°.' : 'Receipt No.'}</th>
+                                    <th style={{ width: '10%', textAlign: 'center' }}>{language === 'hi' ? 'à¤¦à¤¿à¤¨à¤¾à¤‚à¤•' : 'Date'}</th>
+                                    <th style={{ width: '11%', textAlign: 'right' }}>{language === 'hi' ? 'à¤°à¤¾à¤¶à¤¿ (â‚¹)' : 'Amount (â‚¹)'}</th>
                                     {!isReadOnly && <th className="no-print" style={{ width: '70px' }}>{t.common.actions}</th>}
                                 </tr>
                             </thead>
                             <tbody>
                                 {bills.TEST.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'कोई विवरण नहीं' : 'No bills entered'}</td>
+                                        <td colSpan={6} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'à¤•à¥‹à¤ˆ à¤µà¤¿à¤µà¤°à¤£ à¤¨à¤¹à¥€à¤‚' : 'No bills entered'}</td>
                                         {!isReadOnly && <td className="no-print"></td>}
                                     </tr>
                                 ) : (
@@ -822,35 +823,35 @@ const MedicalClaim = () => {
                                             <td style={{ textAlign: 'center' }}>{i + 1}</td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap">{b.description || '—'}</div>
+                                                    <div className="text-wrap">{b.description || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" list="test-list" value={b.description || ''} onChange={(e) => {
                                                             updateBillRow('TEST', i, 'description', e.target.value);
                                                         }} />
-                                                        <div className="print-only text-wrap">{b.description || '—'}</div>
+                                                        <div className="print-only text-wrap">{b.description || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap">{b.lab_name || '—'}</div>
+                                                    <div className="text-wrap">{b.lab_name || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" placeholder="Lab Name" value={b.lab_name || ''} onChange={(e) => {
                                                             updateBillRow('TEST', i, 'lab_name', e.target.value);
                                                         }} />
-                                                        <div className="print-only text-wrap">{b.lab_name || '—'}</div>
+                                                        <div className="print-only text-wrap">{b.lab_name || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" value={b.receipt_no || ''} onChange={(e) => updateBillRow('TEST', i, 'receipt_no', e.target.value)} />
-                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
@@ -880,7 +881,7 @@ const MedicalClaim = () => {
                                 )}
                                 <tr className="subtotal-row">
                                     <td colSpan={5} style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                                        {language === 'hi' ? 'उप-योग (C) जांच एवं परीक्षण शुल्क:' : 'Sub-Total (C) Tests:'}
+                                        {language === 'hi' ? 'à¤‰à¤ª-à¤¯à¥‹à¤— (C) à¤œà¤¾à¤‚à¤š à¤à¤µà¤‚ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤¶à¥à¤²à¥à¤•:' : 'Sub-Total (C) Tests:'}
                                     </td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
                                         {formatRupees(calculateCategoryTotal('TEST'))}
@@ -895,7 +896,7 @@ const MedicalClaim = () => {
                     <div className="table-section">
                         <div className="table-section-header">
                             <h4 className="table-section-title">
-                                04. {language === 'hi' ? 'अन्य अनुषंगिक व्यय' : 'OTHER CHARGES'}
+                                04. {language === 'hi' ? 'à¤…à¤¨à¥à¤¯ à¤…à¤¨à¥à¤·à¤‚à¤—à¤¿à¤• à¤µà¥à¤¯à¤¯' : 'OTHER CHARGES'}
                             </h4>
                             {!isReadOnly && (
                                 <button className="btn btn-sm btn-outline-primary no-print" onClick={() => addBillRow('OTHER')}>
@@ -906,18 +907,18 @@ const MedicalClaim = () => {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'क्र.' : 'S.No.'}</th>
-                                    <th style={{ width: '43%' }}>{language === 'hi' ? 'शुल्क का विवरण' : 'Details of Charge'}</th>
-                                    <th style={{ width: '18%', textAlign: 'center' }}>{language === 'hi' ? 'रसीद क्र.' : 'Receipt No.'}</th>
-                                    <th style={{ width: '16%', textAlign: 'center' }}>{language === 'hi' ? 'दिनांक' : 'Date'}</th>
-                                    <th style={{ width: '16%', textAlign: 'right' }}>{language === 'hi' ? 'राशि (₹)' : 'Amount (₹)'}</th>
+                                    <th style={{ width: '7%', textAlign: 'center', whiteSpace: 'nowrap' }}>{language === 'hi' ? 'à¤•à¥à¤°.' : 'S.No.'}</th>
+                                    <th style={{ width: '43%' }}>{language === 'hi' ? 'à¤¶à¥à¤²à¥à¤• à¤•à¤¾ à¤µà¤¿à¤µà¤°à¤£' : 'Details of Charge'}</th>
+                                    <th style={{ width: '18%', textAlign: 'center' }}>{language === 'hi' ? 'à¤°à¤¸à¥€à¤¦ à¤•à¥à¤°.' : 'Receipt No.'}</th>
+                                    <th style={{ width: '16%', textAlign: 'center' }}>{language === 'hi' ? 'à¤¦à¤¿à¤¨à¤¾à¤‚à¤•' : 'Date'}</th>
+                                    <th style={{ width: '16%', textAlign: 'right' }}>{language === 'hi' ? 'à¤°à¤¾à¤¶à¤¿ (â‚¹)' : 'Amount (â‚¹)'}</th>
                                     {!isReadOnly && <th className="no-print" style={{ width: '70px' }}>{t.common.actions}</th>}
                                 </tr>
                             </thead>
                             <tbody>
                                 {bills.OTHER.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'कोई विवरण नहीं' : 'No bills entered'}</td>
+                                        <td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>{language === 'hi' ? 'à¤•à¥‹à¤ˆ à¤µà¤¿à¤µà¤°à¤£ à¤¨à¤¹à¥€à¤‚' : 'No bills entered'}</td>
                                         {!isReadOnly && <td className="no-print"></td>}
                                     </tr>
                                 ) : (
@@ -926,21 +927,21 @@ const MedicalClaim = () => {
                                             <td style={{ textAlign: 'center' }}>{i + 1}</td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap">{b.description || '—'}</div>
+                                                    <div className="text-wrap">{b.description || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" value={b.description} onChange={(e) => updateBillRow('OTHER', i, 'description', e.target.value)} />
-                                                        <div className="print-only text-wrap">{b.description || '—'}</div>
+                                                        <div className="print-only text-wrap">{b.description || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
                                             <td>
                                                 {isReadOnly ? (
-                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                    <div className="text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                 ) : (
                                                     <>
                                                         <input className="form-input small no-print" value={b.receipt_no || ''} onChange={(e) => updateBillRow('OTHER', i, 'receipt_no', e.target.value)} />
-                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || '—'}</div>
+                                                        <div className="print-only text-wrap" style={{ textAlign: 'center' }}>{b.receipt_no || 'â€”'}</div>
                                                     </>
                                                 )}
                                             </td>
@@ -970,7 +971,7 @@ const MedicalClaim = () => {
                                 )}
                                 <tr className="subtotal-row">
                                     <td colSpan={4} style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                                        {language === 'hi' ? 'उप-योग (D) अन्य व्यय:' : 'Sub-Total (D) Other:'}
+                                        {language === 'hi' ? 'à¤‰à¤ª-à¤¯à¥‹à¤— (D) à¤…à¤¨à¥à¤¯ à¤µà¥à¤¯à¤¯:' : 'Sub-Total (D) Other:'}
                                     </td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
                                         {formatRupees(calculateCategoryTotal('OTHER'))}
@@ -988,7 +989,7 @@ const MedicalClaim = () => {
                             <tbody>
                                 <tr style={{ background: '#f8fafc', fontWeight: 'bold' }}>
                                     <td style={{ width: '72%', textAlign: 'right', fontSize: '8.5pt', padding: '5px 8px' }}>
-                                        {language === 'hi' ? 'समस्त शीर्षों का कुल योग (GRAND TOTAL CLAIMED - A + B + C + D):' : 'GRAND TOTAL CLAIMED (A + B + C + D):'}
+                                        {language === 'hi' ? 'à¤¸à¤®à¤¸à¥à¤¤ à¤¶à¥€à¤°à¥à¤·à¥‹à¤‚ à¤•à¤¾ à¤•à¥à¤² à¤¯à¥‹à¤— (GRAND TOTAL CLAIMED - A + B + C + D):' : 'GRAND TOTAL CLAIMED (A + B + C + D):'}
                                     </td>
                                     <td style={{ width: '28%', textAlign: 'right', fontSize: '9pt', fontWeight: 'bold', padding: '5px 8px' }}>
                                         {formatRupees(calculateGrandTotal())}
@@ -996,7 +997,7 @@ const MedicalClaim = () => {
                                 </tr>
                                 <tr style={{ background: '#fff' }}>
                                     <td colSpan={2} style={{ fontSize: '7.8pt', padding: '4px 8px' }}>
-                                        <strong>{language === 'hi' ? 'राशि अक्षरी / Amount in Words:' : 'Amount in Words:'}</strong> {language === 'hi' ? numberToWordsHindi(calculateGrandTotal()) : numberToWordsEnglish(calculateGrandTotal())}
+                                        <strong>{language === 'hi' ? 'à¤°à¤¾à¤¶à¤¿ à¤…à¤•à¥à¤·à¤°à¥€ / Amount in Words:' : 'Amount in Words:'}</strong> {language === 'hi' ? numberToWordsHindi(calculateGrandTotal()) : numberToWordsEnglish(calculateGrandTotal())}
                                     </td>
                                 </tr>
                             </tbody>
@@ -1005,7 +1006,7 @@ const MedicalClaim = () => {
                         <div className="page2-signatures">
                             <div className="sig-side">
                                 <span className="sig-line">_________________________________</span>
-                                <strong>{language === 'hi' ? 'आवेदक / कर्मचारी के हस्ताक्षर' : 'Signature of Applicant / Employee'}</strong>
+                                <strong>{language === 'hi' ? 'à¤†à¤µà¥‡à¤¦à¤• / à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤•à¥‡ à¤¹à¤¸à¥à¤¤à¤¾à¤•à¥à¤·à¤°' : 'Signature of Applicant / Employee'}</strong>
                                 <span className="sig-emp-name" style={{ fontSize: '7.5pt', color: '#333' }}>({employee.name})</span>
                             </div>
                         </div>

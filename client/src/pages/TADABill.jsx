@@ -1,3 +1,4 @@
+﻿import api from '../utils/api';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Printer, ArrowLeft, FileSpreadsheet, MousePointer2, Receipt, Edit, Check, X } from 'lucide-react';
@@ -8,16 +9,16 @@ import ExcelJS from 'exceljs';
 import logoIco from '../assets/logo.ico';
 
 function formatPayLevelAndGradePay(emp, lang) {
-    if (!emp) return '—';
+    if (!emp) return 'â€”';
     const payLevel = (emp.pay_level || '').trim();
     let gradePay = (emp.grade_pay || '').toString().trim();
-    if (gradePay && !gradePay.startsWith('₹') && !gradePay.toLowerCase().startsWith('gp')) {
-        gradePay = `₹${gradePay}`;
+    if (gradePay && !gradePay.startsWith('â‚¹') && !gradePay.toLowerCase().startsWith('gp')) {
+        gradePay = `â‚¹${gradePay}`;
     }
 
     if (payLevel && gradePay) {
         return lang === 'hi'
-            ? `${payLevel} / ग्रेड वेतन: ${gradePay}`
+            ? `${payLevel} / à¤—à¥à¤°à¥‡à¤¡ à¤µà¥‡à¤¤à¤¨: ${gradePay}`
             : `${payLevel} / GP: ${gradePay}`;
     }
     if (payLevel) {
@@ -25,15 +26,15 @@ function formatPayLevelAndGradePay(emp, lang) {
     }
     if (gradePay) {
         return lang === 'hi'
-            ? `ग्रेड वेतन: ${gradePay}`
+            ? `à¤—à¥à¤°à¥‡à¤¡ à¤µà¥‡à¤¤à¤¨: ${gradePay}`
             : `GP: ${gradePay}`;
     }
-    return emp.category ? `Category ${emp.category}` : '—';
+    return emp.category ? `Category ${emp.category}` : 'â€”';
 }
 
 function formatDACount(factor, lang, compact = false) {
     const f = parseFloat(factor) || 0;
-    if (f <= 0) return lang === 'hi' ? 'निरंक' : 'Nil';
+    if (f <= 0) return lang === 'hi' ? 'à¤¨à¤¿à¤°à¤‚à¤•' : 'Nil';
 
     const fullCount = Math.floor(f);
     const hasHalf = (f - fullCount) >= 0.4;
@@ -48,19 +49,19 @@ function formatDACount(factor, lang, compact = false) {
     }
 
     if (fullCount === 0 && hasHalf) {
-        return lang === 'hi' ? 'Half (आधा)' : 'Half';
+        return lang === 'hi' ? 'Half (à¤†à¤§à¤¾)' : 'Half';
     }
     if (fullCount === 1 && !hasHalf) {
-        return lang === 'hi' ? 'Full (पूर्ण)' : 'Full';
+        return lang === 'hi' ? 'Full (à¤ªà¥‚à¤°à¥à¤£)' : 'Full';
     }
     if (fullCount === 1 && hasHalf) {
-        return lang === 'hi' ? '1 Full 1 Half (1 पूर्ण 1 आधा)' : '1 Full 1 Half';
+        return lang === 'hi' ? '1 Full 1 Half (1 à¤ªà¥‚à¤°à¥à¤£ 1 à¤†à¤§à¤¾)' : '1 Full 1 Half';
     }
     if (fullCount > 1 && !hasHalf) {
-        return lang === 'hi' ? `${fullCount} Full (${fullCount} पूर्ण)` : `${fullCount} Full`;
+        return lang === 'hi' ? `${fullCount} Full (${fullCount} à¤ªà¥‚à¤°à¥à¤£)` : `${fullCount} Full`;
     }
     if (fullCount > 1 && hasHalf) {
-        return lang === 'hi' ? `${fullCount} Full 1 Half (${fullCount} पूर्ण 1 आधा)` : `${fullCount} Full 1 Half`;
+        return lang === 'hi' ? `${fullCount} Full 1 Half (${fullCount} à¤ªà¥‚à¤°à¥à¤£ 1 à¤†à¤§à¤¾)` : `${fullCount} Full 1 Half`;
     }
     return `${f}`;
 }
@@ -95,27 +96,27 @@ export default function TADABill() {
 
     // Official 21-Column widths and visibility
     const defaultColSettings = {
-        c1: { w: 65, v: true, label: '1. प्रस्थान स्थान' },
-        c2: { w: 75, v: true, label: '2. प्रस्थान तारीख/समय' },
-        c3: { w: 65, v: true, label: '3. आगमन स्थान' },
-        c4: { w: 75, v: true, label: '4. आगमन तारीख/समय' },
-        c5: { w: 90, v: true, label: '5. यात्रा का प्रयोजन' },
-        c6: { w: 85, v: true, label: '6. स्थानांतरण ब्यौरा' },
-        c7: { w: 50, v: true, label: '7. स्थानांतरण राशि' },
-        c8: { w: 65, v: true, label: '8. दर्जा/साधन' },
-        c9: { w: 40, v: true, label: '9. किलोमीटर' },
-        c10: { w: 65, v: true, label: '10. टिकट/PNR' },
-        c11: { w: 55, v: true, label: '11. किराया राशि' },
-        c12: { w: 40, v: true, label: '12. यात्रा समय (घंटे)' },
-        c13: { w: 55, v: true, label: '13. यात्रा भत्ता सीमा (DA Limit)' },
-        c14: { w: 55, v: true, label: '14. यात्रा भत्ता राशि' },
-        c15: { w: 40, v: true, label: '15. मुकाम समय (घंटे)' },
-        c16: { w: 55, v: true, label: '16. मुकाम भत्ता सीमा (DA Limit)' },
-        c17: { w: 55, v: true, label: '17. मुकाम भत्ता राशि' },
-        c18: { w: 50, v: true, label: '18. परिवहन व्यय' },
-        c19: { w: 55, v: true, label: '19. होटल व्यय' },
-        c20: { w: 65, v: true, label: '20. पंक्ति योग' },
-        c21: { w: 80, v: true, label: '21. अभियुक्ति' },
+        c1: { w: 65, v: true, label: '1. à¤ªà¥à¤°à¤¸à¥à¤¥à¤¾à¤¨ à¤¸à¥à¤¥à¤¾à¤¨' },
+        c2: { w: 75, v: true, label: '2. à¤ªà¥à¤°à¤¸à¥à¤¥à¤¾à¤¨ à¤¤à¤¾à¤°à¥€à¤–/à¤¸à¤®à¤¯' },
+        c3: { w: 65, v: true, label: '3. à¤†à¤—à¤®à¤¨ à¤¸à¥à¤¥à¤¾à¤¨' },
+        c4: { w: 75, v: true, label: '4. à¤†à¤—à¤®à¤¨ à¤¤à¤¾à¤°à¥€à¤–/à¤¸à¤®à¤¯' },
+        c5: { w: 90, v: true, label: '5. à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤•à¤¾ à¤ªà¥à¤°à¤¯à¥‹à¤œà¤¨' },
+        c6: { w: 85, v: true, label: '6. à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤¬à¥à¤¯à¥Œà¤°à¤¾' },
+        c7: { w: 50, v: true, label: '7. à¤¸à¥à¤¥à¤¾à¤¨à¤¾à¤‚à¤¤à¤°à¤£ à¤°à¤¾à¤¶à¤¿' },
+        c8: { w: 65, v: true, label: '8. à¤¦à¤°à¥à¤œà¤¾/à¤¸à¤¾à¤§à¤¨' },
+        c9: { w: 40, v: true, label: '9. à¤•à¤¿à¤²à¥‹à¤®à¥€à¤Ÿà¤°' },
+        c10: { w: 65, v: true, label: '10. à¤Ÿà¤¿à¤•à¤Ÿ/PNR' },
+        c11: { w: 55, v: true, label: '11. à¤•à¤¿à¤°à¤¾à¤¯à¤¾ à¤°à¤¾à¤¶à¤¿' },
+        c12: { w: 40, v: true, label: '12. à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤¸à¤®à¤¯ (à¤˜à¤‚à¤Ÿà¥‡)' },
+        c13: { w: 55, v: true, label: '13. à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤­à¤¤à¥à¤¤à¤¾ à¤¸à¥€à¤®à¤¾ (DA Limit)' },
+        c14: { w: 55, v: true, label: '14. à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤­à¤¤à¥à¤¤à¤¾ à¤°à¤¾à¤¶à¤¿' },
+        c15: { w: 40, v: true, label: '15. à¤®à¥à¤•à¤¾à¤® à¤¸à¤®à¤¯ (à¤˜à¤‚à¤Ÿà¥‡)' },
+        c16: { w: 55, v: true, label: '16. à¤®à¥à¤•à¤¾à¤® à¤­à¤¤à¥à¤¤à¤¾ à¤¸à¥€à¤®à¤¾ (DA Limit)' },
+        c17: { w: 55, v: true, label: '17. à¤®à¥à¤•à¤¾à¤® à¤­à¤¤à¥à¤¤à¤¾ à¤°à¤¾à¤¶à¤¿' },
+        c18: { w: 50, v: true, label: '18. à¤ªà¤°à¤¿à¤µà¤¹à¤¨ à¤µà¥à¤¯à¤¯' },
+        c19: { w: 55, v: true, label: '19. à¤¹à¥‹à¤Ÿà¤² à¤µà¥à¤¯à¤¯' },
+        c20: { w: 65, v: true, label: '20. à¤ªà¤‚à¤•à¥à¤¤à¤¿ à¤¯à¥‹à¤—' },
+        c21: { w: 80, v: true, label: '21. à¤…à¤­à¤¿à¤¯à¥à¤•à¥à¤¤à¤¿' },
     };
 
     const [colSettings, setColSettings] = useState(defaultColSettings);
@@ -154,7 +155,7 @@ export default function TADABill() {
 
     const fetchBillData = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/calculate-bill/${id}`);
+            const res = await apiRequest(`/api/calculate-bill/${id}`);
             const data = await res.json();
             setBillData(data);
             setLoading(false);
@@ -176,7 +177,7 @@ export default function TADABill() {
         if (!currentEmp?.id) return;
         setIsSavingPayInfo(true);
         try {
-            const res = await fetch(`http://localhost:5000/api/employees/${currentEmp.id}`, {
+            const res = await apiRequest(`/api/employees/${currentEmp.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -376,14 +377,14 @@ export default function TADABill() {
         ws.mergeCells(4, 6, 4, 12);
         ws.getCell(4, 6).value = `${b.gradePay}: ${formatPayLevelAndGradePay(employee, language)}`;
         ws.mergeCells(4, 13, 4, 21);
-        ws.getCell(4, 13).value = `${b.fixedTA}: —`;
+        ws.getCell(4, 13).value = `${b.fixedTA}: â€”`;
 
         ws.mergeCells(5, 1, 5, 5);
-        ws.getCell(5, 1).value = `${b.designation}: ${employee.designation || '—'}`;
+        ws.getCell(5, 1).value = `${b.designation}: ${employee.designation || 'â€”'}`;
         ws.mergeCells(5, 6, 5, 12);
-        ws.getCell(5, 6).value = `${b.headquarter}: ${employee.headquarters || '—'}`;
+        ws.getCell(5, 6).value = `${b.headquarter}: ${employee.headquarters || 'â€”'}`;
         ws.mergeCells(5, 13, 5, 21);
-        ws.getCell(5, 13).value = `${b.consolidatedDA}: ${defaultDaRate ? '₹' + defaultDaRate : '—'}`;
+        ws.getCell(5, 13).value = `${b.consolidatedDA}: ${defaultDaRate ? 'â‚¹' + defaultDaRate : 'â€”'}`;
 
         ws.getRow(4).height = 22;
         ws.getRow(5).height = 22;
@@ -487,10 +488,10 @@ export default function TADABill() {
 
             const isTransfer = claim.claim_type === 'TRANSFER';
             const transferDesc = idx === 0 && isTransfer
-                ? (((totals.transferGrant > 0 ? `मिश्रित अनुदान: ₹${totals.transferGrant}. ` : '') +
-                    (totals.totalTransport > 0 ? `सामग्री परिवहन: ₹${totals.totalTransport}. ` : '') +
+                ? (((totals.transferGrant > 0 ? `à¤®à¤¿à¤¶à¥à¤°à¤¿à¤¤ à¤…à¤¨à¥à¤¦à¤¾à¤¨: â‚¹${totals.transferGrant}. ` : '') +
+                    (totals.totalTransport > 0 ? `à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤ªà¤°à¤¿à¤µà¤¹à¤¨: â‚¹${totals.totalTransport}. ` : '') +
                     (claim.family_details ? claim.family_details + ' ' : '') +
-                    (claim.baggage_weight ? `(${claim.baggage_weight} कि.ग्रा.)` : '')).trim())
+                    (claim.baggage_weight ? `(${claim.baggage_weight} à¤•à¤¿.à¤—à¥à¤°à¤¾.)` : '')).trim())
                 : '';
             const transferAmt = idx === 0 && isTransfer ? (parseFloat(totals.transferAllowance || totals.totalTransport) || null) : null;
             const jFactor = r.da_rate > 0 ? (parseFloat(r.journey_da) || 0) / r.da_rate : 0;
@@ -514,7 +515,7 @@ export default function TADABill() {
                 if (mInfo.span > 1) {
                     ws.mergeCells(curRow, 5, curRow + mInfo.span - 1, 5);
                 }
-                row.getCell(5).value = r.purpose || '—';
+                row.getCell(5).value = r.purpose || 'â€”';
             }
             row.getCell(5).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
 
@@ -643,7 +644,7 @@ export default function TADABill() {
         ws.getCell(curRow, 13).value = `${b.grossTotal}:`;
         ws.mergeCells(curRow, 18, curRow, 21);
         ws.getCell(curRow, 18).value = totals.grandTotal ? parseFloat(totals.grandTotal) : 0;
-        ws.getCell(curRow, 18).numFmt = '₹#,##0.00';
+        ws.getCell(curRow, 18).numFmt = 'â‚¹#,##0.00';
         ws.getRow(curRow).height = 20;
         styleRange(curRow, 13, curRow, 21, {
             font: { name: fontName, size: 9, bold: true },
@@ -656,7 +657,7 @@ export default function TADABill() {
         ws.getCell(curRow, 13).value = `${b.lessAdvance}:`;
         ws.mergeCells(curRow, 18, curRow, 21);
         ws.getCell(curRow, 18).value = totals.advanceAmount ? parseFloat(totals.advanceAmount) : 0;
-        ws.getCell(curRow, 18).numFmt = '₹#,##0.00';
+        ws.getCell(curRow, 18).numFmt = 'â‚¹#,##0.00';
         ws.getRow(curRow).height = 20;
         styleRange(curRow, 13, curRow, 21, {
             font: { name: fontName, size: 9, bold: true },
@@ -669,7 +670,7 @@ export default function TADABill() {
         ws.getCell(curRow, 13).value = `${b.netPayable}:`;
         ws.mergeCells(curRow, 18, curRow, 21);
         ws.getCell(curRow, 18).value = netAmount ? parseFloat(netAmount) : 0;
-        ws.getCell(curRow, 18).numFmt = '₹#,##0.00';
+        ws.getCell(curRow, 18).numFmt = 'â‚¹#,##0.00';
         ws.getRow(curRow).height = 20;
         styleRange(curRow, 13, curRow, 21, {
             font: { name: fontName, size: 9.5, bold: true },
@@ -743,7 +744,7 @@ export default function TADABill() {
 
         setIsSubmitting(true);
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${id}/submit`, {
+            const res = await apiRequest(`/api/claims/${id}/submit`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ total_amount: billData.totals.grandTotal })
@@ -797,7 +798,7 @@ export default function TADABill() {
                     className="btn btn-outline-primary"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                 >
-                    <FileSpreadsheet size={18} /> {language === 'hi' ? 'दौरा डायरी देखें' : 'View Tour Diary'}
+                    <FileSpreadsheet size={18} /> {language === 'hi' ? 'à¤¦à¥Œà¤°à¤¾ à¤¡à¤¾à¤¯à¤°à¥€ à¤¦à¥‡à¤–à¥‡à¤‚' : 'View Tour Diary'}
                 </button>
                 <button type="button" onClick={handlePrint} className="btn btn-primary">
                     <Printer size={18} /> {t.bill.printBill}
@@ -815,7 +816,7 @@ export default function TADABill() {
                     </div>
                 )}
                 <div className="glass-control-bar" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '8px' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{language === 'hi' ? 'फ़ॉन्ट आकार:' : 'Font Size:'}</label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{language === 'hi' ? 'à¤«à¤¼à¥‰à¤¨à¥à¤Ÿ à¤†à¤•à¤¾à¤°:' : 'Font Size:'}</label>
                     <input
                         type="range"
                         min="7"
@@ -990,7 +991,7 @@ export default function TADABill() {
                                         display: 'inline-flex',
                                         alignItems: 'center'
                                     }}
-                                    title={language === 'hi' ? 'वेतन स्तर और ग्रेड वेतन दर्ज/संपादित करें' : 'Enter/Edit Pay Level & Grade Pay'}
+                                    title={language === 'hi' ? 'à¤µà¥‡à¤¤à¤¨ à¤¸à¥à¤¤à¤° à¤”à¤° à¤—à¥à¤°à¥‡à¤¡ à¤µà¥‡à¤¤à¤¨ à¤¦à¤°à¥à¤œ/à¤¸à¤‚à¤ªà¤¾à¤¦à¤¿à¤¤ à¤•à¤°à¥‡à¤‚' : 'Enter/Edit Pay Level & Grade Pay'}
                                 >
                                     <Edit size={12} />
                                 </button>
@@ -998,17 +999,17 @@ export default function TADABill() {
                         )}
                     </div>
                     <div>
-                        <strong>{b.fixedTA}:</strong> —
+                        <strong>{b.fixedTA}:</strong> â€”
                     </div>
 
                     <div>
-                        <strong>{b.designation}:</strong> {employee.designation || '—'}
+                        <strong>{b.designation}:</strong> {employee.designation || 'â€”'}
                     </div>
                     <div>
-                        <strong>{b.headquarter}:</strong> {employee.headquarters || '—'}
+                        <strong>{b.headquarter}:</strong> {employee.headquarters || 'â€”'}
                     </div>
                     <div>
-                        <strong>{b.consolidatedDA}:</strong> {defaultDaRate ? `₹${defaultDaRate}` : '—'}
+                        <strong>{b.consolidatedDA}:</strong> {defaultDaRate ? `â‚¹${defaultDaRate}` : 'â€”'}
                     </div>
                 </div>
 
@@ -1184,10 +1185,10 @@ export default function TADABill() {
                                 return billRows.map((r, i) => {
                                     const isTransfer = claim.claim_type === 'TRANSFER';
                                     const transferDesc = (i === 0 && isTransfer)
-                                        ? (((totals.transferGrant > 0 ? `मिश्रित अनुदान: ₹${totals.transferGrant}. ` : '') +
-                                            (totals.totalTransport > 0 ? `सामग्री परिवहन: ₹${totals.totalTransport}. ` : '') +
+                                        ? (((totals.transferGrant > 0 ? `à¤®à¤¿à¤¶à¥à¤°à¤¿à¤¤ à¤…à¤¨à¥à¤¦à¤¾à¤¨: â‚¹${totals.transferGrant}. ` : '') +
+                                            (totals.totalTransport > 0 ? `à¤¸à¤¾à¤®à¤—à¥à¤°à¥€ à¤ªà¤°à¤¿à¤µà¤¹à¤¨: â‚¹${totals.totalTransport}. ` : '') +
                                             (claim.family_details ? claim.family_details + ' ' : '') +
-                                            (claim.baggage_weight ? `(${claim.baggage_weight} कि.ग्रा.)` : '')).trim())
+                                            (claim.baggage_weight ? `(${claim.baggage_weight} à¤•à¤¿.à¤—à¥à¤°à¤¾.)` : '')).trim())
                                         : '';
                                     const transferAmt = (i === 0 && isTransfer && (totals.transferAllowance || totals.totalTransport)) ? (totals.transferAllowance || totals.totalTransport) : '';
                                     const mInfo = mergeInfo[i] || { isChild: false, span: 1 };
@@ -1200,7 +1201,7 @@ export default function TADABill() {
                                             {colSettings.c4.v && <td style={{ whiteSpace: 'nowrap' }}>{r.arrival_date}<br />{r.arrival_time}</td>}
                                             {colSettings.c5.v && !mInfo.isChild && (
                                                 <td className="wrap" rowSpan={mInfo.span} style={{ verticalAlign: 'middle' }}>
-                                                    {r.purpose || '—'}
+                                                    {r.purpose || 'â€”'}
                                                 </td>
                                             )}
 
@@ -1302,9 +1303,9 @@ export default function TADABill() {
                     fontSize: '7.8pt',
                     color: '#334155'
                 }}>
-                    <span><strong>{language === 'hi' ? 'फॉर्म क्रमांक 21 (पृष्ठ 1 / 2) — यात्रा विवरण' : 'Form 21 (Page 1 of 2) — Journey Details'}</strong></span>
+                    <span><strong>{language === 'hi' ? 'à¤«à¥‰à¤°à¥à¤® à¤•à¥à¤°à¤®à¤¾à¤‚à¤• 21 (à¤ªà¥ƒà¤·à¥à¤  1 / 2) â€” à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤µà¤¿à¤µà¤°à¤£' : 'Form 21 (Page 1 of 2) â€” Journey Details'}</strong></span>
                     <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>
-                        {language === 'hi' ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)'}
+                        {language === 'hi' ? '>> à¤•à¥ƒà¤ªà¤¯à¤¾ à¤ªà¥ƒà¤·à¥à¤  à¤ªà¤²à¤Ÿà¥‡à¤‚: à¤­à¤¾à¤—-2 (à¤¦à¥‡à¤¯à¤• à¤¸à¤®à¤¾à¤¯à¥‹à¤œà¤¨, à¤ªà¥à¤°à¤®à¤¾à¤£-à¤ªà¤¤à¥à¤° à¤à¤µà¤‚ à¤ªà¤¾à¤°à¤¿à¤¤ à¤†à¤¦à¥‡à¤¶)' : '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)'}
                     </span>
                 </div>
 
@@ -1326,13 +1327,13 @@ export default function TADABill() {
                         fontWeight: '700',
                         border: '1px solid #bfdbfe'
                     }}>
-                        📄 {language === 'hi' ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)' : 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)'}
+                        ðŸ“„ {language === 'hi' ? 'à¤«à¥‰à¤°à¥à¤® 21 - à¤ªà¥ƒà¤·à¥à¤  2 (à¤­à¤¾à¤— 2: à¤ªà¥à¤°à¤®à¤¾à¤£-à¤ªà¤¤à¥à¤°, à¤•à¤Ÿà¥Œà¤¤à¥€ à¤à¤µà¤‚ à¤ªà¤¾à¤°à¤¿à¤¤ à¤†à¤¦à¥‡à¤¶)' : 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)'}
                     </span>
                 </div>
 
-                {/* ══════════════════════════════════════════════════════════════
+                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                     PAGE 2: PART II (Certificates, Net Adjustments & Sanction)
-                   ══════════════════════════════════════════════════════════════ */}
+                   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 <div className="form21-page2-container" style={{
                     marginTop: '16px',
                     paddingTop: '8px',
@@ -1347,15 +1348,15 @@ export default function TADABill() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
                                 <h3 style={{ margin: 0, fontSize: '13pt', fontWeight: 'bold' }}>
-                                    {language === 'hi' ? 'मध्य प्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड' : 'M.P. State Civil Supplies Corporation Limited'}
+                                    {language === 'hi' ? 'à¤®à¤§à¥à¤¯ à¤ªà¥à¤°à¤¦à¥‡à¤¶ à¤¸à¥à¤Ÿà¥‡à¤Ÿ à¤¸à¤¿à¤µà¤¿à¤² à¤¸à¤ªà¥à¤²à¤¾à¤‡à¤œ à¤•à¥‰à¤°à¥à¤ªà¥‹à¤°à¥‡à¤¶à¤¨ à¤²à¤¿à¤®à¤¿à¤Ÿà¥‡à¤¡' : 'M.P. State Civil Supplies Corporation Limited'}
                                 </h3>
                                 <h4 style={{ margin: '2px 0 0 0', fontSize: '10.5pt', fontWeight: 'bold', color: '#1e3a8a' }}>
-                                    {language === 'hi' ? 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'Form 21 — Part II (Adjustments, Certificates & Passing Order)'}
+                                    {language === 'hi' ? 'à¤«à¥‰à¤°à¥à¤® à¤•à¥à¤°à¤®à¤¾à¤‚à¤• 21 â€” à¤­à¤¾à¤— 2 (à¤¦à¥‡à¤¯à¤• à¤¸à¤®à¤¾à¤¯à¥‹à¤œà¤¨, à¤ªà¥à¤°à¤®à¤¾à¤£-à¤ªà¤¤à¥à¤° à¤à¤µà¤‚ à¤ªà¤¾à¤°à¤¿à¤¤ à¤†à¤¦à¥‡à¤¶)' : 'Form 21 â€” Part II (Adjustments, Certificates & Passing Order)'}
                                 </h4>
                             </div>
                             <div style={{ textAlign: 'right', fontSize: '8.8pt', lineHeight: '1.35' }}>
-                                <div><strong>{language === 'hi' ? 'कर्मचारी' : 'Employee'}:</strong> {empDisplayName} ({employee.designation || '—'})</div>
-                                <div><strong>{language === 'hi' ? 'मुख्यालय' : 'HQ'}:</strong> {employee.headquarters || '—'}</div>
+                                <div><strong>{language === 'hi' ? 'à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€' : 'Employee'}:</strong> {empDisplayName} ({employee.designation || 'â€”'})</div>
+                                <div><strong>{language === 'hi' ? 'à¤®à¥à¤–à¥à¤¯à¤¾à¤²à¤¯' : 'HQ'}:</strong> {employee.headquarters || 'â€”'}</div>
                             </div>
                         </div>
                     </div>
@@ -1374,29 +1375,29 @@ export default function TADABill() {
                             paddingBottom: '4px',
                             marginBottom: '6px'
                         }}>
-                            {language === 'hi' ? '1. देयक राशि गणना एवं शुद्ध भुगतान विवरण' : '1. Bill Calculation & Net Payable Details'}
+                            {language === 'hi' ? '1. à¤¦à¥‡à¤¯à¤• à¤°à¤¾à¤¶à¤¿ à¤—à¤£à¤¨à¤¾ à¤à¤µà¤‚ à¤¶à¥à¤¦à¥à¤§ à¤­à¥à¤—à¤¤à¤¾à¤¨ à¤µà¤¿à¤µà¤°à¤£' : '1. Bill Calculation & Net Payable Details'}
                         </div>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt', lineHeight: '1.6' }}>
                             <tbody>
                                 <tr>
                                     <td style={{ width: '65%', padding: '2px 0' }}>
-                                        <strong>{language === 'hi' ? '(क) कुल सकल देयक राशि (Gross Approved Amount):' : '(A) Total Gross Approved Amount:'}</strong>
+                                        <strong>{language === 'hi' ? '(à¤•) à¤•à¥à¤² à¤¸à¤•à¤² à¤¦à¥‡à¤¯à¤• à¤°à¤¾à¤¶à¤¿ (Gross Approved Amount):' : '(A) Total Gross Approved Amount:'}</strong>
                                     </td>
-                                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>₹{totals.grandTotal.toFixed(2)}</td>
+                                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>â‚¹{totals.grandTotal.toFixed(2)}</td>
                                 </tr>
                                 <tr>
                                     <td style={{ padding: '2px 0' }}>
-                                        <strong>{language === 'hi' ? '(ख) घटाइये: यात्रा अग्रिम राशि (Less Advance Drawn):' : '(B) Less: Travel Advance Drawn:'}</strong>
+                                        <strong>{language === 'hi' ? '(à¤–) à¤˜à¤Ÿà¤¾à¤‡à¤¯à¥‡: à¤¯à¤¾à¤¤à¥à¤°à¤¾ à¤…à¤—à¥à¤°à¤¿à¤® à¤°à¤¾à¤¶à¤¿ (Less Advance Drawn):' : '(B) Less: Travel Advance Drawn:'}</strong>
                                     </td>
                                     <td style={{ textAlign: 'right', color: totals.advanceAmount > 0 ? '#b91c1c' : 'inherit' }}>
-                                        ₹{(totals.advanceAmount || 0).toFixed(2)}
+                                        â‚¹{(totals.advanceAmount || 0).toFixed(2)}
                                     </td>
                                 </tr>
                                 <tr style={{ borderTop: '1px solid black', borderBottom: '1.5px solid black', fontSize: '10pt' }}>
                                     <td style={{ padding: '4px 0' }}>
-                                        <strong>{language === 'hi' ? '(ग) शुद्ध देय राशि (Net Payable Amount):' : '(C) Net Payable Amount:'}</strong>
+                                        <strong>{language === 'hi' ? '(à¤—) à¤¶à¥à¤¦à¥à¤§ à¤¦à¥‡à¤¯ à¤°à¤¾à¤¶à¤¿ (Net Payable Amount):' : '(C) Net Payable Amount:'}</strong>
                                     </td>
-                                    <td style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '10.5pt' }}>₹{netAmount.toFixed(2)}</td>
+                                    <td style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '10.5pt' }}>â‚¹{netAmount.toFixed(2)}</td>
                                 </tr>
                                 <tr>
                                     <td colSpan="2" style={{ paddingTop: '5px', fontStyle: 'italic', fontSize: '8.8pt' }}>
@@ -1419,7 +1420,7 @@ export default function TADABill() {
                             {b.certificatesTitle} (Mandatory Certificates under MP Travelling Allowance Rules)
                         </div>
                         <p style={{ margin: '3px 0' }}>
-                            1. {b.cert1} <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>{pnrList || '—'}</span>
+                            1. {b.cert1} <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>{pnrList || 'â€”'}</span>
                         </p>
                         <p style={{ margin: '3px 0' }}>2. {b.cert2}</p>
                         <p style={{ margin: '3px 0' }}>3. {b.cert3}</p>
@@ -1468,11 +1469,11 @@ export default function TADABill() {
                             paddingBottom: '3px',
                             marginBottom: '6px'
                         }}>
-                            {language === 'hi' ? '2. नियंत्रण अधिकारी का प्रमाण-पत्र एवं देयक पारित आदेश' : '2. Controlling Officer Certificate & Bill Passing Order'}
+                            {language === 'hi' ? '2. à¤¨à¤¿à¤¯à¤‚à¤¤à¥à¤°à¤£ à¤…à¤§à¤¿à¤•à¤¾à¤°à¥€ à¤•à¤¾ à¤ªà¥à¤°à¤®à¤¾à¤£-à¤ªà¤¤à¥à¤° à¤à¤µà¤‚ à¤¦à¥‡à¤¯à¤• à¤ªà¤¾à¤°à¤¿à¤¤ à¤†à¤¦à¥‡à¤¶' : '2. Controlling Officer Certificate & Bill Passing Order'}
                         </div>
                         <p style={{ margin: '3px 0', fontSize: '8.3pt' }}>
                             {language === 'hi'
-                                ? 'प्रमाणित किया जाता है कि कर्मचारी द्वारा प्रस्तुत दौरा डायरी एवं देयक का सत्यापन कर लिया गया है तथा यात्राएं शासकीय कार्य संपादन हेतु की गई हैं एवं नियमानुसार देय हैं।'
+                                ? 'à¤ªà¥à¤°à¤®à¤¾à¤£à¤¿à¤¤ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾à¤¤à¤¾ à¤¹à¥ˆ à¤•à¤¿ à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤¦à¥à¤µà¤¾à¤°à¤¾ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤¦à¥Œà¤°à¤¾ à¤¡à¤¾à¤¯à¤°à¥€ à¤à¤µà¤‚ à¤¦à¥‡à¤¯à¤• à¤•à¤¾ à¤¸à¤¤à¥à¤¯à¤¾à¤ªà¤¨ à¤•à¤° à¤²à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆ à¤¤à¤¥à¤¾ à¤¯à¤¾à¤¤à¥à¤°à¤¾à¤à¤‚ à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤•à¤¾à¤°à¥à¤¯ à¤¸à¤‚à¤ªà¤¾à¤¦à¤¨ à¤¹à¥‡à¤¤à¥ à¤•à¥€ à¤—à¤ˆ à¤¹à¥ˆà¤‚ à¤à¤µà¤‚ à¤¨à¤¿à¤¯à¤®à¤¾à¤¨à¥à¤¸à¤¾à¤° à¤¦à¥‡à¤¯ à¤¹à¥ˆà¤‚à¥¤'
                                 : 'Certified that the tour diary and submitted claim have been verified. Journeys were undertaken in official interest and are admissible as per rules.'}
                         </p>
 
@@ -1484,12 +1485,12 @@ export default function TADABill() {
                             fontSize: '8.8pt'
                         }}>
                             <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
-                                {language === 'hi' ? 'देयक पारित / स्वीकृति आदेश (Order Passed for Payment):' : 'Order Passed for Payment:'}
+                                {language === 'hi' ? 'à¤¦à¥‡à¤¯à¤• à¤ªà¤¾à¤°à¤¿à¤¤ / à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤†à¤¦à¥‡à¤¶ (Order Passed for Payment):' : 'Order Passed for Payment:'}
                             </div>
                             <div>
                                 {language === 'hi'
-                                    ? `देयक परीक्षणोपरांत शुद्ध राशि ₹ ${netAmount.toFixed(2)} (अक्षरी: ${words}) का भुगतान पारित / स्वीकृत किया जाता है।`
-                                    : `After due audit and verification, net amount of ₹ ${netAmount.toFixed(2)} (${words}) is hereby passed for payment.`}
+                                    ? `à¤¦à¥‡à¤¯à¤• à¤ªà¤°à¥€à¤•à¥à¤·à¤£à¥‹à¤ªà¤°à¤¾à¤‚à¤¤ à¤¶à¥à¤¦à¥à¤§ à¤°à¤¾à¤¶à¤¿ â‚¹ ${netAmount.toFixed(2)} (à¤…à¤•à¥à¤·à¤°à¥€: ${words}) à¤•à¤¾ à¤­à¥à¤—à¤¤à¤¾à¤¨ à¤ªà¤¾à¤°à¤¿à¤¤ / à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾à¤¤à¤¾ à¤¹à¥ˆà¥¤`
+                                    : `After due audit and verification, net amount of â‚¹ ${netAmount.toFixed(2)} (${words}) is hereby passed for payment.`}
                             </div>
                         </div>
 
@@ -1503,7 +1504,7 @@ export default function TADABill() {
                             <div style={{ textAlign: 'center', minWidth: '160px' }}>
                                 <div style={{ borderBottom: '1px dotted black', width: '140px', margin: '0 auto 4px auto' }}></div>
                                 <div style={{ fontWeight: '600', fontSize: '8.5pt' }}>
-                                    {language === 'hi' ? 'लेखापाल / सहायक लेखाधिकारी' : 'Accountant / AAO'}
+                                    {language === 'hi' ? 'à¤²à¥‡à¤–à¤¾à¤ªà¤¾à¤² / à¤¸à¤¹à¤¾à¤¯à¤• à¤²à¥‡à¤–à¤¾à¤§à¤¿à¤•à¤¾à¤°à¥€' : 'Accountant / AAO'}
                                 </div>
                                 <div style={{ fontSize: '7.8pt', color: '#64748b' }}>MPSCSC</div>
                             </div>
@@ -1511,10 +1512,10 @@ export default function TADABill() {
                             <div style={{ textAlign: 'center', minWidth: '200px' }}>
                                 <div style={{ borderBottom: '1px dotted black', width: '170px', margin: '0 auto 4px auto' }}></div>
                                 <div style={{ fontWeight: 'bold', fontSize: '9pt' }}>
-                                    {language === 'hi' ? 'नियंत्रण अधिकारी / जिला प्रबंधक' : 'Controlling Officer / District Manager'}
+                                    {language === 'hi' ? 'à¤¨à¤¿à¤¯à¤‚à¤¤à¥à¤°à¤£ à¤…à¤§à¤¿à¤•à¤¾à¤°à¥€ / à¤œà¤¿à¤²à¤¾ à¤ªà¥à¤°à¤¬à¤‚à¤§à¤•' : 'Controlling Officer / District Manager'}
                                 </div>
                                 <div style={{ fontSize: '7.8pt', color: '#64748b' }}>
-                                    {language === 'hi' ? 'म.प्र. स्टेट सिविल सप्लाइज कॉर्पोरेशन लि.' : 'MPSCSC Ltd.'}
+                                    {language === 'hi' ? 'à¤®.à¤ªà¥à¤°. à¤¸à¥à¤Ÿà¥‡à¤Ÿ à¤¸à¤¿à¤µà¤¿à¤² à¤¸à¤ªà¥à¤²à¤¾à¤‡à¤œ à¤•à¥‰à¤°à¥à¤ªà¥‹à¤°à¥‡à¤¶à¤¨ à¤²à¤¿.' : 'MPSCSC Ltd.'}
                                 </div>
                             </div>
                         </div>

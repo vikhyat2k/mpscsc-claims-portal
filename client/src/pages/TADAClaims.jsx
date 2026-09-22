@@ -1,3 +1,4 @@
+﻿import api from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { PlusCircle, ArrowLeft } from 'lucide-react';
@@ -18,9 +19,9 @@ const TADAClaims = () => {
     const fetchClaims = (empId) => {
         setLoading(true);
         const url = empId && empId !== 'all'
-            ? `http://localhost:5000/api/claims/${empId}`
-            : `http://localhost:5000/api/claims`;
-        fetch(url)
+            ? `/api/claims/${empId}`
+            : `/api/claims`;
+        apiRequest(url)
             .then(res => res.json())
             .then(data => {
                 setClaims(data.filter(c => c.claim_type === 'TA_DA'));
@@ -33,7 +34,7 @@ const TADAClaims = () => {
     };
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/employees')
+        apiRequest('/api/employees')
             .then(res => res.json())
             .then(data => {
                 setEmployees(data);
@@ -56,13 +57,13 @@ const TADAClaims = () => {
     const handleCreate = async () => {
         if (isCreating) return;
         if (selectedEmp === 'all' || !selectedEmp) {
-            alert(language === 'hi' ? 'कृपया नया दावा बनाने के लिए सूची से एक कर्मचारी चुनें।' : 'Please select a specific employee from the dropdown to create a claim.');
+            alert(language === 'hi' ? 'à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¨à¤¯à¤¾ à¤¦à¤¾à¤µà¤¾ à¤¬à¤¨à¤¾à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤¸à¥‚à¤šà¥€ à¤¸à¥‡ à¤à¤• à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ à¤šà¥à¤¨à¥‡à¤‚à¥¤' : 'Please select a specific employee from the dropdown to create a claim.');
             return;
         }
 
         setIsCreating(true);
         try {
-            const res = await fetch('http://localhost:5000/api/claims', {
+            const res = await apiRequest('/api/claims', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -86,7 +87,7 @@ const TADAClaims = () => {
     const handleDelete = async (id) => {
         if (!window.confirm(t.tourDiariesList.deleteConfirm)) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${id}`, {
+            const res = await apiRequest(`/api/claims/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) fetchClaims(selectedEmp);
@@ -98,13 +99,13 @@ const TADAClaims = () => {
     const handleSubmitClaim = async (claim) => {
         if (!window.confirm(t.common.confirmSubmit)) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/claims/${claim.id}/submit`, {
+            const res = await apiRequest(`/api/claims/${claim.id}/submit`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ total_amount: claim.total_amount || 0 })
             });
             if (res.ok) {
-                alert(language === 'hi' ? 'दावा सफलतापूर्वक स्वीकृति हेतु प्रस्तुत किया गया!' : 'Claim successfully submitted for approval!');
+                alert(language === 'hi' ? 'à¤¦à¤¾à¤µà¤¾ à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!' : 'Claim successfully submitted for approval!');
                 fetchClaims(selectedEmp);
             } else {
                 alert(t.messages.errorSaving);
@@ -136,7 +137,7 @@ const TADAClaims = () => {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <select className="form-select" style={{ width: '250px' }}
                         value={selectedEmp} onChange={e => setSelectedEmp(e.target.value)}>
-                        <option value="all">{language === 'hi' ? 'सभी कर्मचारी (All Employees)' : 'All Employees'}</option>
+                        <option value="all">{language === 'hi' ? 'à¤¸à¤­à¥€ à¤•à¤°à¥à¤®à¤šà¤¾à¤°à¥€ (All Employees)' : 'All Employees'}</option>
                         {employees.map(e => (
                             <option key={e.id} value={e.id}>
                                 {language === 'hi' && e.name_hi ? e.name_hi : e.name}
@@ -191,16 +192,16 @@ const TADAClaims = () => {
                                                 className="btn btn-sm btn-primary"
                                                 onClick={() => handleSubmitClaim(c)}
                                                 style={{ background: '#2563eb' }}
-                                                title={language === 'hi' ? 'स्वीकृति हेतु प्रस्तुत करें' : 'Submit for approval'}
+                                                title={language === 'hi' ? 'à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤à¤¿ à¤¹à¥‡à¤¤à¥ à¤ªà¥à¤°à¤¸à¥à¤¤à¥à¤¤ à¤•à¤°à¥‡à¤‚' : 'Submit for approval'}
                                             >
-                                                {language === 'hi' ? 'सबमिट' : 'Submit'}
+                                                {language === 'hi' ? 'à¤¸à¤¬à¤®à¤¿à¤Ÿ' : 'Submit'}
                                             </button>
                                         )}
                                         <button
                                             className="btn btn-sm btn-outline-info"
                                             onClick={() => navigate(`/claims/${c.id}/tour-diary`)}
                                         >
-                                            {language === 'hi' ? 'दौरा डायरी' : 'Tour Diary'}
+                                            {language === 'hi' ? 'à¤¦à¥Œà¤°à¤¾ à¤¡à¤¾à¤¯à¤°à¥€' : 'Tour Diary'}
                                         </button>
                                         <button
                                             className="btn btn-sm btn-outline-primary"
@@ -211,9 +212,9 @@ const TADAClaims = () => {
                                         <button
                                             className="btn btn-sm btn-outline-success"
                                             onClick={() => navigate(`/claims/${c.id}/bill`)}
-                                            title={language === 'hi' ? 'शासकीय प्रारूप में देयक देखें / प्रिंट करें (फॉर्म 21)' : 'View / Print Form 21 Bill'}
+                                            title={language === 'hi' ? 'à¤¶à¤¾à¤¸à¤•à¥€à¤¯ à¤ªà¥à¤°à¤¾à¤°à¥‚à¤ª à¤®à¥‡à¤‚ à¤¦à¥‡à¤¯à¤• à¤¦à¥‡à¤–à¥‡à¤‚ / à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤•à¤°à¥‡à¤‚ (à¤«à¥‰à¤°à¥à¤® 21)' : 'View / Print Form 21 Bill'}
                                         >
-                                            {language === 'hi' ? 'देयक प्रिंट (फॉर्म 21)' : 'Print Bill (Form 21)'}
+                                            {language === 'hi' ? 'à¤¦à¥‡à¤¯à¤• à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ (à¤«à¥‰à¤°à¥à¤® 21)' : 'Print Bill (Form 21)'}
                                         </button>
                                         <button
                                             className="btn btn-sm btn-outline-danger"

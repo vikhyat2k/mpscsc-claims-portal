@@ -1,7 +1,9 @@
+require('dotenv').config();
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const db = new Database(path.join(__dirname, 'claims.db'), { verbose: console.log });
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'claims.db');
+const db = new Database(dbPath);
 db.pragma('foreign_keys = OFF');
 // WAL mode gives much better concurrent read/write throughput than the
 // default rollback-journal mode, which matters once more than one API
@@ -18,10 +20,27 @@ const initDb = () => {
     // to backfill columns on databases created before this column existed.
     // ─────────────────────────────────────────────
 
+    // 0. Users Table (multi-user auth)
+    db.prepare(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            mobile_number TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user',
+            account_status TEXT NOT NULL DEFAULT 'active',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_login_at DATETIME
+        )
+    `).run();
+
     // 1. Employees Table
     db.prepare(`
         CREATE TABLE IF NOT EXISTS employees (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
             name TEXT NOT NULL,
             name_hi TEXT,
             designation TEXT,
@@ -29,7 +48,8 @@ const initDb = () => {
             pay_level TEXT, -- e.g. "Level 14"
             grade_pay TEXT,
             basic_pay REAL,
-            headquarters TEXT
+            headquarters TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     `).run();
 
@@ -130,7 +150,16 @@ const initDb = () => {
     // migration from running.
     // ─────────────────────────────────────────────
 
+    // User Migrations (backfill for existing DBs)
+    try { db.prepare('ALTER TABLE users ADD COLUMN full_name TEXT').run(); } catch (e) { }
+    try { db.prepare('ALTER TABLE users ADD COLUMN mobile_number TEXT').run(); } catch (e) { }
+    try { db.prepare(`ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'`).run(); } catch (e) { }
+    try { db.prepare(`ALTER TABLE users ADD COLUMN account_status TEXT NOT NULL DEFAULT 'active'`).run(); } catch (e) { }
+    try { db.prepare('ALTER TABLE users ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP').run(); } catch (e) { }
+    try { db.prepare('ALTER TABLE users ADD COLUMN last_login_at DATETIME').run(); } catch (e) { }
+
     // Employee Migrations
+    try { db.prepare('ALTER TABLE employees ADD COLUMN user_id INTEGER').run(); } catch (e) { }
     try { db.prepare('ALTER TABLE employees ADD COLUMN basic_pay REAL').run(); } catch (e) { }
     try { db.prepare('ALTER TABLE employees ADD COLUMN name_hi TEXT').run(); } catch (e) { }
     try { db.prepare('ALTER TABLE employees ADD COLUMN grade_pay TEXT').run(); } catch (e) { }
@@ -177,6 +206,8 @@ const initDb = () => {
     // status for dashboards/reports, and the two child tables joined by
     // claim_id) were previously unindexed full-table scans.
     // ─────────────────────────────────────────────
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)').run();
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_employees_user_id ON employees (user_id)').run();
     db.prepare('CREATE INDEX IF NOT EXISTS idx_claims_employee_id ON claims (employee_id)').run();
     db.prepare('CREATE INDEX IF NOT EXISTS idx_claims_status ON claims (status)').run();
     db.prepare('CREATE INDEX IF NOT EXISTS idx_journey_details_claim_id ON journey_details (claim_id)').run();

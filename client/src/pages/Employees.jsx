@@ -1,3 +1,4 @@
+﻿import api from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Save } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -24,7 +25,7 @@ const Employees = () => {
 
     const fetchEmployees = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/employees?t=${Date.now()}`);
+            const res = await apiRequest(`/api/employees?t=${Date.now()}`);
             const data = await res.json();
             setEmployees(data);
         } catch (err) {
@@ -39,7 +40,7 @@ const Employees = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await fetch('http://localhost:5000/api/employees', {
+            await apiRequest('/api/employees', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -68,7 +69,7 @@ const Employees = () => {
 
     const handleUpdate = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/employees/${editingId}`, {
+            const res = await apiRequest(`/api/employees/${editingId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -90,7 +91,7 @@ const Employees = () => {
             return;
         }
         try {
-            const res = await fetch(`http://localhost:5000/api/employees/${id}`, {
+            const res = await apiRequest(`/api/employees/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -245,7 +246,7 @@ const Employees = () => {
                                         <td>{emp.designation}</td>
                                         <td><span style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>{emp.category}</span></td>
                                         <td>{emp.pay_level}</td>
-                                        <td>{emp.grade_pay || '—'}</td>
+                                        <td>{emp.grade_pay || 'â€”'}</td>
                                         <td>{emp.basic_pay}</td>
                                         <td>{emp.headquarters}</td>
                                         <td>
