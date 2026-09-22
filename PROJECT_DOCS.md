@@ -792,6 +792,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
 | `9de71fc` | 2026-09-22 | fix(auth): standardize all default admin password fallbacks strictly to Admin@123 |
 | `a27a410` | 2026-09-22 | fix(db): checkpoint and commit purged clean database containing only Vikhyat Hindoliya |
 | `972b430` | 2026-09-22 | fix(yaml): quote string values in render.yaml for strict YAML schema validation |
@@ -799,13 +800,13 @@ This automatically launches:
 | `1804aac` | 2026-09-22 | chore: update server package-lock |
 | `909bd54` | 2026-09-22 | feat(deploy): prepare codebase for seamless 1-click free server deployment (Render/Railway/Docker) |
 | `120f0b5` | 2026-09-22 | fix(git): make post-commit push non-interactive and fail-safe |
-| `2b2d77a` | 2026-09-22 | feat(git): add post-commit hook for automated GitHub synchronization |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Standardize authLimiter and enhance QA runner for live server validation |
 | **2026-09-22** | **Self-Service Password Reset System** | Created [ResetPassword.jsx](file:///f:/AI%20Projects/Anti%20Gravity/mpscsc-claims-portal/client/src/pages/ResetPassword.jsx), integrated with `ForgotPassword.jsx` and `/api/auth/reset-password` endpoint. Validated end-to-end token flow. |
 | **2026-09-22** | **Master Documentation Overhaul** | Comprehensive sync of `PROJECT_DOCS.md` reflecting all 37 API routes, new architecture, auth security, and admin workflows. |
 | **2026-09-22** | **Form 21 Bill Typography Repair** | Restored UTF-8 Hindi Devanagari across Form 21 TA/DA Bill (`TADABill.jsx`); imported `Noto Sans Devanagari` font; aligned bill columns. |
