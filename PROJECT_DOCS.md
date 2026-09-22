@@ -792,6 +792,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `972b430` | 2026-09-22 | fix(yaml): quote string values in render.yaml for strict YAML schema validation |
 | `4fba562` | 2026-09-22 | fix(build): ensure vite build tools are installed in production environments |
 | `1804aac` | 2026-09-22 | chore: update server package-lock |
 | `909bd54` | 2026-09-22 | feat(deploy): prepare codebase for seamless 1-click free server deployment (Render/Railway/Docker) |
@@ -799,7 +800,6 @@ This automatically launches:
 | `2b2d77a` | 2026-09-22 | feat(git): add post-commit hook for automated GitHub synchronization |
 | `0b6c5d8` | 2026-09-22 | docs: sync recent commits table with docs automation commit |
 | `b9be260` | 2026-09-22 | feat(docs): establish automated multi-tier documentation synchronization system |
-| `f57e605` | 2026-09-22 | docs: correct admin email address to admin@mpscsc.gov.in |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones

@@ -92,6 +92,12 @@ console.log(`✓ Scanned Express Routes: ${totalRoutesCount} endpoints (${authRo
 // ─────────────────────────────────────────────
 // 2. EXTRACT DB METRICS FROM server/db.js
 // ─────────────────────────────────────────────
+// Checkpoint SQLite WAL into claims.db so disk commits reflect live DB state
+try {
+    const { db } = require(serverDbPath);
+    db.pragma('wal_checkpoint(TRUNCATE)');
+} catch (e) {}
+
 const dbContent = fs.readFileSync(serverDbPath, 'utf8');
 const isWalMode = dbContent.includes(`journal_mode = WAL`);
 const tableMatches = [...dbContent.matchAll(/CREATE TABLE IF NOT EXISTS\s+([a-zA-Z0-9_]+)/g)].map(m => m[1]);
