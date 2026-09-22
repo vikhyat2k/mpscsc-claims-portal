@@ -172,6 +172,13 @@ export default function TADABill() {
     };
 
 
+    const handleStartEditPayInfo = () => {
+        const currentEmp = billData?.employee;
+        setPayLevelInput(currentEmp?.pay_level || '');
+        setGradePayInput(currentEmp?.grade_pay || '');
+        setIsEditingPayInfo(true);
+    };
+
     const handleSavePayInfo = async () => {
         const currentEmp = billData?.employee;
         if (!currentEmp?.id) return;

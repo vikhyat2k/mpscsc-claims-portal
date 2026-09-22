@@ -793,6 +793,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `7668d56` | 2026-09-22 | docs: sync PROJECT_DOCS.md and update headed UI data entry script |
 | `f1ccc1a` | 2026-09-22 | feat: add dummy data purge endpoint, headed UI data entry, and relaxed rate limiter |
 | `ad1c850` | 2026-09-22 | fix(security): adjust auth rate limiter and add comprehensive live QA test runner |
 | `cbf3f06` | 2026-09-22 | fix(ui): resolve React Error 310 by moving claimTypeFilter hook to top level |
@@ -800,13 +801,13 @@ This automatically launches:
 | `a27a410` | 2026-09-22 | fix(db): checkpoint and commit purged clean database containing only Vikhyat Hindoliya |
 | `972b430` | 2026-09-22 | fix(yaml): quote string values in render.yaml for strict YAML schema validation |
 | `4fba562` | 2026-09-22 | fix(build): ensure vite build tools are installed in production environments |
-| `1804aac` | 2026-09-22 | chore: update server package-lock |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-22** | **Automated Update** | Fix handleStartEditPayInfo ReferenceError in TADABill.jsx |
 | **2026-09-22** | **Automated Update** | Add dummy data purge endpoint, headed UI entry script, and increased auth rate limiter |
 | **2026-09-22** | **Automated Update** | Standardize authLimiter and enhance QA runner for live server validation |
 | **2026-09-22** | **Self-Service Password Reset System** | Created [ResetPassword.jsx](file:///f:/AI%20Projects/Anti%20Gravity/mpscsc-claims-portal/client/src/pages/ResetPassword.jsx), integrated with `ForgotPassword.jsx` and `/api/auth/reset-password` endpoint. Validated end-to-end token flow. |
