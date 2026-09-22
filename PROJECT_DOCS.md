@@ -792,6 +792,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `4fba562` | 2026-09-22 | fix(build): ensure vite build tools are installed in production environments |
 | `1804aac` | 2026-09-22 | chore: update server package-lock |
 | `909bd54` | 2026-09-22 | feat(deploy): prepare codebase for seamless 1-click free server deployment (Render/Railway/Docker) |
 | `120f0b5` | 2026-09-22 | fix(git): make post-commit push non-interactive and fail-safe |
@@ -799,7 +800,6 @@ This automatically launches:
 | `0b6c5d8` | 2026-09-22 | docs: sync recent commits table with docs automation commit |
 | `b9be260` | 2026-09-22 | feat(docs): establish automated multi-tier documentation synchronization system |
 | `f57e605` | 2026-09-22 | docs: correct admin email address to admin@mpscsc.gov.in |
-| `9adf614` | 2026-09-22 | docs: sync PROJECT_DOCS.md with auth, admin suite, password reset, schema, and changelog |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones

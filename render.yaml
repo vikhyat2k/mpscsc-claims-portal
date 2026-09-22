@@ -11,12 +11,12 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES
-        value: 7d
+        value: "7d"
       - key: ADMIN_EMAIL
-        value: admin@mpscsc.gov.in
+        value: "admin@mpscsc.gov.in"
       - key: ADMIN_PASSWORD
-        value: Admin@123
+        value: "Admin@123"
       - key: ADMIN_NAME
-        value: MPSCSC Administrator
+        value: "MPSCSC Administrator"
       - key: ADMIN_MOBILE
-        value: 9876543210
+        value: "9876543210"
