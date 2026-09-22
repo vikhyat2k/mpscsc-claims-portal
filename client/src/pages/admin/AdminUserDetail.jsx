@@ -54,7 +54,36 @@ export default function AdminUserDetail() {
     if (error) return <div className="page-error">Error: {error}</div>;
     if (!data) return null;
 
-    const { user, employees, claimStats } = data;
+    const { user, employees, claimStats, claims } = data;
+    const [claimTypeFilter, setClaimTypeFilter] = useState("ALL");
+
+    const filteredClaims = (claims || []).filter(c => {
+        if (claimTypeFilter === "ALL") return true;
+        return c.claim_type === claimTypeFilter;
+    });
+
+    const getClaimTypePill = (type) => {
+        switch (type) {
+            case "TA_DA":
+                return <span className="claim-type-pill claim-type-pill--tada">TA/DA</span>;
+            case "TRANSFER":
+                return <span className="claim-type-pill claim-type-pill--transfer">Transfer</span>;
+            case "MEDICAL":
+                return <span className="claim-type-pill claim-type-pill--medical">Medical</span>;
+            default:
+                return <span className="claim-type-pill">{type}</span>;
+        }
+    };
+
+    const getStatusBadge = (status) => {
+        const s = (status || "DRAFT").toUpperCase();
+        if (s === "FINALIZED" || s === "APPROVED") {
+            return <span className="admin-badge admin-badge--finalized">Finalized</span>;
+        } else if (s === "SUBMITTED") {
+            return <span className="admin-badge admin-badge--submitted">Submitted</span>;
+        }
+        return <span className="admin-badge admin-badge--draft">Draft</span>;
+    };
 
     return (
         <div className="admin-page">
@@ -103,7 +132,7 @@ export default function AdminUserDetail() {
 
                 {/* Stats */}
                 <div className="admin-info-card">
-                    <h3 className="admin-info-title"><Briefcase size={17} /> Activity Summary</h3>
+                    <h3 className="admin-info-title"><Briefcase size={17} /> Activity & Claims Summary</h3>
                     <div className="admin-stat-rows">
                         <div className="admin-stat-row">
                             <span>Employees in master</span>
@@ -114,8 +143,20 @@ export default function AdminUserDetail() {
                             <strong>{claimStats?.total_claims ?? 0}</strong>
                         </div>
                         <div className="admin-stat-row">
+                            <span>TA/DA claims</span>
+                            <span style={{ fontWeight: 700, color: "#0284c7" }}>{claimStats?.tada_claims ?? 0}</span>
+                        </div>
+                        <div className="admin-stat-row">
+                            <span>Transfer claims</span>
+                            <span style={{ fontWeight: 700, color: "#ea580c" }}>{claimStats?.transfer_claims ?? 0}</span>
+                        </div>
+                        <div className="admin-stat-row">
+                            <span>Medical claims</span>
+                            <span style={{ fontWeight: 700, color: "#0d9488" }}>{claimStats?.medical_claims ?? 0}</span>
+                        </div>
+                        <div className="admin-stat-row">
                             <span>Total claim amount</span>
-                            <strong style={{ color: "#0d9488" }}>₹{(claimStats?.total_amount ?? 0).toLocaleString("en-IN")}</strong>
+                            <strong style={{ color: "#0d9488", fontSize: "1.15rem" }}>₹{(claimStats?.total_amount ?? 0).toLocaleString("en-IN")}</strong>
                         </div>
                     </div>
                 </div>
@@ -149,6 +190,152 @@ export default function AdminUserDetail() {
                         )}
                     </div>
                 )}
+            </div>
+
+            {/* Claims & Bills Section */}
+            <div className="admin-section">
+                <div className="admin-section-header">
+                    <div>
+                        <h2 className="admin-section-title">User's Submitted Claims & Bills ({claims?.length ?? 0})</h2>
+                        <p className="admin-section-sub">Comprehensive claim history, tour diaries, and Form 21 government bills</p>
+                    </div>
+                </div>
+
+                <div className="admin-filter-tabs">
+                    <button
+                        type="button"
+                        className={`admin-filter-tab ${claimTypeFilter === "ALL" ? "active" : ""}`}
+                        onClick={() => setClaimTypeFilter("ALL")}
+                    >
+                        All Claims ({claims?.length ?? 0})
+                    </button>
+                    <button
+                        type="button"
+                        className={`admin-filter-tab ${claimTypeFilter === "TA_DA" ? "active" : ""}`}
+                        onClick={() => setClaimTypeFilter("TA_DA")}
+                    >
+                        TA/DA Claims ({claimStats?.tada_claims ?? 0})
+                    </button>
+                    <button
+                        type="button"
+                        className={`admin-filter-tab ${claimTypeFilter === "TRANSFER" ? "active" : ""}`}
+                        onClick={() => setClaimTypeFilter("TRANSFER")}
+                    >
+                        Transfer Claims ({claimStats?.transfer_claims ?? 0})
+                    </button>
+                    <button
+                        type="button"
+                        className={`admin-filter-tab ${claimTypeFilter === "MEDICAL" ? "active" : ""}`}
+                        onClick={() => setClaimTypeFilter("MEDICAL")}
+                    >
+                        Medical Claims ({claimStats?.medical_claims ?? 0})
+                    </button>
+                </div>
+
+                <div className="admin-table-wrap">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>TD No / Claim ID</th>
+                                <th>Employee</th>
+                                <th>Claim Type</th>
+                                <th>Period / Month</th>
+                                <th style={{ textAlign: "right" }}>Amount</th>
+                                <th style={{ textAlign: "center" }}>Status</th>
+                                <th style={{ textAlign: "center" }}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredClaims.length ? filteredClaims.map((c, i) => (
+                                <tr key={c.id}>
+                                    <td style={{ color: "#64748b", fontWeight: 600 }}>{i + 1}</td>
+                                    <td>
+                                        <strong style={{ color: "#0f172a" }}>{c.td_no || `#${c.id}`}</strong>
+                                        {c.remarks && (
+                                            <span style={{ display: "block", fontSize: "0.75rem", color: "#64748b", maxWidth: "220px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                                {c.remarks}
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <strong style={{ color: "#0f172a" }}>{c.employee_name}</strong>
+                                        <span style={{ display: "block", fontSize: "0.75rem", color: "#64748b" }}>
+                                            {c.designation || "-"}
+                                        </span>
+                                    </td>
+                                    <td>{getClaimTypePill(c.claim_type)}</td>
+                                    <td style={{ color: "#475569", fontSize: "0.82rem" }}>
+                                        {c.start_date && c.end_date ? (
+                                            `${c.start_date} to ${c.end_date}`
+                                        ) : c.month && c.year ? (
+                                            `${c.month}/${c.year}`
+                                        ) : (
+                                            new Date(c.created_at).toLocaleDateString("en-IN")
+                                        )}
+                                    </td>
+                                    <td style={{ textAlign: "right", fontWeight: 800, color: "#0f172a", fontSize: "0.95rem" }}>
+                                        ₹{(c.total_amount || 0).toLocaleString("en-IN")}
+                                    </td>
+                                    <td style={{ textAlign: "center" }}>
+                                        {getStatusBadge(c.status)}
+                                    </td>
+                                    <td>
+                                        <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" }}>
+                                            {c.claim_type !== "MEDICAL" ? (
+                                                <Link
+                                                    to={`/claims/${c.id}/bill`}
+                                                    className="admin-table-link"
+                                                    title="View / Print Form 21 Government Bill"
+                                                >
+                                                    View Bill
+                                                </Link>
+                                            ) : (
+                                                <Link
+                                                    to={`/medical-claims/${c.id}?print=1`}
+                                                    className="admin-table-link"
+                                                    title="View Medical Claim Form & Bill"
+                                                >
+                                                    View Bill
+                                                </Link>
+                                            )}
+                                            <Link
+                                                to={
+                                                    c.claim_type === "TRANSFER"
+                                                        ? `/claims/transfer/${c.id}`
+                                                        : c.claim_type === "MEDICAL"
+                                                        ? `/medical-claims/${c.id}`
+                                                        : `/claims/${c.id}`
+                                                }
+                                                className="btn btn-secondary"
+                                                style={{ padding: "0.3rem 0.65rem", fontSize: "0.78rem" }}
+                                                title="View or edit claim details"
+                                            >
+                                                Details
+                                            </Link>
+                                            {(c.claim_type === "TA_DA" || c.claim_type === "TRANSFER") && (
+                                                <Link
+                                                    to={`/claims/${c.id}/tour-diary`}
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: "0.3rem 0.65rem", fontSize: "0.78rem" }}
+                                                    title="View Tour Diary entries"
+                                                >
+                                                    Diary
+                                                </Link>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={8} style={{ textAlign: "center", color: "var(--text-3)", padding: "2.5rem" }}>
+                                        No claims found matching this category
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Employee Master */}

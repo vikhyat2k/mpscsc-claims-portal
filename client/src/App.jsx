@@ -31,6 +31,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers     from "./pages/admin/AdminUsers";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
+import AdminClaims    from "./pages/admin/AdminClaims";
 
 // ─────────────────────────────────────────────
 // SIDEBAR NAVBAR
@@ -72,6 +73,7 @@ const NavBar = () => {
             <div className="nav-section-label">Admin Control</div>
             <Link to="/admin" className={isActive("/admin")}><ShieldCheck size={14} /> Admin Dashboard</Link>
             <Link to="/admin/users" className={isActivePrefix("/admin/users")}><UserCog size={14} /> User Management</Link>
+            <Link to="/admin/claims" className={isActivePrefix("/admin/claims")}><FileText size={14} /> Claims Oversight</Link>
           </>
         )}
       </div>
@@ -153,6 +155,7 @@ function MainLayout() {
           <Route path="/admin"                     element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/users"               element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
           <Route path="/admin/users/:id"           element={<ProtectedRoute adminOnly><AdminUserDetail /></ProtectedRoute>} />
+          <Route path="/admin/claims"              element={<ProtectedRoute adminOnly><AdminClaims /></ProtectedRoute>} />
           {/* Compat */}
           <Route path="/claims/claims/*"           element={<ClaimCompatibilityRedirect />} />
           <Route path="*"                          element={<Navigate to="/" replace />} />

@@ -213,6 +213,11 @@ const initDb = () => {
     db.prepare('CREATE INDEX IF NOT EXISTS idx_journey_details_claim_id ON journey_details (claim_id)').run();
     db.prepare('CREATE INDEX IF NOT EXISTS idx_medical_bills_claim_id ON medical_bills (claim_id)').run();
 
+    // Associate any legacy employees without user_id with user 1 (Admin/System)
+    try {
+        db.prepare('UPDATE employees SET user_id = 1 WHERE user_id IS NULL').run();
+    } catch (e) { }
+
     console.log('Database initialized successfully.');
 };
 

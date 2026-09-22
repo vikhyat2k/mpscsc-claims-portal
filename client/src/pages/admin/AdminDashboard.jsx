@@ -39,9 +39,14 @@ export default function AdminDashboard() {
                     <h1 className="admin-page-title">Admin Dashboard</h1>
                     <p className="admin-page-subtitle">Platform overview, user activity, and claims management</p>
                 </div>
-                <Link to="/admin/users" className="btn btn-primary">
-                    <UserCog size={15} /> Manage Users
-                </Link>
+                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                    <Link to="/admin/claims" className="btn btn-secondary">
+                        <FileText size={15} /> All Claims Register
+                    </Link>
+                    <Link to="/admin/users" className="btn btn-primary">
+                        <UserCog size={15} /> Manage Users
+                    </Link>
+                </div>
             </div>
 
             <div className="admin-kpi-grid">
@@ -87,6 +92,78 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            {/* Recent Claims Section */}
+            <div className="admin-section">
+                <div className="admin-section-header">
+                    <div>
+                        <h2 className="admin-section-title">Recent Claims & Bills Filed Across Platform</h2>
+                        <p className="admin-section-sub">Latest employee claims submitted for TA/DA, Transfer, and Medical reimbursement</p>
+                    </div>
+                    <Link to="/admin/claims" className="admin-link-subtle">
+                        View all claims register <ChevronRight size={14} />
+                    </Link>
+                </div>
+                <div className="admin-table-wrap">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>TD No / ID</th>
+                                <th>Submitter (User)</th>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Period / Month</th>
+                                <th style={{ textAlign: "right" }}>Amount</th>
+                                <th style={{ textAlign: "center" }}>Status</th>
+                                <th style={{ textAlign: "center" }}>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {stats?.recentClaims?.length ? stats.recentClaims.map((c, i) => (
+                                <tr key={c.id}>
+                                    <td style={{ color: "#64748b", fontWeight: 600 }}>{i + 1}</td>
+                                    <td><strong style={{ color: "#0f172a" }}>{c.td_no || `#${c.id}`}</strong></td>
+                                    <td>
+                                        <Link to={`/admin/users/${c.user_id}`} style={{ color: "#0f172a", fontWeight: 700, textDecoration: "none" }}>
+                                            {c.user_name || "User"}
+                                        </Link>
+                                    </td>
+                                    <td><strong style={{ color: "#0f172a" }}>{c.employee_name}</strong></td>
+                                    <td>
+                                        <span className={`claim-type-pill claim-type-pill--${c.claim_type === "TA_DA" ? "tada" : c.claim_type === "TRANSFER" ? "transfer" : "medical"}`}>
+                                            {c.claim_type === "TA_DA" ? "TA/DA" : c.claim_type === "TRANSFER" ? "Transfer" : "Medical"}
+                                        </span>
+                                    </td>
+                                    <td style={{ color: "#475569", fontSize: "0.82rem" }}>
+                                        {c.start_date && c.end_date ? `${c.start_date} to ${c.end_date}` : c.month && c.year ? `${c.month}/${c.year}` : new Date(c.created_at).toLocaleDateString("en-IN")}
+                                    </td>
+                                    <td style={{ textAlign: "right", fontWeight: 800, color: "#0f172a" }}>
+                                        ₹{(c.total_amount || 0).toLocaleString("en-IN")}
+                                    </td>
+                                    <td style={{ textAlign: "center" }}>
+                                        <span className={`admin-badge ${c.status === "FINALIZED" ? "admin-badge--finalized" : c.status === "SUBMITTED" ? "admin-badge--submitted" : "admin-badge--draft"}`}>
+                                            {c.status || "Draft"}
+                                        </span>
+                                    </td>
+                                    <td style={{ textAlign: "center" }}>
+                                        <Link
+                                            to={c.claim_type !== "MEDICAL" ? `/claims/${c.id}/bill` : `/medical-claims/${c.id}?print=1`}
+                                            className="admin-table-link"
+                                            title="View / Print Bill"
+                                        >
+                                            View Bill <ArrowUpRight size={13} />
+                                        </Link>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--text-3)", padding: "2.5rem" }}>No claims filed yet</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Recent Users Section */}
             <div className="admin-section">
                 <div className="admin-section-header">
                     <div>

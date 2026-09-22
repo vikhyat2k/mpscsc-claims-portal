@@ -314,7 +314,7 @@ app.get('/api/admin/users', verifyToken, requireAdmin, (req, res) => {
     }
 });
 
-// GET /api/admin/users/:id — single user detail
+// GET /api/admin/users/:id — single user detail (including their claims & employees)
 app.get('/api/admin/users/:id', verifyToken, requireAdmin, (req, res) => {
     try {
         const user = db.prepare('SELECT id, full_name, email, mobile_number, role, account_status, created_at, updated_at, last_login_at FROM users WHERE id = ?').get(req.params.id);
@@ -322,12 +322,61 @@ app.get('/api/admin/users/:id', verifyToken, requireAdmin, (req, res) => {
 
         const employees = db.prepare('SELECT * FROM employees WHERE user_id = ? ORDER BY name').all(req.params.id);
         const claimStats = db.prepare(`
-            SELECT COUNT(*) as total_claims, COALESCE(SUM(c.total_amount),0) as total_amount
+            SELECT COUNT(*) as total_claims, COALESCE(SUM(c.total_amount),0) as total_amount,
+                   COUNT(CASE WHEN c.claim_type = 'TA_DA' THEN 1 END) as tada_claims,
+                   COUNT(CASE WHEN c.claim_type = 'TRANSFER' THEN 1 END) as transfer_claims,
+                   COUNT(CASE WHEN c.claim_type = 'MEDICAL' THEN 1 END) as medical_claims
             FROM claims c JOIN employees e ON c.employee_id = e.id
             WHERE e.user_id = ?
         `).get(req.params.id);
 
-        res.json({ user, employees, claimStats });
+        const claims = db.prepare(`
+            SELECT c.*, e.name as employee_name, e.name_hi as employee_name_hi, e.designation, e.category
+            FROM claims c
+            JOIN employees e ON c.employee_id = e.id
+            WHERE e.user_id = ?
+            ORDER BY c.created_at DESC
+        `).all(req.params.id);
+
+        res.json({ user, employees, claimStats, claims });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/admin/claims — list all claims across all users with submitter and employee details
+app.get('/api/admin/claims', verifyToken, requireAdmin, (req, res) => {
+    try {
+        const { search, type, status, user_id } = req.query;
+        let query = `
+            SELECT c.*,
+                   e.name as employee_name, e.name_hi as employee_name_hi, e.designation, e.category,
+                   u.id as user_id, u.full_name as user_name, u.email as user_email
+            FROM claims c
+            JOIN employees e ON c.employee_id = e.id
+            JOIN users u ON e.user_id = u.id
+            WHERE 1=1
+        `;
+        const params = [];
+        if (search) {
+            query += ` AND (e.name LIKE ? OR u.full_name LIKE ? OR u.email LIKE ? OR c.td_no LIKE ? OR c.rendered_claim_id LIKE ?)`;
+            params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+        }
+        if (type && type !== 'ALL') {
+            query += ` AND c.claim_type = ?`;
+            params.push(type);
+        }
+        if (status && status !== 'ALL') {
+            query += ` AND c.status = ?`;
+            params.push(status);
+        }
+        if (user_id) {
+            query += ` AND u.id = ?`;
+            params.push(user_id);
+        }
+        query += ` ORDER BY c.created_at DESC`;
+        const claims = db.prepare(query).all(...params);
+        res.json(claims);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -356,7 +405,7 @@ app.get('/api/admin/users/:id/employees', verifyToken, requireAdmin, (req, res) 
     }
 });
 
-// GET /api/admin/stats — overall platform stats
+// GET /api/admin/stats — overall platform stats (including recent user claims)
 app.get('/api/admin/stats', verifyToken, requireAdmin, (req, res) => {
     try {
         const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE role = ?').get('user').count;
@@ -365,7 +414,15 @@ app.get('/api/admin/stats', verifyToken, requireAdmin, (req, res) => {
         const totalClaims = db.prepare('SELECT COUNT(*) as count FROM claims').get().count;
         const totalAmount = db.prepare('SELECT COALESCE(SUM(total_amount),0) as total FROM claims').get().total;
         const recentUsers = db.prepare('SELECT id, full_name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5').all();
-        res.json({ totalUsers, activeUsers, totalEmployees, totalClaims, totalAmount: Math.round(totalAmount), recentUsers });
+        const recentClaims = db.prepare(`
+            SELECT c.id, c.claim_type, c.status, c.total_amount, c.created_at, c.start_date, c.end_date, c.td_no, c.month, c.year,
+                   e.name as employee_name, u.full_name as user_name, u.id as user_id
+            FROM claims c
+            LEFT JOIN employees e ON c.employee_id = e.id
+            LEFT JOIN users u ON e.user_id = u.id
+            ORDER BY c.created_at DESC LIMIT 6
+        `).all();
+        res.json({ totalUsers, activeUsers, totalEmployees, totalClaims, totalAmount: Math.round(totalAmount), recentUsers, recentClaims });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
