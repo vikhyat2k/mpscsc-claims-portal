@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Users, FileText, DollarSign, Activity, UserCheck, UserX, TrendingUp } from "lucide-react";
-import api from "../../utils/api";
+import api, { apiRequest } from "../../utils/api";
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState(null);

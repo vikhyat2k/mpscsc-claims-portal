@@ -34,11 +34,18 @@ export async function apiRequest(path, options = {}) {
 }
 
 const api = {
+    apiRequest,
     get:    (path)        => apiRequest(path, { method: 'GET' }),
     post:   (path, body)  => apiRequest(path, { method: 'POST',  body: JSON.stringify(body) }),
     put:    (path, body)  => apiRequest(path, { method: 'PUT',   body: JSON.stringify(body) }),
     patch:  (path, body)  => apiRequest(path, { method: 'PATCH', body: JSON.stringify(body) }),
     delete: (path)        => apiRequest(path, { method: 'DELETE' }),
 };
+
+// Expose globally on window so any component calling apiRequest() or api will always have it defined
+if (typeof window !== 'undefined') {
+    window.apiRequest = apiRequest;
+    window.api = api;
+}
 
 export default api;

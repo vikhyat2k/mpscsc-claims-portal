@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, User, Mail, Phone, Calendar, Shield, UserCheck, UserX, KeyRound } from "lucide-react";
-import api from "../../utils/api";
+import api, { apiRequest } from "../../utils/api";
 
 export default function AdminUserDetail() {
     const { id } = useParams();

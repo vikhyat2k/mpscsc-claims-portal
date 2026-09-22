@@ -1,4 +1,4 @@
-﻿import api from '../utils/api';
+﻿import api, { apiRequest } from '../utils/api';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Printer, ArrowLeft, FileSpreadsheet, MousePointer2, Receipt, Edit, Check, X } from 'lucide-react';

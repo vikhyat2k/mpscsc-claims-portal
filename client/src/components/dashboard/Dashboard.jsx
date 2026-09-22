@@ -1,4 +1,4 @@
-﻿import api from '../../utils/api';
+﻿import api, { apiRequest } from '../../utils/api';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';

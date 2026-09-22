@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search, UserCheck, UserX, Eye } from "lucide-react";
-import api from "../../utils/api";
+import api, { apiRequest } from "../../utils/api";
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
