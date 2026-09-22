@@ -1,0 +1,16 @@
+export { default as Dashboard } from './Dashboard';
+export { default as KpiStrip } from './KpiStrip';
+export { default as DecisionQueue } from './DecisionQueue';
+export { default as PipelinePanel } from './PipelinePanel';
+export { default as TrendChart } from './TrendChart';
+export { default as TypeDonut } from './TypeDonut';
+export { default as ClaimsRegister } from './ClaimsRegister';
+export { default as AlertsPanel } from './AlertsPanel';
+export { default as ActivityPanel } from './ActivityPanel';
+export { default as TopClaimants } from './TopClaimants';
+export { default as OfficeBreakdown } from './OfficeBreakdown';
+export { default as BudgetUse } from './BudgetUse';
+export { default as ConfirmationModal } from './ConfirmationModal';
+export { default as WorkspaceTiles } from './WorkspaceTiles';
+export { default as DashboardHeader } from './DashboardHeader';
+export { default as DashboardTopBar } from './DashboardTopBar';

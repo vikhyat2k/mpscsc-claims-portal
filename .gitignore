@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Production build outputs
+client/dist/
+dist/
+dist-ssr/
+
+# SQLite WAL and journal files
+*.db-shm
+*.db-wal
+*.db-journal
+backups/*.db
+backups/
+
+# Backup archives
+*.zip
+*.tar.gz
+mpscsc-claims-portal_backup_*.zip
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and local config
+.env
+.env.local
+*.local
+
+# Editor directories and OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary files
+test.pdf
+output_test.pdf
+*.temp
+MPSCSC Claims Portal*
