@@ -1096,36 +1096,74 @@ body {
 .dash .menu {
   position: absolute;
   right: 0;
-  top: calc(100% + 6px);
-  min-width: 200px;
-  padding: 6px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur-heavy);
-  -webkit-backdrop-filter: var(--glass-blur-heavy);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  z-index: 40;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  padding: 8px;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.18), 0 8px 12px -4px rgba(0, 0, 0, 0.08);
+  z-index: 9999;
 }
 
-.dash .menu button {
+.dash[data-theme="dark"] .dash .menu {
+  background: #1e293b !important;
+  border-color: #334155;
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.65), 0 8px 16px -4px rgba(0, 0, 0, 0.4);
+}
+
+.dash .menu button,
+.dash .menu .menu-item {
   display: flex;
   width: 100%;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
+  gap: 12px;
+  padding: 10px 12px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   background: transparent;
-  color: var(--text);
-  font: 500 13px var(--font);
+  color: #0f172a;
+  font-family: var(--font);
+  font-size: 13.5px;
+  font-weight: 600;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s;
+  transition: all 0.15s ease;
 }
 
-.dash .menu button:hover {
-  background: var(--glass-bg-hover);
+.dash[data-theme="dark"] .dash .menu button,
+.dash[data-theme="dark"] .dash .menu .menu-item {
+  color: #f8fafc;
+}
+
+.dash .menu button:hover,
+.dash .menu .menu-item:hover {
+  background: #f1f5f9;
+}
+
+.dash[data-theme="dark"] .dash .menu button:hover,
+.dash[data-theme="dark"] .dash .menu .menu-item:hover {
+  background: #334155;
+}
+
+.dash .menu-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.dash .menu-item-label {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #0f172a;
+}
+
+.dash[data-theme="dark"] .dash .menu-item-label {
+  color: #f8fafc;
 }
 
 .dash .seg {

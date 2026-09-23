@@ -42,10 +42,10 @@ export default function DashboardTopBar({
   }, []);
 
   const newClaimOptions = [
-    { key: 'ta', label: t.dashboard.nc_ta, icon: FileText, path: '/claims/tada' },
-    { key: 'transfer', label: t.dashboard.nc_tr, icon: ArrowLeftRight, path: '/claims/transfer-list' },
-    { key: 'medical', label: t.dashboard.nc_md, icon: HeartPulse, path: '/medical' },
-    { key: 'diary', label: t.dashboard.nc_diary, icon: FileSpreadsheet, path: '/tour-diaries' }
+    { key: 'ta', label: t.dashboard.nc_ta, icon: FileText, path: '/claims/tada', color: '#0284c7', bg: 'rgba(2, 132, 199, 0.12)' },
+    { key: 'transfer', label: t.dashboard.nc_tr, icon: ArrowLeftRight, path: '/claims/transfer-list', color: '#4f46e5', bg: 'rgba(79, 70, 229, 0.12)' },
+    { key: 'medical', label: t.dashboard.nc_md, icon: HeartPulse, path: '/medical', color: '#e11d48', bg: 'rgba(225, 29, 72, 0.12)' },
+    { key: 'diary', label: t.dashboard.nc_diary, icon: FileSpreadsheet, path: '/tour-diaries', color: '#059669', bg: 'rgba(5, 150, 105, 0.12)' }
   ];
 
   return (
@@ -133,13 +133,16 @@ export default function DashboardTopBar({
                 <button
                   key={opt.key}
                   type="button"
+                  className="menu-item"
                   onClick={() => {
                     setMenuOpen(false);
                     navigate(opt.path);
                   }}
                 >
-                  <IconComp size={16} />
-                  {opt.label}
+                  <span className="menu-icon-wrap" style={{ color: opt.color, backgroundColor: opt.bg }}>
+                    <IconComp size={16} />
+                  </span>
+                  <span className="menu-item-label">{opt.label}</span>
                 </button>
               );
             })}

@@ -804,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `0651770` | 2026-09-23 | feat(admin): zero auto-seeding policy, persistent disk storage, and admin-only data deletion with accidental deletion confirmation |
 | `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
 | `92f9b21` | 2026-09-23 | fix: add Render persistent disk so SQLite DB survives redeploys |
 | `be37afc` | 2026-09-23 | fix: add missing PUT /api/tour-diaries/:id route (Tour Diary save was broken) |
@@ -811,13 +812,13 @@ This automatically launches:
 | `3dfecca` | 2026-09-23 | feat: optimise A4 landscape print layouts for all 4 forms - TADABill: default landscape, remove Part II forced page-break, compress column widths/fonts for 1-page; TourDiary: tighten margins/font/padding for 1-page; MedicalClaim: landscape recommended, 2-col grid on Page 2, smaller fonts/padding; TransferClaim: add orientation toggle, handlePrint, formal print-only bill section with full CSS |
 | `5ed9f36` | 2026-09-23 | feat: Hide bill passing order from individual users; add A4 print orientation toggles across all modules |
 | `078b3f8` | 2026-09-23 | fix(medical-claim): ensure Applicant and Doctor signatures are clearly visible and unclipped in print |
-| `ad5b798` | 2026-09-23 | feat(auth): implement automatic inactivity logout with 60s warning modal and cross-tab sync |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-23** | **Automated Update** | Fix: '+ New claim' dropdown transparency resolved with opaque solid background, crisp typography, and colored badge icons |
 | **2026-09-23** | **Automated Update** | Zero auto-seeding policy implemented; Persistent disk storage configured; Admin data deletion features added (DELETE /api/admin/users/:id, DELETE /api/admin/claims/:id, POST /api/admin/delete-system-data) with accidental deletion confirmation protection |
 | **2026-09-23** | **Automated Update** | Added persistent auto-seeding for District Manager Betul (dmnanbetul1@gmail.com) and SEED_USERS env mechanism to prevent user deletion on Render ephemeral restarts |
 | **2026-09-23** | **Automated Update** | Infrastructure fix: added Render persistent disk (1GB at /var/data) and DB_PATH=/var/data/claims.db env var — SQLite DB now survives redeploys, users/data will no longer be wiped on every deployment |
