@@ -5,6 +5,13 @@ services:
     plan: free
     buildCommand: npm run build
     startCommand: npm start
+    # Persistent Disk — stores the SQLite DB so it survives every redeploy.
+    # Without this, Render wipes the container filesystem on each deploy
+    # and all users/data are deleted.
+    disk:
+      name: mpscsc-db
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -20,3 +27,5 @@ services:
         value: "MPSCSC Administrator"
       - key: ADMIN_MOBILE
         value: "9876543210"
+      - key: DB_PATH
+        value: "/var/data/claims.db"

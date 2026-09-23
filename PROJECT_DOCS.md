@@ -800,6 +800,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `be37afc` | 2026-09-23 | fix: add missing PUT /api/tour-diaries/:id route (Tour Diary save was broken) |
 | `cb3a198` | 2026-09-23 | fix(MedicalClaim): enforce strict 2-page split in print layout - Page 1 (points 1-11): removed conflicting break-inside:avoid that was causing overflow spill; kept only break-after:page; compacted landscape CSS (logo 36px, table padding 3/5px, cert box padding 5/8px, sig-space 16px, smaller fonts) so all 11 points fit cleanly on one A4 landscape sheet - Page 2 (PART II Itemized Details): guaranteed fresh page with break-before:page only |
 | `3dfecca` | 2026-09-23 | feat: optimise A4 landscape print layouts for all 4 forms - TADABill: default landscape, remove Part II forced page-break, compress column widths/fonts for 1-page; TourDiary: tighten margins/font/padding for 1-page; MedicalClaim: landscape recommended, 2-col grid on Page 2, smaller fonts/padding; TransferClaim: add orientation toggle, handlePrint, formal print-only bill section with full CSS |
 | `5ed9f36` | 2026-09-23 | feat: Hide bill passing order from individual users; add A4 print orientation toggles across all modules |
@@ -807,13 +808,13 @@ This automatically launches:
 | `ad5b798` | 2026-09-23 | feat(auth): implement automatic inactivity logout with 60s warning modal and cross-tab sync |
 | `5850f17` | 2026-09-22 | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |
 | `e174550` | 2026-09-22 | Fix dashboard date-filter clock skew and permanently bake 10 user claims into claims.db with auto-seeding |
-| `5ad2703` | 2026-09-22 | feat(seed): populate comprehensive realistic records for all 10 user accounts across all 4 modules and support total_amount in claim update |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-23** | **Automated Update** | Infrastructure fix: added Render persistent disk (1GB at /var/data) and DB_PATH=/var/data/claims.db env var — SQLite DB now survives redeploys, users/data will no longer be wiped on every deployment |
 | **2026-09-23** | **Automated Update** | Bug fix: Added missing PUT /api/tour-diaries/:id route — TourDiary.jsx was calling this endpoint but it did not exist on the server, causing 'Error saving data' on every save attempt |
 | **2026-09-23** | **Automated Update** | Medical Claim print: strict 2-page split enforced — Page 1 has exactly points 1-11 (break-after:page, no conflicting break-inside:avoid, compacted landscape CSS), Page 2 has PART II Itemized Details (break-before:page) |
 | **2026-09-23** | **Automated Update** | Optimised print layouts for all 4 forms to A4 Landscape: TADABill (1 page, removed page-break, default landscape, compressed fonts/margins), TourDiary (1 page, tighter margins/padding/font), MedicalClaim (2 pages, landscape 2-column Page 2 tables, recommended landscape), TransferClaim (1 page, new formal print-only bill section with header/journey table/summary/signatures + orientation toggle) |
