@@ -970,6 +970,78 @@ app.get('/api/claim-details/:claimId', verifyToken, (req, res) => {
     }
 });
 
+// Tour-diary save alias: PUT /api/tour-diaries/:id
+// TourDiary.jsx calls this; it injects claim_id from the URL param
+// and delegates to the same handler used by journey-details-bulk.
+app.put('/api/tour-diaries/:id', verifyToken, (req, res, next) => {
+    req.body.claim_id = req.params.id;
+    next();
+}, (req, res) => {
+    req.url = '/api/journey-details-bulk'; // cosmetic — handler is inline below
+    const { claim_id, journeys } = req.body;
+    const claimCheck = db.prepare('SELECT employee_id FROM claims WHERE id = ?').get(claim_id);
+    if (!claimCheck) return res.status(404).json({ error: 'Claim not found' });
+    const isAdmin = req.user.role === 'admin';
+    if (!verifyEmployeeOwnership(claimCheck.employee_id, req.user.id, isAdmin)) {
+        return res.status(403).json({ error: 'Access denied' });
+    }
+    try {
+        const deleteStmt = db.prepare('DELETE FROM journey_details WHERE claim_id = ?');
+        const insertStmt = db.prepare(`
+            INSERT INTO journey_details (
+                claim_id, departure_date, departure_time, departure_station,
+                arrival_date, arrival_time, arrival_station,
+                mode, class_of_travel, ticket_no, fare_amount, distance_km, purpose, merge_purpose
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const updateClaimStmt = db.prepare(`
+            UPDATE claims
+            SET start_date = COALESCE(?, start_date),
+                end_date = COALESCE(?, end_date),
+                month = COALESCE(?, month),
+                year = COALESCE(?, year),
+                declaration_date = COALESCE(?, declaration_date),
+                total_amount = COALESCE(?, total_amount),
+                status = COALESCE(?, status)
+            WHERE id = ?
+        `);
+        const getMinMaxDates = (js) => {
+            if (!js || !js.length) return { start: null, end: null };
+            const all = [...js.map(j => j.departure_date), ...js.map(j => j.arrival_date)].filter(Boolean).sort();
+            return { start: all[0], end: all[all.length - 1] };
+        };
+        const { month, year, declaration_date, status } = req.body;
+        const { start, end } = getMinMaxDates(journeys || []);
+
+        db.transaction(() => {
+            deleteStmt.run(claim_id);
+            let lastPurpose = '';
+            for (let idx = 0; idx < (journeys || []).length; idx++) {
+                const j = journeys[idx];
+                const isMerged = idx > 0 && !!j.merge_purpose;
+                let legPurpose = (j.purpose || '').trim();
+                if (isMerged && !legPurpose) legPurpose = lastPurpose;
+                else if (legPurpose) lastPurpose = legPurpose;
+                insertStmt.run(
+                    claim_id, j.departure_date, j.departure_time, j.departure_station,
+                    j.arrival_date, j.arrival_time, j.arrival_station,
+                    j.mode, j.class_of_travel, j.ticket_no, j.fare_amount,
+                    j.distance_km, legPurpose, isMerged ? 1 : 0
+                );
+            }
+            const currentClaim = db.prepare('SELECT employee_id, claim_type, month, year FROM claims WHERE id = ?').get(claim_id);
+            const employee = db.prepare('SELECT * FROM employees WHERE id = ?').get(currentClaim.employee_id);
+            const updatedClaim = { ...req.body, id: claim_id, claim_type: currentClaim.claim_type, month: month || currentClaim.month, year: year || currentClaim.year };
+            const { totals: fullTotals } = calculateTadaBillTotals(updatedClaim, employee, journeys || []);
+            updateClaimStmt.run(start, end, month, year, declaration_date, fullTotals.grandTotal, status, claim_id);
+        })();
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[PUT /api/tour-diaries] Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/journey-details-bulk', verifyToken, (req, res) => {
     const { claim_id, journeys } = req.body;
     // Verify claim ownership
