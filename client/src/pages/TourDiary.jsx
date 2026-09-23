@@ -756,7 +756,7 @@ const TourDiary = () => {
                 @media print {
                     @page {
                         size: A4 ${printOrientation};
-                        margin: ${printOrientation === 'landscape' ? '8mm 10mm 10mm 10mm' : '8mm 8mm 10mm 8mm'};
+                        margin: ${printOrientation === 'landscape' ? '5mm 8mm 5mm 8mm' : '8mm 8mm 10mm 8mm'};
                     }
                     * {
                         color: black !important;
@@ -776,7 +776,7 @@ const TourDiary = () => {
                     .no-print { display: none !important; }
                     body {
                         background: white !important;
-                        font-size: 9pt;
+                        font-size: 8pt;
                         font-family: 'Times New Roman', Times, serif;
                         margin: 0 !important;
                         padding: 0 !important;
@@ -803,12 +803,12 @@ const TourDiary = () => {
                         width: 100% !important;
                         border-collapse: collapse !important;
                         table-layout: fixed !important;
-                        font-size: 8.5pt !important;
-                        margin-bottom: 8px !important;
+                        font-size: 7.8pt !important;
+                        margin-bottom: 6px !important;
                     }
                     .print-table th, .print-table td, .data-table th, .data-table td {
                         border: 1px solid black !important;
-                        padding: 3px 4px !important;
+                        padding: 2px 3px !important;
                         vertical-align: middle !important;
                         word-break: break-word !important;
                     }
@@ -825,7 +825,7 @@ const TourDiary = () => {
                     }
                     .tour-declaration-box {
                         page-break-inside: avoid !important;
-                        margin-top: 18px !important;
+                        margin-top: 8px !important;
                     }
                 }
             `}</style>

@@ -265,7 +265,7 @@ const MedicalClaim = () => {
                         <button
                             type="button"
                             onClick={() => setPrintOrientation('portrait')}
-                            title={language === 'hi' ? 'चिकित्सा दावा A4 पोर्ट्रेट में प्रिंट करें (अनुशंसित)' : 'Print Medical Claim in A4 Portrait (Recommended)'}
+                            title={language === 'hi' ? 'A4 पोर्ट्रेट में प्रिंट करें' : 'Print in A4 Portrait'}
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -281,16 +281,13 @@ const MedicalClaim = () => {
                                 transition: 'all 0.15s ease'
                             }}
                         >
-                            <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                        <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
                             {language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
-                            <span style={{ fontSize: '10px', opacity: 0.9, background: printOrientation === 'portrait' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'portrait' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>
-                                {language === 'hi' ? 'अनुशंसित' : 'Rec.'}
-                            </span>
                         </button>
                         <button
                             type="button"
                             onClick={() => setPrintOrientation('landscape')}
-                            title={language === 'hi' ? 'A4 लैंडस्केप में प्रिंट करें' : 'Print in A4 Landscape'}
+                            title={language === 'hi' ? 'A4 लैंडस्केप में प्रिंट करें (अनुशंसित)' : 'Print in A4 Landscape (Recommended)'}
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -308,6 +305,9 @@ const MedicalClaim = () => {
                         >
                             <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
                             {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
+                            <span style={{ fontSize: '10px', opacity: 0.9, background: printOrientation === 'landscape' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'landscape' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>
+                                {language === 'hi' ? 'अनुशंसित' : 'Rec.'}
+                            </span>
                         </button>
                     </div>
                     <button
@@ -663,8 +663,10 @@ const MedicalClaim = () => {
                         </div>
                     </div>
 
-                    {/* Container for all Page 2 itemized tables */}
+                    {/* Container for all Page 2 itemized tables — 2-column in landscape */}
                     <div className="page2-tables-container">
+                        {/* LEFT COLUMN: Consultation + Medicines */}
+                        <div className="p2-col p2-col-left">
                         {/* 01. Consultation Charges */}
                         <div className="table-section">
                             <div className="table-section-header">
@@ -845,8 +847,10 @@ const MedicalClaim = () => {
                             </tbody>
                         </table>
                     </div>
+                        </div>{/* /p2-col-left */}
 
-                    {/* 03. Tests and Investigations */}
+                        {/* RIGHT COLUMN: Tests + Other */}
+                        <div className="p2-col p2-col-right">
                     <div className="table-section">
                         <div className="table-section-header">
                             <h4 className="table-section-title">
@@ -950,8 +954,10 @@ const MedicalClaim = () => {
                             </tbody>
                         </table>
                     </div>
+                        </div>{/* /p2-col-right */}
 
-                    {/* 04. Other Charges */}
+                        {/* 04. Other Charges */}
+                        <div className="p2-col-other">
                     <div className="table-section">
                         <div className="table-section-header">
                             <h4 className="table-section-title">
@@ -1039,8 +1045,9 @@ const MedicalClaim = () => {
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
+                    </div>{/* /table-section OTHER */}
+                        </div>{/* /p2-col-other */}
+                    </div>{/* /page2-tables-container */}
 
                     {/* Page 2 Bottom Grand Total Summary & Signatures Box */}
                     <div className="page2-summary-box">
@@ -1078,7 +1085,7 @@ const MedicalClaim = () => {
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </div>{/* /page2-tables-container */}
                 </div>
             </div>
 
@@ -1358,7 +1365,7 @@ const MedicalClaim = () => {
                 @media print {
                     @page {
                         size: A4 ${printOrientation};
-                        margin: ${printOrientation === 'landscape' ? '6mm 10mm 8mm 10mm' : '6mm 8mm 8mm 8mm'};
+                        margin: ${printOrientation === 'landscape' ? '5mm 8mm 6mm 8mm' : '6mm 8mm 8mm 8mm'};
                     }
                     * {
                         color: black !important;
@@ -1467,9 +1474,9 @@ const MedicalClaim = () => {
                     }
                     .med-border-table th, .med-border-table td {
                         border: 1px solid black !important;
-                        padding: 5px 7px !important;
-                        font-size: 7.8pt !important;
-                        line-height: 1.25 !important;
+                        padding: ${printOrientation === 'landscape' ? '4px 6px' : '5px 7px'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.5pt' : '7.8pt'} !important;
+                        line-height: 1.22 !important;
                         vertical-align: middle !important;
                         word-break: break-word !important;
                         overflow-wrap: break-word !important;
@@ -1609,14 +1616,25 @@ const MedicalClaim = () => {
                         color: black !important;
                     }
 
-                    /* Page 2 Tables Container */
+                    /* Page 2 Tables Container — 2-column layout in landscape */
                     .page2-tables-container {
+                        display: ${printOrientation === 'landscape' ? 'grid' : 'flex'} !important;
+                        grid-template-columns: ${printOrientation === 'landscape' ? '1fr 1fr' : 'unset'} !important;
+                        grid-template-rows: ${printOrientation === 'landscape' ? 'auto' : 'unset'} !important;
+                        flex-direction: ${printOrientation === 'landscape' ? 'unset' : 'column'} !important;
+                        gap: ${printOrientation === 'landscape' ? '0 8px' : '6px'} !important;
+                        align-items: start !important;
+                        flex: 1 !important;
+                        margin: 4px 0 !important;
+                    }
+                    .p2-col {
                         display: flex !important;
                         flex-direction: column !important;
-                        justify-content: space-around !important;
-                        flex: 1 !important;
                         gap: 6px !important;
-                        margin: 4px 0 !important;
+                    }
+                    .p2-col-other {
+                        grid-column: ${printOrientation === 'landscape' ? '2' : 'unset'} !important;
+                        grid-row: ${printOrientation === 'landscape' ? '2' : 'unset'} !important;
                     }
 
                     /* Page 2 Data Tables */
@@ -1639,14 +1657,14 @@ const MedicalClaim = () => {
                         border-collapse: collapse !important;
                         border: 1px solid black !important;
                         table-layout: fixed !important;
-                        font-size: 7.8pt !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
                         margin-bottom: 0 !important;
                     }
                     .data-table th, .data-table td {
                         border: 1px solid black !important;
-                        padding: 4.5px 6px !important;
-                        line-height: 1.3 !important;
-                        font-size: 7.8pt !important;
+                        padding: ${printOrientation === 'landscape' ? '3px 4px' : '4.5px 6px'} !important;
+                        line-height: 1.25 !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
                         vertical-align: middle !important;
                         word-break: break-word !important;
                         overflow-wrap: break-word !important;
@@ -1656,14 +1674,14 @@ const MedicalClaim = () => {
                         background: #f1f5f9 !important;
                         font-weight: bold !important;
                         text-align: center !important;
-                        padding: 4px 6px !important;
-                        font-size: 7.8pt !important;
+                        padding: ${printOrientation === 'landscape' ? '3px 4px' : '4px 6px'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
                     }
                     .subtotal-row td {
                         background: #f8fafc !important;
                         font-weight: bold !important;
-                        font-size: 7.8pt !important;
-                        padding: 4px 6px !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '3px 4px' : '4px 6px'} !important;
                     }
 
                     /* Text Wrapping in Table Cells */

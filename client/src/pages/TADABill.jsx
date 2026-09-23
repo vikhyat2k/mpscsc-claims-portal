@@ -89,7 +89,7 @@ export default function TADABill() {
     const [loading, setLoading] = useState(true);
     const [printOrientation, setPrintOrientation] = useState(() => {
         const p = new URLSearchParams(window.location.search).get('orientation');
-        return p === 'landscape' ? 'landscape' : 'portrait';
+        return p === 'portrait' ? 'portrait' : 'landscape';
     });
     const [billData, setBillData] = useState(null);
     const [fontSize, setFontSize] = useState(9); // Default 9px for 21-column official layout
@@ -843,7 +843,7 @@ export default function TADABill() {
                     <button
                         type="button"
                         onClick={() => setPrintOrientation('portrait')}
-                        title={language === 'hi' ? 'फॉर्म 21 देयक A4 पोर्ट्रेट में प्रिंट करें (अनुशंसित)' : 'Print Form 21 Bill in A4 Portrait (Recommended)'}
+                        title={language === 'hi' ? 'फॉर्म 21 देयक A4 पोर्ट्रेट में प्रिंट करें' : 'Print Form 21 Bill in A4 Portrait'}
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1659,7 +1659,7 @@ export default function TADABill() {
                 @media print {
                     @page {
                         size: A4 ${printOrientation};
-                        margin: ${printOrientation === 'landscape' ? '5mm 7mm 6mm 7mm' : '5mm 5mm 6mm 5mm'};
+                        margin: ${printOrientation === 'landscape' ? '4mm 5mm 4mm 5mm' : '5mm 5mm 6mm 5mm'};
                     }
                     .no-print { display: none !important; }
                     .print-only { display: block !important; }
@@ -1691,10 +1691,10 @@ export default function TADABill() {
                         box-shadow: none !important;
                     }
                     .form21-meta-box {
-                        font-size: 7.2pt !important;
-                        padding: 3px 6px !important;
-                        margin-bottom: 4px !important;
-                        gap: 2px 14px !important;
+                        font-size: ${printOrientation === 'landscape' ? '6.8pt' : '7.2pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '2px 5px' : '3px 6px'} !important;
+                        margin-bottom: ${printOrientation === 'landscape' ? '3px' : '4px'} !important;
+                        gap: ${printOrientation === 'landscape' ? '1px 10px' : '2px 14px'} !important;
                     }
                     .table-scroll-wrapper {
                         overflow: visible !important;
@@ -1708,34 +1708,34 @@ export default function TADABill() {
                         page-break-inside: auto;
                     }
 
-                    /* Balanced A4 Portrait Column Proportions */
-                    .bill-21-table col.col-c1 { width: 5.6% !important; }
-                    .bill-21-table col.col-c2 { width: 6.8% !important; }
-                    .bill-21-table col.col-c3 { width: 5.6% !important; }
-                    .bill-21-table col.col-c4 { width: 6.8% !important; }
-                    .bill-21-table col.col-c5 { width: 8.5% !important; }
-                    .bill-21-table col.col-c6 { width: 5.4% !important; }
-                    .bill-21-table col.col-c7 { width: 4.4% !important; }
-                    .bill-21-table col.col-c8 { width: 5.2% !important; }
-                    .bill-21-table col.col-c9 { width: 3.4% !important; }
-                    .bill-21-table col.col-c10 { width: 4.8% !important; }
-                    .bill-21-table col.col-c11 { width: 4.5% !important; }
-                    .bill-21-table col.col-c12 { width: 3.2% !important; }
-                    .bill-21-table col.col-c13 { width: 4.4% !important; }
-                    .bill-21-table col.col-c14 { width: 4.5% !important; }
-                    .bill-21-table col.col-c15 { width: 3.2% !important; }
-                    .bill-21-table col.col-c16 { width: 4.4% !important; }
-                    .bill-21-table col.col-c17 { width: 4.5% !important; }
-                    .bill-21-table col.col-c18 { width: 4.2% !important; }
-                    .bill-21-table col.col-c19 { width: 4.4% !important; }
-                    .bill-21-table col.col-c20 { width: 5.8% !important; }
-                    .bill-21-table col.col-c21 { width: 5.2% !important; }
+                    /* A4 Landscape Optimised Column Proportions (277mm usable width) */
+                    .bill-21-table col.col-c1 { width: 5.2% !important; }
+                    .bill-21-table col.col-c2 { width: 6.4% !important; }
+                    .bill-21-table col.col-c3 { width: 5.2% !important; }
+                    .bill-21-table col.col-c4 { width: 6.4% !important; }
+                    .bill-21-table col.col-c5 { width: 9.0% !important; }
+                    .bill-21-table col.col-c6 { width: 5.0% !important; }
+                    .bill-21-table col.col-c7 { width: 4.0% !important; }
+                    .bill-21-table col.col-c8 { width: 5.0% !important; }
+                    .bill-21-table col.col-c9 { width: 3.2% !important; }
+                    .bill-21-table col.col-c10 { width: 4.5% !important; }
+                    .bill-21-table col.col-c11 { width: 4.3% !important; }
+                    .bill-21-table col.col-c12 { width: 3.0% !important; }
+                    .bill-21-table col.col-c13 { width: 4.3% !important; }
+                    .bill-21-table col.col-c14 { width: 4.3% !important; }
+                    .bill-21-table col.col-c15 { width: 3.0% !important; }
+                    .bill-21-table col.col-c16 { width: 4.3% !important; }
+                    .bill-21-table col.col-c17 { width: 4.3% !important; }
+                    .bill-21-table col.col-c18 { width: 4.0% !important; }
+                    .bill-21-table col.col-c19 { width: 4.2% !important; }
+                    .bill-21-table col.col-c20 { width: 5.4% !important; }
+                    .bill-21-table col.col-c21 { width: 5.0% !important; }
 
                     .bill-21-table th, .bill-21-table td {
                         border: 1px solid black !important;
-                        padding: 1.5px 1.5px !important;
-                        line-height: 1.12 !important;
-                        font-size: 6.0pt !important;
+                        padding: ${printOrientation === 'landscape' ? '1px 1px' : '1.5px 1.5px'} !important;
+                        line-height: 1.10 !important;
+                        font-size: ${printOrientation === 'landscape' ? '5.8pt' : '6.0pt'} !important;
                         vertical-align: middle !important;
                         word-break: normal !important;
                         overflow-wrap: break-word !important;
@@ -1743,14 +1743,14 @@ export default function TADABill() {
                     }
                     .bill-21-table th {
                         background: #f8fafc !important;
-                        font-size: 5.6pt !important;
+                        font-size: ${printOrientation === 'landscape' ? '5.4pt' : '5.6pt'} !important;
                         font-weight: bold !important;
                         text-align: center !important;
                         letter-spacing: -0.15px !important;
                     }
                     .col-numbers td {
                         background: #f1f5f9 !important;
-                        font-size: 5.4pt !important;
+                        font-size: ${printOrientation === 'landscape' ? '5.2pt' : '5.4pt'} !important;
                         padding: 0.5px !important;
                         text-align: center !important;
                         font-weight: bold !important;
@@ -1771,8 +1771,6 @@ export default function TADABill() {
 
                     /* Form 21 Page 2: Part II Container */
                     .form21-page2-container {
-                        page-break-before: always !important;
-                        break-before: page !important;
                         padding-top: 4mm !important;
                         display: block !important;
                         border-top: none !important;
@@ -1782,24 +1780,38 @@ export default function TADABill() {
                         display: block !important;
                         margin-bottom: 8px !important;
                     }
+                    .form21-page2-header {
+                        margin-bottom: ${printOrientation === 'landscape' ? '4px' : '8px'} !important;
+                    }
+                    .form21-page2-header h3 {
+                        font-size: ${printOrientation === 'landscape' ? '9pt' : '13pt'} !important;
+                        margin: 0 !important;
+                    }
+                    .form21-page2-header h4 {
+                        font-size: ${printOrientation === 'landscape' ? '8pt' : '10.5pt'} !important;
+                        margin: 1px 0 0 0 !important;
+                    }
                     .form21-calc-box {
-                        font-size: 8.5pt !important;
-                        padding: 6px 10px !important;
-                        margin-bottom: 10px !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.8pt' : '8.5pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '4px 8px' : '6px 10px'} !important;
+                        margin-bottom: ${printOrientation === 'landscape' ? '6px' : '10px'} !important;
                     }
+                    .form21-calc-box table { font-size: inherit !important; line-height: 1.4 !important; }
                     .form21-cert-box {
-                        font-size: 8.0pt !important;
-                        padding: 6px 10px !important;
-                        margin-bottom: 10px !important;
-                        line-height: 1.4 !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.4pt' : '8.0pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '4px 8px' : '6px 10px'} !important;
+                        margin-bottom: ${printOrientation === 'landscape' ? '6px' : '10px'} !important;
+                        line-height: ${printOrientation === 'landscape' ? '1.3' : '1.4'} !important;
                     }
+                    .form21-cert-box p { margin: ${printOrientation === 'landscape' ? '2px 0' : '3px 0'} !important; }
                     .form21-claimant-sig-box {
-                        font-size: 8.5pt !important;
-                        margin-bottom: 12px !important;
+                        font-size: ${printOrientation === 'landscape' ? '8pt' : '8.5pt'} !important;
+                        margin-bottom: ${printOrientation === 'landscape' ? '6px' : '12px'} !important;
+                        padding: 0 4px !important;
                     }
                     .form21-passing-box {
-                        font-size: 8.2pt !important;
-                        padding: 6px 10px !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.8pt' : '8.2pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '4px 8px' : '6px 10px'} !important;
                         page-break-inside: avoid !important;
                     }
                 }

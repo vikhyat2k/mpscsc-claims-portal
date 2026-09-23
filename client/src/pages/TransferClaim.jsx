@@ -238,7 +238,38 @@ const TransferClaim = () => {
                 <button className="btn btn-secondary" onClick={() => navigate(-1)}>
                     <ArrowLeft size={18} /> {t.common.back}
                 </button>
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* Print Orientation Toggle */}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #cbd5e1', gap: '3px' }}>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('portrait')}
+                            title={language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 10px', fontSize: '12.5px', fontWeight: printOrientation === 'portrait' ? '600' : '500', borderRadius: '6px', border: 'none', background: printOrientation === 'portrait' ? '#1e3a8a' : 'transparent', color: printOrientation === 'portrait' ? '#ffffff' : '#475569', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                        >
+                            <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setPrintOrientation('landscape')}
+                            title={language === 'hi' ? 'A4 लैंडस्केप (अनुशंसित)' : 'A4 Landscape (Recommended)'}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 10px', fontSize: '12.5px', fontWeight: printOrientation === 'landscape' ? '600' : '500', borderRadius: '6px', border: 'none', background: printOrientation === 'landscape' ? '#1e3a8a' : 'transparent', color: printOrientation === 'landscape' ? '#ffffff' : '#475569', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                        >
+                            <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                            {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
+                            <span style={{ fontSize: '10px', background: printOrientation === 'landscape' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'landscape' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>{language === 'hi' ? 'अनु' : 'Rec.'}</span>
+                        </button>
+                    </div>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={handlePrint}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: '600' }}
+                        title={language === 'hi' ? 'स्थानांतरण भत्ता बिल प्रिंट करें' : 'Print Transfer Allowance Bill'}
+                    >
+                        <Printer size={18} /> {language === 'hi' ? `प्रिंट (A4 ${printOrientation === 'landscape' ? 'लैंडस्केप' : 'पोर्ट्रेट'})` : `Print (A4 ${printOrientation === 'landscape' ? 'Landscape' : 'Portrait'})`}
+                    </button>
                     <button
                         type="button"
                         className="btn btn-secondary"
@@ -488,6 +519,195 @@ const TransferClaim = () => {
                     </div>
                 </div>
             )}
+
+            {/* ===== PRINT-ONLY FORMAL BILL SECTION ===== */}
+            <div className="transfer-print-bill" style={{ display: 'none' }}>
+
+                {/* MPSCSC Header */}
+                <div className="tpb-header">
+                    <div className="tpb-header-text">
+                        <div className="tpb-org">{language === 'hi' ? 'मध्यप्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड' : 'M.P. STATE CIVIL SUPPLIES CORPORATION LIMITED'}</div>
+                        <div className="tpb-title">{language === 'hi' ? 'स्थानांतरण भत्ता बिल' : 'TRANSFER ALLOWANCE BILL'}</div>
+                        <div className="tpb-subtitle">{language === 'hi' ? '(म.प्र. सरकारी सेवक यात्रा भत्ता नियम के अंतर्गत)' : '(Under M.P. Government Servant Travelling Allowance Rules)'}</div>
+                    </div>
+                </div>
+
+                {/* Employee Info Strip */}
+                <table className="tpb-info-table">
+                    <tbody>
+                        <tr>
+                            <td className="tpb-label">{language === 'hi' ? 'नाम' : 'Name'}:</td>
+                            <td className="tpb-value">{empName}</td>
+                            <td className="tpb-label">{language === 'hi' ? 'पदनाम' : 'Designation'}:</td>
+                            <td className="tpb-value">{employee?.designation}</td>
+                            <td className="tpb-label">{language === 'hi' ? 'श्रेणी' : 'Category'}:</td>
+                            <td className="tpb-value">{employee?.category}</td>
+                            <td className="tpb-label">{language === 'hi' ? 'मुख्यालय' : 'HQ'}:</td>
+                            <td className="tpb-value">{employee?.headquarters}</td>
+                        </tr>
+                        <tr>
+                            <td className="tpb-label">{language === 'hi' ? 'पूर्व स्थल' : 'Transfer From'}:</td>
+                            <td className="tpb-value" colSpan={3}>{employee?.headquarters || '—'}</td>
+                            <td className="tpb-label">{language === 'hi' ? 'नव पदस्थापन' : 'Transfer To'}:</td>
+                            <td className="tpb-value" colSpan={3}>{claim?.transfer_to || journeys[journeys.length - 1]?.arrival_station || '—'}</td>
+                        </tr>
+                        <tr>
+                            <td className="tpb-label">{language === 'hi' ? 'माह' : 'Month/Year'}:</td>
+                            <td className="tpb-value" colSpan={3}>{claim?.month} {claim?.year}</td>
+                            <td className="tpb-label">{language === 'hi' ? 'स्थानांतरण आदेश दिनांक' : 'Transfer Order Date'}:</td>
+                            <td className="tpb-value" colSpan={3}>{claim?.declaration_date || '—'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {/* Transfer Details */}
+                <table className="tpb-info-table" style={{ marginTop: '4px' }}>
+                    <tbody>
+                        <tr>
+                            <td className="tpb-label">{language === 'hi' ? 'परिवार विवरण' : 'Family Details'}:</td>
+                            <td className="tpb-value" colSpan={3}>{familyMembers || 'N/A'}</td>
+                            <td className="tpb-label">{language === 'hi' ? 'सामान भार' : 'Baggage (Kg)'}:</td>
+                            <td className="tpb-value">{baggageWeight || 'N/A'}</td>
+                            <td className="tpb-label">{language === 'hi' ? 'आवास प्रकार' : 'Stay Type'}:</td>
+                            <td className="tpb-value">{hotelStayType}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {/* Journey Table */}
+                <div className="tpb-section-title" style={{ marginTop: '6px' }}>
+                    {language === 'hi' ? 'यात्रा विवरण' : 'JOURNEY DETAILS'}
+                </div>
+                <table className="tpb-journey-table">
+                    <thead>
+                        <tr>
+                            <th style={{ width: '5%' }}>{language === 'hi' ? 'क्र.' : 'S.'}</th>
+                            <th style={{ width: '14%' }}>{language === 'hi' ? 'रवानगी दिनांक/समय' : 'Depart Date/Time'}</th>
+                            <th style={{ width: '14%' }}>{language === 'hi' ? 'रवानगी स्थान' : 'Depart Station'}</th>
+                            <th style={{ width: '14%' }}>{language === 'hi' ? 'आगमन दिनांक/समय' : 'Arrive Date/Time'}</th>
+                            <th style={{ width: '14%' }}>{language === 'hi' ? 'आगमन स्थान' : 'Arrive Station'}</th>
+                            <th style={{ width: '12%' }}>{language === 'hi' ? 'यात्रा का विवरण' : 'Purpose'}</th>
+                            <th style={{ width: '10%' }}>{language === 'hi' ? 'वाहन / श्रेणी' : 'Mode/Class'}</th>
+                            <th style={{ width: '8%', textAlign: 'right' }}>{language === 'hi' ? 'भाड़ा (₹)' : 'Fare (₹)'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {journeys.length === 0 ? (
+                            <tr><td colSpan={8} style={{ textAlign: 'center', fontStyle: 'italic' }}>No journeys recorded</td></tr>
+                        ) : journeys.map((j, i) => (
+                            <tr key={i}>
+                                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                                <td>{j.departure_date} {j.departure_time}</td>
+                                <td>{j.departure_station}</td>
+                                <td>{j.arrival_date} {j.arrival_time}</td>
+                                <td>{j.arrival_station}</td>
+                                <td>{j.purpose}</td>
+                                <td>{j.mode} {j.class_of_travel ? `(${j.class_of_travel})` : ''}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{parseFloat(j.fare_amount || 0).toFixed(2)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                {/* Financial Summary */}
+                <div className="tpb-summary-grid">
+                    <div className="tpb-summary-left">
+                        <div className="tpb-section-title">{language === 'hi' ? 'वित्तीय विवरण' : 'FINANCIAL SUMMARY'}</div>
+                        <table className="tpb-fin-table">
+                            <tbody>
+                                <tr><td>{language === 'hi' ? 'यात्रा भाड़ा' : 'Travel Fare'}:</td><td style={{ textAlign: 'right' }}>₹{totals.fare.toFixed(2)}</td></tr>
+                                <tr><td>{language === 'hi' ? 'दैनिक भत्ता (D.A.)' : 'Daily Allowance (D.A.)'}:</td><td style={{ textAlign: 'right' }}>₹{totals.totalDA.toFixed(2)}</td></tr>
+                                <tr><td>{language === 'hi' ? 'ठहराव भत्ता' : 'Stay Allowance'}:</td><td style={{ textAlign: 'right' }}>₹{totals.totalStayAllowance.toFixed(2)}</td></tr>
+                                <tr><td>{language === 'hi' ? 'पैकिंग / लोडिंग' : 'Packing / Loading'}:</td><td style={{ textAlign: 'right' }}>₹{totals.totalPacking.toFixed(2)}</td></tr>
+                                <tr><td>{language === 'hi' ? 'सामान ढुलाई' : 'Goods Transport'}:</td><td style={{ textAlign: 'right' }}>₹{totals.totalTransport.toFixed(2)}</td></tr>
+                                <tr><td>{language === 'hi' ? 'स्थानीय अनुवहन' : 'Local Transport'}:</td><td style={{ textAlign: 'right' }}>₹{totals.totalLocalTransport.toFixed(2)}</td></tr>
+                                <tr><td>{language === 'hi' ? 'स्थानांतरण अनुदान' : 'Transfer Grant'}:</td><td style={{ textAlign: 'right' }}>₹{totals.transferGrant.toFixed(2)}</td></tr>
+                                <tr className="tpb-grand-row"><td><strong>{language === 'hi' ? 'कुल योग' : 'GRAND TOTAL'}:</strong></td><td style={{ textAlign: 'right' }}><strong>₹{totals.grandTotal.toFixed(2)}</strong></td></tr>
+                                {(parseFloat(advanceAmount) > 0) && (
+                                    <tr><td>{language === 'hi' ? 'घटाइए: अग्रिम' : 'Less: Advance'}:</td><td style={{ textAlign: 'right', color: 'darkred' }}>- ₹{parseFloat(advanceAmount).toFixed(2)}</td></tr>
+                                )}
+                                {(parseFloat(advanceAmount) > 0) && (
+                                    <tr className="tpb-grand-row"><td><strong>{language === 'hi' ? 'शुद्ध देय राशि' : 'Net Payable'}:</strong></td><td style={{ textAlign: 'right' }}><strong>₹{(totals.grandTotal - parseFloat(advanceAmount)).toFixed(2)}</strong></td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="tpb-summary-right">
+                        <div className="tpb-section-title">{language === 'hi' ? 'प्रमाण-पत्र' : 'CERTIFICATES'}</div>
+                        <div className="tpb-cert-text">
+                            <p>1. {language === 'hi' ? 'प्रमाणित किया जाता है कि उपर्युक्त विवरण में दिए गए यात्रा विवरण सत्य एवं सही हैं।' : 'Certified that the journeys detailed above were actually performed as stated.'}</p>
+                            <p>2. {language === 'hi' ? 'मैंने स्थानांतरण भत्ता किसी अन्य स्रोत से प्राप्त नहीं किया है।' : 'Transfer allowance has not been claimed from any other source.'}</p>
+                            <p>3. {language === 'hi' ? 'परिवार के सदस्य मेरे साथ रहते हैं एवं वे मेरे साथ स्थानांतरित हुए।' : 'Family members mentioned above actually accompanied me to the new place of posting.'}</p>
+                        </div>
+                        <div className="tpb-sig-area">
+                            <div className="tpb-date-place">
+                                <div><strong>{language === 'hi' ? 'स्थान' : 'Place'}:</strong> {employee?.headquarters || '—'}</div>
+                                <div><strong>{language === 'hi' ? 'दिनांक' : 'Date'}:</strong> {claim?.declaration_date || '—'}</div>
+                            </div>
+                            <div className="tpb-sig-block">
+                                <div style={{ height: '32px' }}></div>
+                                <div className="tpb-sig-rule"></div>
+                                <strong>{language === 'hi' ? 'आवेदक / कर्मचारी के हस्ताक्षर' : 'Signature of Applicant / Employee'}</strong>
+                                <div style={{ fontSize: '7.8pt', marginTop: '2px' }}>({empName}{employee?.designation ? ', ' + employee.designation : ''})</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>{/* /transfer-print-bill */}
+
+            <style>{`
+                .transfer-print-bill {
+                    display: none;
+                }
+                @media print {
+                    @page {
+                        size: A4 ${printOrientation};
+                        margin: ${printOrientation === 'landscape' ? '5mm 8mm 6mm 8mm' : '8mm 8mm 10mm 8mm'};
+                    }
+                    * { color: black !important; background: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
+                    body { background: white !important; font-size: 8pt !important; font-family: 'Times New Roman', Times, serif !important; margin: 0 !important; padding: 0 !important; }
+                    .no-print { display: none !important; }
+                    .page-transition { padding: 0 !important; }
+                    .card { display: none !important; }
+                    .modal-overlay { display: none !important; }
+                    .transfer-print-bill { display: block !important; width: 100% !important; }
+
+                    /* Header */
+                    .tpb-header { border-bottom: 2px solid black; padding-bottom: 5px; margin-bottom: 5px; text-align: center; }
+                    .tpb-org { font-size: 11pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.4px; }
+                    .tpb-title { font-size: 9.5pt; font-weight: bold; margin-top: 2px; text-transform: uppercase; }
+                    .tpb-subtitle { font-size: 7.8pt; color: black; margin-top: 2px; }
+
+                    /* Info Table */
+                    .tpb-info-table { width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 7.8pt; }
+                    .tpb-info-table td { border: 1px solid black; padding: 2px 5px; vertical-align: middle; }
+                    .tpb-label { font-weight: bold; width: 10%; white-space: nowrap; background: #f8fafc; }
+                    .tpb-value { width: 15%; }
+
+                    /* Section Title */
+                    .tpb-section-title { font-size: 8.2pt; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid black; padding-bottom: 2px; margin-bottom: 3px; }
+
+                    /* Journey Table */
+                    .tpb-journey-table { width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 7.5pt; table-layout: fixed; }
+                    .tpb-journey-table th, .tpb-journey-table td { border: 1px solid black; padding: 2px 4px; vertical-align: middle; word-break: break-word; overflow-wrap: break-word; }
+                    .tpb-journey-table th { background: #f1f5f9; font-weight: bold; text-align: center; }
+
+                    /* Summary Grid */
+                    .tpb-summary-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 8px; margin-top: 6px; }
+                    .tpb-fin-table { width: 100%; border-collapse: collapse; border: 1px solid black; font-size: 7.8pt; }
+                    .tpb-fin-table td { border: 1px solid black; padding: 2px 5px; }
+                    .tpb-grand-row td { background: #f1f5f9; font-weight: bold; border-top: 1.5px solid black; }
+
+                    /* Certificates & Signature */
+                    .tpb-cert-text { font-size: 7.5pt; line-height: 1.4; border: 1px solid black; padding: 5px 8px; }
+                    .tpb-cert-text p { margin: 2px 0; }
+                    .tpb-sig-area { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px; }
+                    .tpb-date-place { font-size: 8pt; line-height: 1.5; }
+                    .tpb-sig-block { text-align: center; font-size: 8.5pt; font-weight: bold; min-width: 200px; }
+                    .tpb-sig-rule { border-top: 1.5px solid black; width: 200px; margin: 0 auto 4px auto; }
+                }
+            `}</style>
 
             <style>{`.text-danger { color: #dc3545; border: none; background: transparent; cursor: pointer; }`}</style>
         </div>
