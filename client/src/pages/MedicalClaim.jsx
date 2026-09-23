@@ -1400,7 +1400,7 @@ const MedicalClaim = () => {
                     /* Dedicated Page Containers with Outer Border */
                     .medical-print-page {
                         border: 1.5px solid black !important;
-                        padding: 5mm 6mm !important;
+                        padding: ${printOrientation === 'landscape' ? '4mm 5mm' : '5mm 6mm'} !important;
                         box-sizing: border-box !important;
                         width: 100% !important;
                         background: white !important;
@@ -1409,50 +1409,49 @@ const MedicalClaim = () => {
                         border-radius: 0 !important;
                     }
 
-                    /* Page 1: Strict 1-Page Constraint */
+                    /* Page 1: Points 1-11 — STRICT 1 page, break after */
                     .medical-page-1 {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
+                        /* NO break-inside:avoid — it fights overflow and causes page 1
+                           content to spill onto page 2. Let break-after do all the work. */
                         page-break-after: always !important;
                         break-after: page !important;
-                        min-height: auto !important;
-                        height: auto !important;
                         display: flex !important;
                         flex-direction: column !important;
-                        justify-content: space-between !important;
+                        justify-content: flex-start !important;
                         margin-bottom: 0 !important;
-                        padding-bottom: 6mm !important;
+                        padding-bottom: 4mm !important;
                         box-sizing: border-box !important;
+                        overflow: hidden !important;
                     }
 
-                    /* Page 1 Header */
+                    /* Page 1 Header — compact for landscape */
                     .medical-header {
                         display: flex !important;
                         align-items: center !important;
                         justify-content: center !important;
-                        gap: 12px !important;
-                        margin-bottom: 6px !important;
-                        padding-bottom: 4px !important;
+                        gap: ${printOrientation === 'landscape' ? '8px' : '12px'} !important;
+                        margin-bottom: ${printOrientation === 'landscape' ? '4px' : '6px'} !important;
+                        padding-bottom: ${printOrientation === 'landscape' ? '3px' : '4px'} !important;
                         border-bottom: 1.5px solid black !important;
                     }
                     .medical-logo {
-                        width: 44px !important;
-                        height: 44px !important;
-                        min-width: 44px !important;
-                        min-height: 44px !important;
-                        max-width: 44px !important;
-                        max-height: 44px !important;
+                        width: ${printOrientation === 'landscape' ? '36px' : '44px'} !important;
+                        height: ${printOrientation === 'landscape' ? '36px' : '44px'} !important;
+                        min-width: ${printOrientation === 'landscape' ? '36px' : '44px'} !important;
+                        min-height: ${printOrientation === 'landscape' ? '36px' : '44px'} !important;
+                        max-width: ${printOrientation === 'landscape' ? '36px' : '44px'} !important;
+                        max-height: ${printOrientation === 'landscape' ? '36px' : '44px'} !important;
                         object-fit: contain !important;
                     }
                     .medical-header-title {
-                        font-size: 10.5pt !important;
+                        font-size: ${printOrientation === 'landscape' ? '9.5pt' : '10.5pt'} !important;
                         letter-spacing: 0 !important;
-                        line-height: 1.2 !important;
+                        line-height: 1.15 !important;
                         font-weight: bold !important;
                     }
                     .medical-header-subtitle {
-                        font-size: 8.8pt !important;
-                        margin-top: 2px !important;
+                        font-size: ${printOrientation === 'landscape' ? '8pt' : '8.8pt'} !important;
+                        margin-top: 1px !important;
                         color: black !important;
                         font-weight: bold !important;
                     }
@@ -1461,7 +1460,7 @@ const MedicalClaim = () => {
                     .page1-tables-wrap {
                         display: flex !important;
                         flex-direction: column !important;
-                        gap: 6px !important;
+                        gap: ${printOrientation === 'landscape' ? '3px' : '5px'} !important;
                     }
 
                     /* Bordered Tables (Page 1) */
@@ -1474,9 +1473,9 @@ const MedicalClaim = () => {
                     }
                     .med-border-table th, .med-border-table td {
                         border: 1px solid black !important;
-                        padding: ${printOrientation === 'landscape' ? '4px 6px' : '5px 7px'} !important;
-                        font-size: ${printOrientation === 'landscape' ? '7.5pt' : '7.8pt'} !important;
-                        line-height: 1.22 !important;
+                        padding: ${printOrientation === 'landscape' ? '3px 5px' : '5px 7px'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.3pt' : '7.8pt'} !important;
+                        line-height: 1.18 !important;
                         vertical-align: middle !important;
                         word-break: break-word !important;
                         overflow-wrap: break-word !important;
@@ -1488,22 +1487,22 @@ const MedicalClaim = () => {
                         text-align: center !important;
                     }
                     .table-field-label {
-                        font-size: 7.3pt !important;
+                        font-size: ${printOrientation === 'landscape' ? '6.8pt' : '7.3pt'} !important;
                         font-weight: bold !important;
                         color: black !important;
-                        margin-bottom: 2px !important;
-                        line-height: 1.15 !important;
+                        margin-bottom: 1px !important;
+                        line-height: 1.1 !important;
                     }
                     .table-field-value {
-                        font-size: 8.5pt !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.8pt' : '8.5pt'} !important;
                         font-weight: bold !important;
                         color: black !important;
-                        line-height: 1.2 !important;
+                        line-height: 1.15 !important;
                     }
 
-                    /* Page 1 Certification Section (Declaration & Doctor Certification) */
+                    /* Page 1 Certification Section (10-Declaration + 11-Doctor Cert) */
                     .medical-cert-section {
-                        margin-top: 6px !important;
+                        margin-top: ${printOrientation === 'landscape' ? '4px' : '6px'} !important;
                         padding-top: 0 !important;
                         flex: 1 !important;
                         display: flex !important;
@@ -1511,86 +1510,88 @@ const MedicalClaim = () => {
                     }
                     .medical-cert-box {
                         border: 1px solid black !important;
-                        padding: 8px 10px !important;
+                        padding: ${printOrientation === 'landscape' ? '5px 8px' : '8px 10px'} !important;
                         border-radius: 0 !important;
                         background: white !important;
-                        flex: 1 !important;
                         display: flex !important;
                         flex-direction: column !important;
-                        justify-content: space-between !important;
+                        justify-content: flex-start !important;
                     }
                     .cert-p {
-                        margin: 2px 0 !important;
-                        font-size: 7.8pt !important;
-                        line-height: 1.35 !important;
+                        margin: 1px 0 !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
+                        line-height: ${printOrientation === 'landscape' ? '1.25' : '1.35'} !important;
                     }
                     .cert-divider {
                         border-top: 1px solid black !important;
-                        margin: 6px 0 !important;
+                        margin: ${printOrientation === 'landscape' ? '4px 0' : '6px 0'} !important;
                     }
                     .cert-doctor-heading {
-                        margin-top: 2px !important;
-                        font-size: 8.2pt !important;
+                        margin-top: 1px !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.5pt' : '8.2pt'} !important;
                         font-weight: bold !important;
                     }
                     .doctor-sig-row {
                         display: flex !important;
                         justify-content: space-between !important;
                         align-items: flex-end !important;
-                        margin-top: 10px !important;
+                        margin-top: ${printOrientation === 'landscape' ? '6px' : '10px'} !important;
                     }
                     .doctor-meta {
-                        font-size: 7.6pt !important;
-                        line-height: 1.55 !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.6pt'} !important;
+                        line-height: 1.45 !important;
                     }
                     .sig-container {
                         display: flex !important;
                         justify-content: flex-end !important;
-                        margin-top: 8px !important;
+                        margin-top: ${printOrientation === 'landscape' ? '5px' : '8px'} !important;
                     }
                     .sig-block {
                         display: inline-flex !important;
                         flex-direction: column !important;
                         align-items: center !important;
                         text-align: center !important;
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                        min-width: 200px !important;
+                        min-width: 180px !important;
                     }
-                    .sig-line {
+                    /* sig-space (blank space above rule) — shrink in landscape */
+                    .sig-space {
+                        height: ${printOrientation === 'landscape' ? '16px' : '24px'} !important;
                         display: block !important;
-                        font-size: 7.5pt !important;
-                        line-height: 1 !important;
-                        margin-bottom: 3px !important;
                     }
                     .sig-label {
                         display: block !important;
-                        font-size: 8.5pt !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.8pt' : '8.5pt'} !important;
                         line-height: 1.2 !important;
                         font-weight: bold !important;
                         text-transform: uppercase !important;
                         color: black !important;
                     }
+                    .sig-emp-name {
+                        display: block !important;
+                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
+                        font-weight: bold !important;
+                        color: black !important;
+                        margin-top: 1px !important;
+                    }
                     .sig-rule {
                         border-top: 1.5px solid black !important;
                         display: block !important;
+                        margin-bottom: 3px !important;
                     }
                     .sig-line {
                         display: none !important;
                     }
 
                     /* ================= PAGE 2 ================= */
+                    /* PART II: Itemized Details — always starts on a fresh page */
                     .medical-page-2 {
                         page-break-before: always !important;
                         break-before: page !important;
-                        page-break-inside: auto !important;
-                        min-height: auto !important;
-                        height: auto !important;
                         display: flex !important;
                         flex-direction: column !important;
                         justify-content: flex-start !important;
                         margin-top: 0 !important;
-                        padding-bottom: 8mm !important;
+                        padding-bottom: 6mm !important;
                         box-sizing: border-box !important;
                     }
 
