@@ -147,6 +147,60 @@ async function autoSeedAdmin() {
 }
 autoSeedAdmin();
 
+// ─────────────────────────────────────────────
+// Auto-seed users from SEED_USERS env var
+// ─────────────────────────────────────────────
+// On Render free plan the filesystem is ephemeral — the DB is wiped on every
+// redeploy. To keep user accounts alive, define them in SEED_USERS and they
+// will be automatically created (or updated) on every server startup.
+//
+// Format: email|password|fullName|mobile
+// Multiple users: comma-separated
+// Example: "user1@gmail.com|Pass@123|Ram Singh|9800000001,user2@gmail.com|Pass@123|Shyam Lal|9800000002"
+async function autoSeedEnvUsers() {
+    const raw = process.env.SEED_USERS;
+    if (!raw || !raw.trim()) return;
+    const entries = raw.split(',').map(s => s.trim()).filter(Boolean);
+    for (const entry of entries) {
+        const parts = entry.split('|');
+        if (parts.length < 2) continue;
+        const [email, password, fullName = 'User', mobile = '9000000000'] = parts.map(p => p.trim());
+        if (!email || !password) continue;
+        try {
+            let userId;
+            const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
+            if (existing) {
+                userId = existing.id;
+                const hash = await bcrypt.hash(password, 10);
+                db.prepare('UPDATE users SET password_hash = ?, full_name = COALESCE(?, full_name), account_status = ? WHERE email = ?')
+                    .run(hash, fullName, 'active', email.toLowerCase());
+                console.log(`[SeedUsers] Refreshed: ${email}`);
+            } else {
+                const hash = await bcrypt.hash(password, 10);
+                const info = db.prepare("INSERT INTO users (full_name, email, mobile_number, password_hash, role, account_status) VALUES (?, ?, ?, ?, 'user', 'active')")
+                    .run(fullName, email.toLowerCase(), mobile, hash);
+                userId = info.lastInsertRowid;
+                console.log(`[SeedUsers] Created: ${email}`);
+            }
+
+            // Ensure employee profile exists for this user
+            if (userId) {
+                const emp = db.prepare('SELECT id FROM employees WHERE user_id = ?').get(userId);
+                if (!emp) {
+                    db.prepare(`
+                        INSERT INTO employees (user_id, name, name_hi, designation, category, pay_level, grade_pay, headquarters, basic_pay)
+                        VALUES (?, ?, ?, 'District Manager', 'A', 'Level 14', '7600', 'Betul', 85000)
+                    `).run(userId, fullName, fullName);
+                    console.log(`[SeedUsers] Created employee profile for: ${fullName} (${email})`);
+                }
+            }
+        } catch (e) {
+            console.error(`[SeedUsers] Error processing ${email}:`, e.message);
+        }
+    }
+}
+autoSeedEnvUsers();
+
 // Auto-seed and self-heal 10 test users, employee records, and claims
 const { autoSeedDummyUsers } = require('./autoSeedUsers');
 autoSeedDummyUsers(db);

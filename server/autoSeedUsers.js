@@ -184,6 +184,23 @@ const defaultTestUsers = [
         },
         transfer: { month: "February", year: "2026", start_date: "2026-02-18", end_date: "2026-02-19", packing: 2200, transport: 8000, total_amount: 10200, family: "Self [DUMMY_DATA_RECORD]", remarks: "Transfer order from Junnardeo to Chhindwara [DUMMY_DATA_RECORD]" },
         medical: { patient: "Sandeep Mishra", relation: "Self", illness: "Seasonal Flu & Fever [DUMMY_DATA_RECORD]", duration: "3 days", total_amount: 630, bills: [{ desc: "Community Health Center [DUMMY_DATA_RECORD]", amt: 630, no: "CHC-12" }] }
+    },
+    {
+        user: { name: "DM Betul", email: "dmnanbetul1@gmail.com", pass: "Password@123", mobile: "9800000001" },
+        emp: { name: "DM Betul", designation: "District Manager", category: "A", headquarters: "Betul", pay_level: "Level 14", basic_pay: 85000, grade_pay: "7600" },
+        diary: { month: "August", year: "2026", start_date: "2026-08-16", end_date: "2026-08-17", remarks: "District Mandi & Storage Inspection",
+            journeys: [
+                { departure_date: "2026-08-16", departure_time: "08:00", departure_station: "Betul", arrival_date: "2026-08-16", arrival_time: "10:30", arrival_station: "Multai", mode: "Car", class_of_travel: "Official", fare_amount: 450, distance_km: 50, purpose: "District Mandi & Storage Inspection" }
+            ]
+        },
+        tada: { month: "September", year: "2026", start_date: "2026-09-08", end_date: "2026-09-09", hotel: "Hotel", hotelAmt: 2500, total_amount: 4200, remarks: "State warehouse & procurement center inspection",
+            journeys: [
+                { departure_date: "2026-09-08", departure_time: "07:30", departure_station: "Betul", arrival_date: "2026-09-08", arrival_time: "10:00", arrival_station: "Amla", mode: "Car", class_of_travel: "Official", fare_amount: 350, distance_km: 35, purpose: "State warehouse & procurement center inspection" },
+                { departure_date: "2026-09-09", departure_time: "15:00", departure_station: "Amla", arrival_date: "2026-09-09", arrival_time: "17:30", arrival_station: "Betul", mode: "Car", class_of_travel: "Official", fare_amount: 350, distance_km: 35, purpose: "Return to HQ" }
+            ]
+        },
+        transfer: { month: "March", year: "2026", start_date: "2026-03-05", end_date: "2026-03-06", packing: 5000, transport: 20000, total_amount: 25000, family: "Spouse & 2 Children", remarks: "Administrative transfer order to Betul District" },
+        medical: { patient: "DM Betul", relation: "Self", illness: "Routine Medical Checkup & Prescription", duration: "2 days", total_amount: 1650, bills: [{ desc: "District Hospital Betul", amt: 1650, no: "DH-BTL-101" }] }
     }
 ];
 
