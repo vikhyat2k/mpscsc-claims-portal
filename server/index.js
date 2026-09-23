@@ -147,63 +147,8 @@ async function autoSeedAdmin() {
 }
 autoSeedAdmin();
 
-// ─────────────────────────────────────────────
-// Auto-seed users from SEED_USERS env var
-// ─────────────────────────────────────────────
-// On Render free plan the filesystem is ephemeral — the DB is wiped on every
-// redeploy. To keep user accounts alive, define them in SEED_USERS and they
-// will be automatically created (or updated) on every server startup.
-//
-// Format: email|password|fullName|mobile
-// Multiple users: comma-separated
-// Example: "user1@gmail.com|Pass@123|Ram Singh|9800000001,user2@gmail.com|Pass@123|Shyam Lal|9800000002"
-async function autoSeedEnvUsers() {
-    const raw = process.env.SEED_USERS;
-    if (!raw || !raw.trim()) return;
-    const entries = raw.split(',').map(s => s.trim()).filter(Boolean);
-    for (const entry of entries) {
-        const parts = entry.split('|');
-        if (parts.length < 2) continue;
-        const [email, password, fullName = 'User', mobile = '9000000000'] = parts.map(p => p.trim());
-        if (!email || !password) continue;
-        try {
-            let userId;
-            const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
-            if (existing) {
-                userId = existing.id;
-                const hash = await bcrypt.hash(password, 10);
-                db.prepare('UPDATE users SET password_hash = ?, full_name = COALESCE(?, full_name), account_status = ? WHERE email = ?')
-                    .run(hash, fullName, 'active', email.toLowerCase());
-                console.log(`[SeedUsers] Refreshed: ${email}`);
-            } else {
-                const hash = await bcrypt.hash(password, 10);
-                const info = db.prepare("INSERT INTO users (full_name, email, mobile_number, password_hash, role, account_status) VALUES (?, ?, ?, ?, 'user', 'active')")
-                    .run(fullName, email.toLowerCase(), mobile, hash);
-                userId = info.lastInsertRowid;
-                console.log(`[SeedUsers] Created: ${email}`);
-            }
 
-            // Ensure employee profile exists for this user
-            if (userId) {
-                const emp = db.prepare('SELECT id FROM employees WHERE user_id = ?').get(userId);
-                if (!emp) {
-                    db.prepare(`
-                        INSERT INTO employees (user_id, name, name_hi, designation, category, pay_level, grade_pay, headquarters, basic_pay)
-                        VALUES (?, ?, ?, 'District Manager', 'A', 'Level 14', '7600', 'Betul', 85000)
-                    `).run(userId, fullName, fullName);
-                    console.log(`[SeedUsers] Created employee profile for: ${fullName} (${email})`);
-                }
-            }
-        } catch (e) {
-            console.error(`[SeedUsers] Error processing ${email}:`, e.message);
-        }
-    }
-}
-autoSeedEnvUsers();
 
-// Auto-seed and self-heal 10 test users, employee records, and claims
-const { autoSeedDummyUsers } = require('./autoSeedUsers');
-autoSeedDummyUsers(db);
 
 // ─────────────────────────────────────────────
 // SERVE STATIC CLIENT BUILD IN PRODUCTION
@@ -636,6 +581,136 @@ app.post('/api/admin/purge-dummy-data', verifyToken, requireAdmin, (req, res) =>
             deletedCounts
         });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE /api/admin/users/:id — permanently delete user account and cascade delete all their data
+app.delete('/api/admin/users/:id', verifyToken, requireAdmin, (req, res) => {
+    try {
+        const targetUserId = parseInt(req.params.id, 10);
+        if (!targetUserId || isNaN(targetUserId)) {
+            return res.status(400).json({ error: 'Valid user ID is required' });
+        }
+
+        // Accidental self-deletion guard
+        if (targetUserId === req.user.id) {
+            return res.status(400).json({ error: 'Cannot delete your own logged-in administrator account' });
+        }
+
+        const targetUser = db.prepare('SELECT id, full_name, email, role FROM users WHERE id = ?').get(targetUserId);
+        if (!targetUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Prevent deleting the sole remaining admin
+        if (targetUser.role === 'admin') {
+            const adminCount = db.prepare("SELECT COUNT(*) as c FROM users WHERE role = 'admin'").get().c;
+            if (adminCount <= 1) {
+                return res.status(400).json({ error: 'Cannot delete the only administrator account' });
+            }
+        }
+
+        // Atomic cascade deletion
+        const deleteTx = db.transaction(() => {
+            const empRows = db.prepare('SELECT id FROM employees WHERE user_id = ?').all(targetUserId);
+            for (const emp of empRows) {
+                const claimRows = db.prepare('SELECT id FROM claims WHERE employee_id = ?').all(emp.id);
+                for (const cl of claimRows) {
+                    db.prepare('DELETE FROM journey_details WHERE claim_id = ?').run(cl.id);
+                    db.prepare('DELETE FROM daily_allowances WHERE claim_id = ?').run(cl.id);
+                    db.prepare('DELETE FROM medical_bills WHERE claim_id = ?').run(cl.id);
+                }
+                db.prepare('DELETE FROM claims WHERE employee_id = ?').run(emp.id);
+                db.prepare('DELETE FROM family_members WHERE employee_id = ?').run(emp.id);
+            }
+            db.prepare('DELETE FROM employees WHERE user_id = ?').run(targetUserId);
+            db.prepare('DELETE FROM users WHERE id = ?').run(targetUserId);
+        });
+
+        deleteTx();
+
+        console.log(`[Admin Delete] User "${targetUser.email}" (ID: ${targetUserId}) deleted by Admin "${req.user.email}"`);
+        res.json({
+            success: true,
+            message: `User ${targetUser.full_name} (${targetUser.email}) and all associated records permanently deleted.`
+        });
+    } catch (err) {
+        console.error('[Admin Delete User Error]', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE /api/admin/claims/:id — permanently delete a claim and related records
+app.delete('/api/admin/claims/:id', verifyToken, requireAdmin, (req, res) => {
+    try {
+        const claimId = parseInt(req.params.id, 10);
+        if (!claimId || isNaN(claimId)) {
+            return res.status(400).json({ error: 'Valid claim ID is required' });
+        }
+
+        const claim = db.prepare('SELECT id, claim_type, rendered_claim_id, td_no FROM claims WHERE id = ?').get(claimId);
+        if (!claim) {
+            return res.status(404).json({ error: 'Claim not found' });
+        }
+
+        const deleteTx = db.transaction(() => {
+            db.prepare('DELETE FROM journey_details WHERE claim_id = ?').run(claimId);
+            db.prepare('DELETE FROM daily_allowances WHERE claim_id = ?').run(claimId);
+            db.prepare('DELETE FROM medical_bills WHERE claim_id = ?').run(claimId);
+            db.prepare('DELETE FROM claims WHERE id = ?').run(claimId);
+        });
+
+        deleteTx();
+
+        console.log(`[Admin Delete] Claim #${claimId} (${claim.claim_type}) deleted by Admin "${req.user.email}"`);
+        res.json({
+            success: true,
+            message: `Claim #${claimId} (${claim.rendered_claim_id || claim.td_no || claim.claim_type}) permanently deleted.`
+        });
+    } catch (err) {
+        console.error('[Admin Delete Claim Error]', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/admin/delete-system-data — high-security wipe of all user and claim data (preserves admin accounts)
+app.post('/api/admin/delete-system-data', verifyToken, requireAdmin, async (req, res) => {
+    try {
+        const { admin_password, confirmation_text } = req.body;
+        if (confirmation_text !== 'DELETE ALL DATA') {
+            return res.status(400).json({ error: 'Confirmation text must match exactly "DELETE ALL DATA"' });
+        }
+
+        if (!admin_password) {
+            return res.status(400).json({ error: 'Admin password is required for confirmation' });
+        }
+
+        const currentAdmin = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+        const match = await bcrypt.compare(admin_password, currentAdmin.password_hash);
+        if (!match) {
+            return res.status(401).json({ error: 'Incorrect administrator password. Deletion aborted.' });
+        }
+
+        const resetTx = db.transaction(() => {
+            db.prepare('DELETE FROM journey_details').run();
+            db.prepare('DELETE FROM daily_allowances').run();
+            db.prepare('DELETE FROM medical_bills').run();
+            db.prepare('DELETE FROM claims').run();
+            db.prepare('DELETE FROM family_members').run();
+            db.prepare("DELETE FROM employees WHERE user_id NOT IN (SELECT id FROM users WHERE role = 'admin')").run();
+            db.prepare("DELETE FROM users WHERE role != 'admin'").run();
+        });
+
+        resetTx();
+
+        console.log(`[Admin Data Reset] Full system data reset executed by Admin "${req.user.email}" (ID: ${req.user.id})`);
+        res.json({
+            success: true,
+            message: 'All system claims, employees, and user accounts successfully purged. Administrator accounts preserved.'
+        });
+    } catch (err) {
+        console.error('[Admin Data Reset Error]', err);
         res.status(500).json({ error: err.message });
     }
 });

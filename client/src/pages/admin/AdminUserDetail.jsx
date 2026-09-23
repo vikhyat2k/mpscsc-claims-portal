@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     ArrowLeft, User, Mail, Phone, Calendar, Shield,
     UserCheck, UserX, KeyRound, Clock, CheckCircle2,
-    Briefcase, LogIn
+    Briefcase, LogIn, Trash2, AlertTriangle
 } from "lucide-react";
 import api, { apiRequest } from "../../utils/api";
 import { useAuth } from "../../contexts/AuthContext";
@@ -19,6 +19,12 @@ export default function AdminUserDetail() {
     const [resetPw, setResetPw] = useState("");
     const [resetMsg, setResetMsg] = useState("");
     const [claimTypeFilter, setClaimTypeFilter] = useState("ALL");
+
+    // Accidental deletion modal state
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [confirmEmailInput, setConfirmEmailInput] = useState("");
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
 
     const fetchUser = async () => {
         setLoading(true);
@@ -154,6 +160,26 @@ export default function AdminUserDetail() {
                             onClick={toggleStatus}
                         >
                             {user.account_status === "active" ? <><UserX size={15} /> Suspend Account</> : <><UserCheck size={15} /> Activate Account</>}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            style={{
+                                color: "#ef4444",
+                                borderColor: "#ef4444",
+                                backgroundColor: "rgba(239,68,68,0.06)",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.4rem"
+                            }}
+                            onClick={() => {
+                                setShowDeleteModal(true);
+                                setConfirmEmailInput("");
+                                setDeleteError("");
+                            }}
+                            title="Permanently Delete User & All Data"
+                        >
+                            <Trash2 size={15} /> Delete Account
                         </button>
                     </div>
                 )}
@@ -426,6 +452,139 @@ export default function AdminUserDetail() {
                     </table>
                 </div>
             </div>
+
+            {/* Accidental Deletion Prevention Confirmation Modal */}
+            {showDeleteModal && (
+                <div style={{
+                    position: "fixed",
+                    inset: 0,
+                    backgroundColor: "rgba(15, 23, 42, 0.65)",
+                    backdropFilter: "blur(4px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999,
+                    padding: "1rem"
+                }}>
+                    <div style={{
+                        background: "#ffffff",
+                        borderRadius: "14px",
+                        maxWidth: "520px",
+                        width: "100%",
+                        padding: "1.75rem",
+                        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                        border: "1px solid #fee2e2"
+                    }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem", color: "#b91c1c" }}>
+                            <div style={{ background: "#fee2e2", padding: "0.6rem", borderRadius: "10px" }}>
+                                <AlertTriangle size={24} color="#dc2626" />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700, color: "#991b1b" }}>
+                                    Delete User Account
+                                </h3>
+                                <span style={{ fontSize: "0.85rem", color: "#64748b" }}>Admin Confirmation Required</span>
+                            </div>
+                        </div>
+
+                        <div style={{
+                            background: "#fff1f2",
+                            border: "1px solid #fecdd3",
+                            borderRadius: "8px",
+                            padding: "0.85rem 1rem",
+                            fontSize: "0.88rem",
+                            color: "#9f1239",
+                            lineHeight: "1.45",
+                            marginBottom: "1.25rem"
+                        }}>
+                            <strong>Warning: This action is permanent and irreversible!</strong>
+                            <p style={{ margin: "0.35rem 0 0 0", fontSize: "0.84rem" }}>
+                                Deleting <strong>{user.full_name}</strong> ({user.email}) will permanently destroy this account, all {employees?.length ?? 0} employee records in the master, and all {claimStats?.total_claims ?? 0} submitted claims.
+                            </p>
+                        </div>
+
+                        <div style={{ marginBottom: "1.25rem" }}>
+                            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }}>
+                                To prevent accidental deletion, type <code style={{ background: "#f1f5f9", padding: "0.2rem 0.4rem", borderRadius: "4px", color: "#0f172a" }}>{user.email}</code> to confirm:
+                            </label>
+                            <input
+                                type="text"
+                                style={{
+                                    width: "100%",
+                                    padding: "0.65rem 0.85rem",
+                                    borderRadius: "8px",
+                                    border: confirmEmailInput.trim().toLowerCase() === user.email.toLowerCase() ? "2px solid #22c55e" : "1px solid #cbd5e1",
+                                    fontSize: "0.92rem",
+                                    outline: "none"
+                                }}
+                                placeholder={user.email}
+                                value={confirmEmailInput}
+                                onChange={e => setConfirmEmailInput(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+
+                        {deleteError && (
+                            <div style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1rem", fontWeight: 600 }}>
+                                ⚠️ {deleteError}
+                            </div>
+                        )}
+
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setConfirmEmailInput("");
+                                    setDeleteError("");
+                                }}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (confirmEmailInput.trim().toLowerCase() !== user.email.toLowerCase()) {
+                                        setDeleteError("Confirmation email does not match.");
+                                        return;
+                                    }
+                                    setDeleting(true);
+                                    setDeleteError("");
+                                    try {
+                                        const res = await api.delete(`/api/admin/users/${user.id}`);
+                                        const json = await res.json();
+                                        if (!res.ok) throw new Error(json.error || "Failed to delete user");
+                                        navigate('/admin/users');
+                                    } catch (err) {
+                                        setDeleteError(err.message);
+                                    } finally {
+                                        setDeleting(false);
+                                    }
+                                }}
+                                disabled={confirmEmailInput.trim().toLowerCase() !== user.email.toLowerCase() || deleting}
+                                style={{
+                                    background: confirmEmailInput.trim().toLowerCase() === user.email.toLowerCase() ? "#dc2626" : "#cbd5e1",
+                                    color: "#ffffff",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    padding: "0.65rem 1.25rem",
+                                    fontWeight: 700,
+                                    fontSize: "0.9rem",
+                                    cursor: confirmEmailInput.trim().toLowerCase() === user.email.toLowerCase() ? "pointer" : "not-allowed",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "0.4rem"
+                                }}
+                            >
+                                <Trash2 size={16} />
+                                {deleting ? "Deleting..." : "Permanently Delete"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

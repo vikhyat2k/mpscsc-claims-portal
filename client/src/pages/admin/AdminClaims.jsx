@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
     Search, Filter, ShieldCheck, ArrowUpRight,
     FileText, DollarSign, Activity, IndianRupee,
-    User, X, ChevronRight
+    User, X, ChevronRight, Trash2, AlertTriangle
 } from "lucide-react";
 import api, { apiRequest } from "../../utils/api";
 
@@ -14,6 +14,11 @@ export default function AdminClaims() {
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState("ALL");
     const [statusFilter, setStatusFilter] = useState("ALL");
+
+    // Accidental deletion modal state
+    const [claimToDelete, setClaimToDelete] = useState(null);
+    const [deletingClaim, setDeletingClaim] = useState(false);
+    const [deleteClaimError, setDeleteClaimError] = useState("");
 
     const fetchClaims = async (q = search, type = typeFilter, status = statusFilter) => {
         setLoading(true);
@@ -307,6 +312,24 @@ export default function AdminClaims() {
                                                     Diary
                                                 </Link>
                                             )}
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary"
+                                                style={{
+                                                    padding: "0.3rem 0.55rem",
+                                                    fontSize: "0.78rem",
+                                                    color: "#ef4444",
+                                                    borderColor: "rgba(239, 68, 68, 0.3)",
+                                                    background: "rgba(239, 68, 68, 0.05)"
+                                                }}
+                                                onClick={() => {
+                                                    setClaimToDelete(c);
+                                                    setDeleteClaimError("");
+                                                }}
+                                                title="Permanently Delete Claim"
+                                            >
+                                                <Trash2 size={13} />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -321,6 +344,117 @@ export default function AdminClaims() {
                     </table>
                 )}
             </div>
+
+            {/* Accidental Deletion Prevention Confirmation Modal for Claims */}
+            {claimToDelete && (
+                <div style={{
+                    position: "fixed",
+                    inset: 0,
+                    backgroundColor: "rgba(15, 23, 42, 0.65)",
+                    backdropFilter: "blur(4px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999,
+                    padding: "1rem"
+                }}>
+                    <div style={{
+                        background: "#ffffff",
+                        borderRadius: "14px",
+                        maxWidth: "480px",
+                        width: "100%",
+                        padding: "1.75rem",
+                        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                        border: "1px solid #fee2e2"
+                    }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+                            <div style={{ background: "#fee2e2", padding: "0.6rem", borderRadius: "10px" }}>
+                                <AlertTriangle size={24} color="#dc2626" />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700, color: "#991b1b" }}>
+                                    Delete Claim Record
+                                </h3>
+                                <span style={{ fontSize: "0.85rem", color: "#64748b" }}>Admin Confirmation Required</span>
+                            </div>
+                        </div>
+
+                        <div style={{
+                            background: "#fff1f2",
+                            border: "1px solid #fecdd3",
+                            borderRadius: "8px",
+                            padding: "0.85rem 1rem",
+                            fontSize: "0.88rem",
+                            color: "#9f1239",
+                            lineHeight: "1.45",
+                            marginBottom: "1.25rem"
+                        }}>
+                            <strong>Are you sure you want to permanently delete this claim?</strong>
+                            <div style={{ margin: "0.5rem 0 0 0", fontSize: "0.85rem", color: "#475569" }}>
+                                <div>• <strong>Claim ID:</strong> #{claimToDelete.id} ({claimToDelete.rendered_claim_id || claimToDelete.td_no || "—"})</div>
+                                <div>• <strong>Type:</strong> {claimToDelete.claim_type}</div>
+                                <div>• <strong>Employee:</strong> {claimToDelete.employee_name || "—"}</div>
+                                <div>• <strong>Amount:</strong> ₹{Number(claimToDelete.total_amount || 0).toLocaleString("en-IN")}</div>
+                            </div>
+                            <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.82rem", color: "#b91c1c", fontWeight: 600 }}>
+                                This will permanently delete the claim, all journey legs, daily allowances, and itemized medical bills.
+                            </p>
+                        </div>
+
+                        {deleteClaimError && (
+                            <div style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1rem", fontWeight: 600 }}>
+                                ⚠️ {deleteClaimError}
+                            </div>
+                        )}
+
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => setClaimToDelete(null)}
+                                disabled={deletingClaim}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    setDeletingClaim(true);
+                                    setDeleteClaimError("");
+                                    try {
+                                        const res = await api.delete(`/api/admin/claims/${claimToDelete.id}`);
+                                        const json = await res.json();
+                                        if (!res.ok) throw new Error(json.error || "Failed to delete claim");
+                                        setClaimToDelete(null);
+                                        fetchClaims(search, typeFilter, statusFilter);
+                                    } catch (err) {
+                                        setDeleteClaimError(err.message);
+                                    } finally {
+                                        setDeletingClaim(false);
+                                    }
+                                }}
+                                disabled={deletingClaim}
+                                style={{
+                                    background: "#dc2626",
+                                    color: "#ffffff",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    padding: "0.65rem 1.25rem",
+                                    fontWeight: 700,
+                                    fontSize: "0.9rem",
+                                    cursor: "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "0.4rem"
+                                }}
+                            >
+                                <Trash2 size={16} />
+                                {deletingClaim ? "Deleting..." : "Yes, Delete Claim"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

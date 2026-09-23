@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
     Users, FileText, Activity, UserCheck,
     ShieldCheck, UserCog, ArrowUpRight,
-    IndianRupee, ChevronRight
+    IndianRupee, ChevronRight, Trash2, AlertTriangle, KeyRound
 } from "lucide-react";
 import api, { apiRequest } from "../../utils/api";
 
@@ -23,6 +23,11 @@ export default function AdminDashboard() {
     }, []);
 
     const [purging, setPurging] = useState(false);
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [adminPasswordInput, setAdminPasswordInput] = useState("");
+    const [confirmResetTextInput, setConfirmResetTextInput] = useState("");
+    const [resettingSystem, setResettingSystem] = useState(false);
+    const [resetError, setResetError] = useState("");
 
     const handlePurgeDummyData = async () => {
         if (!window.confirm("Are you sure you want to purge all dummy test records? This will delete all users ending in @mpscsc.test and their test claims. Genuine records will NOT be affected.")) {
@@ -250,6 +255,209 @@ export default function AdminDashboard() {
                     </table>
                 </div>
             </div>
+
+            {/* System Data Management & Deletion */}
+            <div className="admin-section" style={{ border: "1px solid #fecdd3", borderRadius: "12px", background: "#fff5f5", padding: "1.5rem", marginTop: "2rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+                    <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#991b1b", fontWeight: 700, fontSize: "1.1rem" }}>
+                            <AlertTriangle size={20} color="#dc2626" /> System Data Management & Danger Zone
+                        </div>
+                        <p style={{ margin: "0.35rem 0 0 0", fontSize: "0.85rem", color: "#7f1d1d" }}>
+                            Authorized admin controls to purge test records or execute a full database data reset. Accidental deletion protection enforced.
+                        </p>
+                    </div>
+                    <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                        <button
+                            type="button"
+                            onClick={handlePurgeDummyData}
+                            disabled={purging}
+                            className="btn btn-secondary"
+                            style={{ borderColor: "#ef4444", color: "#ef4444", background: "#ffffff", fontSize: "0.85rem" }}
+                            title="Safely remove all test users and test claims without affecting genuine accounts"
+                        >
+                            {purging ? "Purging..." : "🗑️ Purge Test Records"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowResetModal(true);
+                                setAdminPasswordInput("");
+                                setConfirmResetTextInput("");
+                                setResetError("");
+                            }}
+                            className="btn btn-danger"
+                            style={{ fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+                            title="High-security system reset: wipes all claims and non-admin users"
+                        >
+                            <Trash2 size={15} /> System Data Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* High-Security System Reset Modal */}
+            {showResetModal && (
+                <div style={{
+                    position: "fixed",
+                    inset: 0,
+                    backgroundColor: "rgba(15, 23, 42, 0.75)",
+                    backdropFilter: "blur(4px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999,
+                    padding: "1rem"
+                }}>
+                    <div style={{
+                        background: "#ffffff",
+                        borderRadius: "14px",
+                        maxWidth: "520px",
+                        width: "100%",
+                        padding: "1.75rem",
+                        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
+                        border: "2px solid #ef4444"
+                    }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem", color: "#991b1b" }}>
+                            <div style={{ background: "#fee2e2", padding: "0.6rem", borderRadius: "10px" }}>
+                                <AlertTriangle size={26} color="#dc2626" />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: "#991b1b" }}>
+                                    System Data Reset
+                                </h3>
+                                <span style={{ fontSize: "0.82rem", color: "#dc2626", fontWeight: 600 }}>High Security Admin Authorization</span>
+                            </div>
+                        </div>
+
+                        <div style={{
+                            background: "#fff1f2",
+                            border: "1px solid #fecdd3",
+                            borderRadius: "8px",
+                            padding: "0.85rem 1rem",
+                            fontSize: "0.86rem",
+                            color: "#9f1239",
+                            lineHeight: "1.45",
+                            marginBottom: "1.25rem"
+                        }}>
+                            <strong>CRITICAL WARNING: This will permanently wipe all system data!</strong>
+                            <p style={{ margin: "0.35rem 0 0 0", fontSize: "0.82rem" }}>
+                                All submitted claims (TA/DA, Medical, Transfer), all journey logs, medical bills, daily allowances, and all non-admin user accounts will be permanently destroyed. Administrator login accounts will be preserved.
+                            </p>
+                        </div>
+
+                        <div style={{ marginBottom: "1rem" }}>
+                            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "#334155", marginBottom: "0.4rem" }}>
+                                1. Enter your Administrator Password:
+                            </label>
+                            <input
+                                type="password"
+                                style={{
+                                    width: "100%",
+                                    padding: "0.6rem 0.85rem",
+                                    borderRadius: "8px",
+                                    border: "1px solid #cbd5e1",
+                                    fontSize: "0.92rem",
+                                    outline: "none"
+                                }}
+                                placeholder="Enter admin password..."
+                                value={adminPasswordInput}
+                                onChange={e => setAdminPasswordInput(e.target.value)}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: "1.25rem" }}>
+                            <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "#334155", marginBottom: "0.4rem" }}>
+                                2. Type <code style={{ background: "#f1f5f9", padding: "0.2rem 0.4rem", borderRadius: "4px", color: "#dc2626", fontWeight: 700 }}>DELETE ALL DATA</code> to confirm:
+                            </label>
+                            <input
+                                type="text"
+                                style={{
+                                    width: "100%",
+                                    padding: "0.6rem 0.85rem",
+                                    borderRadius: "8px",
+                                    border: confirmResetTextInput === "DELETE ALL DATA" ? "2px solid #dc2626" : "1px solid #cbd5e1",
+                                    fontSize: "0.92rem",
+                                    outline: "none"
+                                }}
+                                placeholder="DELETE ALL DATA"
+                                value={confirmResetTextInput}
+                                onChange={e => setConfirmResetTextInput(e.target.value)}
+                            />
+                        </div>
+
+                        {resetError && (
+                            <div style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1rem", fontWeight: 600 }}>
+                                ⚠️ {resetError}
+                            </div>
+                        )}
+
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => {
+                                    setShowResetModal(false);
+                                    setAdminPasswordInput("");
+                                    setConfirmResetTextInput("");
+                                    setResetError("");
+                                }}
+                                disabled={resettingSystem}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (confirmResetTextInput !== "DELETE ALL DATA") {
+                                        setResetError("Confirmation text must match 'DELETE ALL DATA'");
+                                        return;
+                                    }
+                                    if (!adminPasswordInput) {
+                                        setResetError("Admin password is required");
+                                        return;
+                                    }
+                                    setResettingSystem(true);
+                                    setResetError("");
+                                    try {
+                                        const res = await api.post('/api/admin/delete-system-data', {
+                                            admin_password: adminPasswordInput,
+                                            confirmation_text: confirmResetTextInput
+                                        });
+                                        const data = await res.json();
+                                        if (!res.ok) throw new Error(data.error || "System reset failed");
+                                        alert(data.message || "System data reset successfully!");
+                                        setShowResetModal(false);
+                                        const r = await api.get("/api/admin/stats");
+                                        setStats(await r.json());
+                                    } catch (err) {
+                                        setResetError(err.message);
+                                    } finally {
+                                        setResettingSystem(false);
+                                    }
+                                }}
+                                disabled={confirmResetTextInput !== "DELETE ALL DATA" || !adminPasswordInput || resettingSystem}
+                                style={{
+                                    background: confirmResetTextInput === "DELETE ALL DATA" && adminPasswordInput ? "#dc2626" : "#cbd5e1",
+                                    color: "#ffffff",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    padding: "0.65rem 1.25rem",
+                                    fontWeight: 700,
+                                    fontSize: "0.9rem",
+                                    cursor: confirmResetTextInput === "DELETE ALL DATA" && adminPasswordInput ? "pointer" : "not-allowed",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "0.4rem"
+                                }}
+                            >
+                                <Trash2 size={16} />
+                                {resettingSystem ? "Purging System..." : "Confirm System Reset"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

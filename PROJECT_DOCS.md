@@ -27,7 +27,7 @@
 | **Database** | Better-SQLite3 (`server/claims.db`) in **WAL Mode** with 6 Performance Indexes |
 | **Active Modules** | 9 (Dashboard, Authentication & RBAC, Admin Portal, Employees, TA/DA Claims, Transfer Claims, Medical Claims, Tour Diaries, Reports) |
 | **Claim Types** | TA_DA, TRANSFER, MEDICAL |
-| **Total API Routes** | 38 REST endpoints (6 Auth, 9 Admin, 23 Core Domain) |
+| **Total API Routes** | 41 REST endpoints (6 Auth, 12 Admin, 23 Core Domain) |
 | **Authentication** | Bearer JWT (HS256), bcrypt password hashing (10 salt rounds), rate limiting (`express-rate-limit`) |
 | **Default Admin Account** | `admin@mpscsc.gov.in` / `Admin@123` |
 | **Bilingual Support** | Hindi + English (`LanguageContext`, `translations.js`, Google Font `Noto Sans Devanagari`) |
@@ -584,7 +584,10 @@ All routes run on **port 5000** under base `/api`. Protected routes require `Aut
 | `POST` | `/api/admin/impersonate/:userId` | Admin Only | Issue scoped JWT impersonation session for target user account |
 | `GET` | `/api/admin/users/:id/employees` | Admin Only | Employees associated with specific user |
 | `GET` | `/api/admin/claims` | Admin Only | Centralized statewide cross-user claims ledger |
+| `DELETE` | `/api/admin/users/:id` | Admin Only | Permanent cascade deletion of user account, linked employees, and claims |
+| `DELETE` | `/api/admin/claims/:id` | Admin Only | Permanent cascade deletion of specific claim, journey legs, allowances, and bills |
 | `POST` | `/api/admin/purge-dummy-data` | Admin Only | Cascade purge of all test dummy records matching `@mpscsc.test` / `[DUMMY_DATA_RECORD]` |
+| `POST` | `/api/admin/delete-system-data` | Admin Only | High-security master data reset (requires admin password + confirmation text) |
 
 ### 7.3 Dashboard & Analytics
 
@@ -801,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
 | `92f9b21` | 2026-09-23 | fix: add Render persistent disk so SQLite DB survives redeploys |
 | `be37afc` | 2026-09-23 | fix: add missing PUT /api/tour-diaries/:id route (Tour Diary save was broken) |
 | `cb3a198` | 2026-09-23 | fix(MedicalClaim): enforce strict 2-page split in print layout - Page 1 (points 1-11): removed conflicting break-inside:avoid that was causing overflow spill; kept only break-after:page; compacted landscape CSS (logo 36px, table padding 3/5px, cert box padding 5/8px, sig-space 16px, smaller fonts) so all 11 points fit cleanly on one A4 landscape sheet - Page 2 (PART II Itemized Details): guaranteed fresh page with break-before:page only |
@@ -808,13 +812,13 @@ This automatically launches:
 | `5ed9f36` | 2026-09-23 | feat: Hide bill passing order from individual users; add A4 print orientation toggles across all modules |
 | `078b3f8` | 2026-09-23 | fix(medical-claim): ensure Applicant and Doctor signatures are clearly visible and unclipped in print |
 | `ad5b798` | 2026-09-23 | feat(auth): implement automatic inactivity logout with 60s warning modal and cross-tab sync |
-| `5850f17` | 2026-09-22 | Add A4 Landscape printing support, orientation selector, and clean print layout for Tour Diary |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-23** | **Automated Update** | Zero auto-seeding policy implemented; Persistent disk storage configured; Admin data deletion features added (DELETE /api/admin/users/:id, DELETE /api/admin/claims/:id, POST /api/admin/delete-system-data) with accidental deletion confirmation protection |
 | **2026-09-23** | **Automated Update** | Added persistent auto-seeding for District Manager Betul (dmnanbetul1@gmail.com) and SEED_USERS env mechanism to prevent user deletion on Render ephemeral restarts |
 | **2026-09-23** | **Automated Update** | Infrastructure fix: added Render persistent disk (1GB at /var/data) and DB_PATH=/var/data/claims.db env var — SQLite DB now survives redeploys, users/data will no longer be wiped on every deployment |
 | **2026-09-23** | **Automated Update** | Bug fix: Added missing PUT /api/tour-diaries/:id route — TourDiary.jsx was calling this endpoint but it did not exist on the server, causing 'Error saving data' on every save attempt |

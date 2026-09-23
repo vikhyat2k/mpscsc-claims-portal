@@ -1,8 +1,43 @@
 require('dotenv').config();
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = process.env.DB_PATH || path.join(__dirname, 'claims.db');
+// Persistent storage path resolution:
+// 1. process.env.DB_PATH if explicitly specified
+// 2. /var/data/claims.db if /var/data mount directory exists (Render/Docker volume)
+// 3. Fallback to local server/claims.db
+let dbPath = process.env.DB_PATH;
+if (!dbPath) {
+    if (fs.existsSync('/var/data')) {
+        dbPath = '/var/data/claims.db';
+    } else {
+        dbPath = path.join(__dirname, 'claims.db');
+    }
+}
+
+// Ensure the parent directory exists
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+    try {
+        fs.mkdirSync(dbDir, { recursive: true });
+    } catch (e) {
+        console.warn(`[Database] Could not create directory ${dbDir}:`, e.message);
+    }
+}
+
+// If using a persistent disk location and the database does not exist yet (first boot on persistent volume),
+// copy the baseline database template from the repository if available
+const repoDbPath = path.join(__dirname, 'claims.db');
+if (path.resolve(dbPath) !== path.resolve(repoDbPath) && !fs.existsSync(dbPath) && fs.existsSync(repoDbPath)) {
+    try {
+        fs.copyFileSync(repoDbPath, dbPath);
+        console.log(`[Database] Initialized persistent database at ${dbPath} from baseline template.`);
+    } catch (err) {
+        console.warn(`[Database] Could not seed ${dbPath} from template, initializing fresh schema:`, err.message);
+    }
+}
+
 const db = new Database(dbPath);
 db.pragma('foreign_keys = OFF');
 // WAL mode gives much better concurrent read/write throughput than the

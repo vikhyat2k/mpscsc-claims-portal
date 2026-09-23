@@ -2,12 +2,18 @@ services:
   - type: web
     name: mpscsc-claims-portal
     runtime: node
-    plan: free
+    plan: starter
     buildCommand: npm run build
     startCommand: npm start
+    disk:
+      name: mpscsc-db
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DB_PATH
+        value: "/var/data/claims.db"
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES
@@ -20,8 +26,3 @@ services:
         value: "MPSCSC Administrator"
       - key: ADMIN_MOBILE
         value: "9876543210"
-      # Auto-seed user accounts on every startup (survives redeploys).
-      # Format: email|password|fullName|mobile  (one per line, comma-separated)
-      # Example: user1@gmail.com|Pass@123|Ram Singh|9800000001,user2@gmail.com|Pass@123|Shyam Lal|9800000002
-      - key: SEED_USERS
-        value: "dmnanbetul1@gmail.com|Password@123|DM Betul|9800000001"
