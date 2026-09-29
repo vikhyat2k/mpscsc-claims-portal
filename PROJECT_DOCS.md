@@ -804,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `23629ec` | 2026-09-29 | fix(bill): align Form 21 borders, eliminate scrollbar, set 100% width on screen and format Fixed TA label |
 | `f3f672b` | 2026-09-29 | feat: match Form 21 TA/DA bill format to official department 18-column PDF standard |
 | `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 | `599c3e5` | 2026-09-29 | fix(bill): hide Form 21 Page 1 turnover continuation notice and Page 2 screen separator in individual login view |
@@ -811,13 +812,13 @@ This automatically launches:
 | `b50abc2` | 2026-09-23 | fix(ui): make '+ New claim' dropdown completely opaque and solid with crisp typography and colored icon badges |
 | `0651770` | 2026-09-23 | feat(admin): zero auto-seeding policy, persistent disk storage, and admin-only data deletion with accidental deletion confirmation |
 | `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
-| `92f9b21` | 2026-09-23 | fix: add Render persistent disk so SQLite DB survives redeploys |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-29** | **Automated Update** | Increase physical signing room above claimant signature block and place/date in Form 21 |
 | **2026-09-29** | **Automated Update** | Fix Form 21 table border alignment, eliminate horizontal scrollbar, match 100% width on screen, and sync Fixed TA Rupee label |
 | **2026-09-29** | **Automated Update** | Aligned Form 21 TA/DA Bill layout, headers, 3-column top metadata box, 18-column table, statutory certificates, and summary calculation box to exact official department PDF standard |
 | **2026-09-29** | **Automated Update** | Optimize Form 21 TA/DA bill print layout for single-page A4 Landscape with text wrapping and 2-column Part II |

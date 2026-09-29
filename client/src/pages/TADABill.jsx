@@ -1429,7 +1429,7 @@ export default function TADABill() {
                             {b.cert4}
                         </div>
 
-                        <div style={{ marginTop: '22px', fontSize: '9.5px' }}>
+                        <div className="form21-place-date" style={{ marginTop: '38px', fontSize: '9.5px' }}>
                             <div style={{ marginBottom: '3px' }}>
                                 <strong>{b.place}:</strong> {employee.headquarters || '__________'}
                             </div>
@@ -1483,9 +1483,9 @@ export default function TADABill() {
                             </table>
                         </div>
 
-                        {/* Claimant Signature */}
+                        {/* Claimant Signature with Physical Signing Room */}
                         <div className="form21-signature-block" style={{
-                            marginTop: '22px',
+                            marginTop: '56px',
                             textAlign: 'center',
                             alignSelf: 'center',
                             width: '100%'
@@ -1782,9 +1782,12 @@ export default function TADABill() {
                         font-size: 6.0pt !important;
                     }
                     .form21-signature-block {
-                        margin-top: 3.5mm !important;
+                        margin-top: 15mm !important;
                         font-size: 6.0pt !important;
                         line-height: 1.15 !important;
+                    }
+                    .form21-place-date {
+                        margin-top: 10mm !important;
                     }
                     .form21-signature-block div {
                         font-size: inherit !important;
