@@ -352,9 +352,10 @@ export default function AdminUserDetail() {
                                         <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" }}>
                                             {c.claim_type !== "MEDICAL" ? (
                                                 <Link
-                                                    to={`/claims/${c.id}/bill`}
+                                                    to={`/claims/${c.id}/bill?from=admin`}
+                                                    state={{ fromAdminControl: true }}
                                                     className="admin-table-link"
-                                                    title="View / Print Form 21 Government Bill"
+                                                    title="View / Print Form 21 Government Bill (Admin Control)"
                                                 >
                                                     View Bill
                                                 </Link>

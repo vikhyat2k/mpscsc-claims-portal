@@ -1,7 +1,7 @@
 import api, { apiRequest } from '../utils/api';
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Printer, ArrowLeft, FileSpreadsheet, MousePointer2, Receipt, Edit, Check, X } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Printer, ArrowLeft, FileSpreadsheet, MousePointer2, Receipt, Edit, Check, X, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslations } from '../utils/translations';
@@ -82,9 +82,25 @@ function getClaimDAFactor(totals, billRows) {
 export default function TADABill() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { language } = useLanguage();
     const t = getTranslations(language);
     const { user, isAdmin } = useAuth();
+
+    // Check if accessed directly from Admin Control section (?from=admin or state.fromAdminControl)
+    const searchParams = new URLSearchParams(location.search);
+    const fromAdminControl = searchParams.get('from') === 'admin'
+        || searchParams.get('admin') === '1'
+        || location.state?.fromAdminControl === true;
+
+    // Admin passing order toggle state (null = follow entry context: show when from Admin Control, hide when from individual login)
+    const [adminPassingOrderOverride, setAdminPassingOrderOverride] = useState(null);
+
+    // Active visibility for "2. Controlling Officer Certificate & Bill Passing Order"
+    // Strictly FALSE for non-admin users (individual login) under all circumstances.
+    const showPassingOrder = Boolean(isAdmin && (
+        adminPassingOrderOverride !== null ? adminPassingOrderOverride : fromAdminControl
+    ));
 
     const [loading, setLoading] = useState(true);
     const [printOrientation, setPrintOrientation] = useState(() => {
@@ -827,7 +843,7 @@ export default function TADABill() {
         <div style={{ padding: '1rem' }}>
             {/* Action Bar (No Print) */}
             <div className="no-print" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <button onClick={() => navigate(`/claims`)} className="btn btn-secondary">
+                <button onClick={() => fromAdminControl ? navigate('/admin/claims') : navigate('/claims')} className="btn btn-secondary">
                     <ArrowLeft size={18} /> {t.common.back}
                 </button>
                 <button
@@ -838,6 +854,52 @@ export default function TADABill() {
                 >
                     <FileSpreadsheet size={18} /> {language === 'hi' ? 'दौरा डायरी देखें' : 'View Tour Diary'}
                 </button>
+                {/* Admin Control Passing Order Indicator & Toggle (Admin Only) */}
+                {isAdmin && (
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                        padding: '3px 8px',
+                        borderRadius: '8px',
+                        background: showPassingOrder ? '#eff6ff' : '#f8fafc',
+                        border: showPassingOrder ? '1px solid #93c5fd' : '1px solid #cbd5e1',
+                        fontSize: '12px'
+                    }}>
+                        <ShieldCheck size={16} color={showPassingOrder ? '#2563eb' : '#64748b'} />
+                        <span style={{ fontWeight: '600', color: showPassingOrder ? '#1e40af' : '#475569' }}>
+                            {language === 'hi' ? 'एडमिन कंट्रोल:' : 'Admin Control:'}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => setAdminPassingOrderOverride(!showPassingOrder)}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '3px 8px',
+                                borderRadius: '5px',
+                                border: 'none',
+                                background: showPassingOrder ? '#2563eb' : '#e2e8f0',
+                                color: showPassingOrder ? '#ffffff' : '#334155',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                transition: 'all 0.15s ease'
+                            }}
+                            title={showPassingOrder
+                                ? (language === 'hi' ? 'देयक पारित आदेश छिपाएं (कर्मचारी प्रति)' : 'Hide Bill Passing Order (Claimant Copy)')
+                                : (language === 'hi' ? 'देयक पारित आदेश दिखाएं (एडमिन कंट्रोल)' : 'Show Bill Passing Order (Admin Control)')
+                            }
+                        >
+                            {showPassingOrder ? <EyeOff size={13} /> : <Eye size={13} />}
+                            {showPassingOrder
+                                ? (language === 'hi' ? 'पारित आदेश सक्रिय (छिपाएं)' : 'Passing Order Shown (Hide)')
+                                : (language === 'hi' ? 'पारित आदेश छिपा है (दिखाएं)' : 'Passing Order Hidden (Show)')
+                            }
+                        </button>
+                    </div>
+                )}
                 {/* Print Orientation Selector Toggle */}
                 <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #cbd5e1', gap: '3px' }}>
                     <button
@@ -1386,7 +1448,7 @@ export default function TADABill() {
                 }}>
                     <span><strong>{language === 'hi' ? 'फॉर्म क्रमांक 21 (पृष्ठ 1 / 2) — यात्रा विवरण' : 'Form 21 (Page 1 of 2) — Journey Details'}</strong></span>
                     <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>
-                        {language === 'hi' ? (isAdmin ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन एवं प्रमाण-पत्र)') : (isAdmin ? '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)' : '>> Please Turn Over: Part II (Adjustments & Certificates)')}
+                        {language === 'hi' ? (showPassingOrder ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन एवं प्रमाण-पत्र)') : (showPassingOrder ? '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)' : '>> Please Turn Over: Part II (Adjustments & Certificates)')}
                     </span>
                 </div>
 
@@ -1408,7 +1470,7 @@ export default function TADABill() {
                         fontWeight: '700',
                         border: '1px solid #bfdbfe'
                     }}>
-                        📄 {language === 'hi' ? (isAdmin ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)' : 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र एवं कटौती)') : (isAdmin ? 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)' : 'Form 21 - Page 2 (Part II: Certificates & Deductions)')}
+                        📄 {language === 'hi' ? (showPassingOrder ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)' : 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र एवं कटौती)') : (showPassingOrder ? 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)' : 'Form 21 - Page 2 (Part II: Certificates & Deductions)')}
                     </span>
                 </div>
 
@@ -1432,7 +1494,7 @@ export default function TADABill() {
                                     {language === 'hi' ? 'मध्य प्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड' : 'M.P. State Civil Supplies Corporation Limited'}
                                 </h3>
                                 <h4 style={{ margin: '2px 0 0 0', fontSize: '10.5pt', fontWeight: 'bold', color: '#1e3a8a' }}>
-                                    {language === 'hi' ? (isAdmin ? 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन एवं प्रमाण-पत्र)') : (isAdmin ? 'Form 21 — Part II (Adjustments, Certificates & Passing Order)' : 'Form 21 — Part II (Adjustments & Certificates)')}
+                                    {language === 'hi' ? (showPassingOrder ? 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन एवं प्रमाण-पत्र)') : (showPassingOrder ? 'Form 21 — Part II (Adjustments, Certificates & Passing Order)' : 'Form 21 — Part II (Adjustments & Certificates)')}
                                 </h4>
                             </div>
                             <div style={{ textAlign: 'right', fontSize: '8.8pt', lineHeight: '1.35' }}>
@@ -1535,8 +1597,8 @@ export default function TADABill() {
                         </div>
                     </div>
 
-                    {/* Section 4: Controlling Officer Certificate & Bill Sanction Order (Admin Only) */}
-                    {isAdmin && (
+                    {/* Section 4: Controlling Officer Certificate & Bill Sanction Order (Admin Control Only) */}
+                    {showPassingOrder && (
                     <div style={{
                         border: '1.5px solid black',
                         padding: '10px 14px',

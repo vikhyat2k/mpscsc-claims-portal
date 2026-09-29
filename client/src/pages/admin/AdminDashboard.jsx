@@ -182,9 +182,10 @@ export default function AdminDashboard() {
                                     </td>
                                     <td style={{ textAlign: "center" }}>
                                         <Link
-                                            to={c.claim_type !== "MEDICAL" ? `/claims/${c.id}/bill` : `/medical-claims/${c.id}?print=1`}
+                                            to={c.claim_type !== "MEDICAL" ? `/claims/${c.id}/bill?from=admin` : `/medical-claims/${c.id}?print=1`}
+                                            state={{ fromAdminControl: true }}
                                             className="admin-table-link"
-                                            title="View / Print Bill"
+                                            title="View / Print Bill (Admin Control)"
                                         >
                                             View Bill <ArrowUpRight size={13} />
                                         </Link>

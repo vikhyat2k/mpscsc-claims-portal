@@ -12,7 +12,7 @@
 > **System:** Claims Portal Web Application  
 > **Stack:** Express.js (Node.js) · React 19 · Vite · Better-SQLite3 (WAL Mode) · React Router v7 · Lucide React · JWT (jsonwebtoken) · bcryptjs  
 > **Document Status:** LIVE — Maintained by developer / AI assistant on every project change  
-> **Last Sync:** 2026-09-23  
+> **Last Sync:** 2026-09-29  
 
 ---
 
@@ -392,7 +392,7 @@ mpscsc-claims-portal/
   - Fully restored UTF-8 Devanagari Hindi text (heading, column labels, certificates, declaration).
   - Styled with Google Font `Noto Sans Devanagari` and `Inter`.
   - Export to Excel via SheetJS and CSS-optimized Print layout.
-  - **Passing Order Access Control:** Section 4 Controlling Officer Certificate & Passing Order ("देयक पारित आदेश") is exclusively displayed to Administrators (`isAdmin`). For individual employee logins, the passing order is hidden and the bill terminates cleanly at the Claimant's Signature.
+  - **Passing Order Access Control:** Section 4 Controlling Officer Certificate & Passing Order ("देयक पारित आदेश") is strictly hidden in Individual Login (non-admin accounts) and in standard employee views, terminating cleanly at the Claimant's Signature. It is exclusively shown in Admin Control (`/admin/claims`, `/admin`, `/admin/users/:id`), with contextual query state (`from=admin`) and an on-demand Admin Control action bar toggle (`Admin Control: Passing Order Active / Hidden`) allowing administrators to switch between the official Passing Order sanction copy and the unpassed Claimant submission copy.
   - **Universal Print Orientation:** Independent A4 Landscape and A4 Portrait orientation toggles available in all user logins (Admin and Individual) with dynamic `@page` CSS and localized button labels.
 
 ### 5.6 Transfer Claims
@@ -804,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `b50abc2` | 2026-09-23 | fix(ui): make '+ New claim' dropdown completely opaque and solid with crisp typography and colored icon badges |
 | `0651770` | 2026-09-23 | feat(admin): zero auto-seeding policy, persistent disk storage, and admin-only data deletion with accidental deletion confirmation |
 | `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
 | `92f9b21` | 2026-09-23 | fix: add Render persistent disk so SQLite DB survives redeploys |
@@ -811,13 +812,14 @@ This automatically launches:
 | `cb3a198` | 2026-09-23 | fix(MedicalClaim): enforce strict 2-page split in print layout - Page 1 (points 1-11): removed conflicting break-inside:avoid that was causing overflow spill; kept only break-after:page; compacted landscape CSS (logo 36px, table padding 3/5px, cert box padding 5/8px, sig-space 16px, smaller fonts) so all 11 points fit cleanly on one A4 landscape sheet - Page 2 (PART II Itemized Details): guaranteed fresh page with break-before:page only |
 | `3dfecca` | 2026-09-23 | feat: optimise A4 landscape print layouts for all 4 forms - TADABill: default landscape, remove Part II forced page-break, compress column widths/fonts for 1-page; TourDiary: tighten margins/font/padding for 1-page; MedicalClaim: landscape recommended, 2-col grid on Page 2, smaller fonts/padding; TransferClaim: add orientation toggle, handlePrint, formal print-only bill section with full CSS |
 | `5ed9f36` | 2026-09-23 | feat: Hide bill passing order from individual users; add A4 print orientation toggles across all modules |
-| `078b3f8` | 2026-09-23 | fix(medical-claim): ensure Applicant and Doctor signatures are clearly visible and unclipped in print |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-29** | **Automated Update** | feat(tada-bill): restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control with active action-bar toggle |
+| **2026-09-24** | **Automated Update** | Added fly.toml configuration for Fly.io deployment with persistent volume |
 | **2026-09-23** | **Automated Update** | Fix: '+ New claim' dropdown transparency resolved with opaque solid background, crisp typography, and colored badge icons |
 | **2026-09-23** | **Automated Update** | Zero auto-seeding policy implemented; Persistent disk storage configured; Admin data deletion features added (DELETE /api/admin/users/:id, DELETE /api/admin/claims/:id, POST /api/admin/delete-system-data) with accidental deletion confirmation protection |
 | **2026-09-23** | **Automated Update** | Added persistent auto-seeding for District Manager Betul (dmnanbetul1@gmail.com) and SEED_USERS env mechanism to prevent user deletion on Render ephemeral restarts |
