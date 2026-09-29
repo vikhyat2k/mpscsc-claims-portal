@@ -142,26 +142,26 @@ export default function TADABill() {
     const [gradePayInput, setGradePayInput] = useState('');
     const [isSavingPayInfo, setIsSavingPayInfo] = useState(false);
 
-    // Official 18-Column widths and visibility (matching department PDF standard)
+    // Official 18-Column widths and visibility (matching department PDF standard - exact 100% total)
     const defaultColSettings = {
-        c1: { w: 60, v: true, label: '1. Departure Station' },
-        c2: { w: 80, v: true, label: '2. Departure Date / Time' },
-        c3: { w: 60, v: true, label: '3. Arrival Station' },
-        c4: { w: 80, v: true, label: '4. Arrival Date / Time' },
-        c5: { w: 120, v: true, label: '5. Purpose of Journey' },
-        c6: { w: 75, v: true, label: '6. Transfer Description' },
-        c7: { w: 55, v: true, label: '7. Transfer Amount (₹)' },
-        c8: { w: 70, v: true, label: '8. Class of Travel Undertaken' },
-        c9: { w: 45, v: true, label: '9. Distance (KM)' },
-        c10: { w: 75, v: true, label: '10. Ticket PNR' },
-        c11: { w: 60, v: true, label: '11. Fare Amount (₹)' },
-        c12: { w: 45, v: true, label: '12. Journey DA Time (Hrs)' },
-        c13: { w: 60, v: true, label: '13. Journey DA Limit' },
-        c14: { w: 60, v: true, label: '14. Journey DA Amount (₹)' },
-        c15: { w: 45, v: true, label: '15. Stay DA Time (Hrs)' },
-        c16: { w: 60, v: true, label: '16. Stay DA Limit' },
-        c17: { w: 60, v: true, label: '17. Stay DA Amount (₹)' },
-        c18: { w: 65, v: true, label: '18. Transport Expenses (₹)' },
+        c1: { w: '5.5%', v: true, label: '1. Departure Station' },
+        c2: { w: '7.0%', v: true, label: '2. Departure Date / Time' },
+        c3: { w: '5.5%', v: true, label: '3. Arrival Station' },
+        c4: { w: '7.0%', v: true, label: '4. Arrival Date / Time' },
+        c5: { w: '15.0%', v: true, label: '5. Purpose of Journey' },
+        c6: { w: '4.5%', v: true, label: '6. Transfer Description' },
+        c7: { w: '3.5%', v: true, label: '7. Transfer Amount (₹)' },
+        c8: { w: '5.0%', v: true, label: '8. Class of Travel Undertaken' },
+        c9: { w: '3.5%', v: true, label: '9. Distance (KM)' },
+        c10: { w: '6.0%', v: true, label: '10. Ticket PNR' },
+        c11: { w: '4.5%', v: true, label: '11. Fare Amount (₹)' },
+        c12: { w: '3.5%', v: true, label: '12. Journey DA Time (Hrs)' },
+        c13: { w: '6.0%', v: true, label: '13. Journey DA Limit' },
+        c14: { w: '4.5%', v: true, label: '14. Journey DA Amount (₹)' },
+        c15: { w: '3.5%', v: true, label: '15. Stay DA Time (Hrs)' },
+        c16: { w: '6.0%', v: true, label: '16. Stay DA Limit' },
+        c17: { w: '5.0%', v: true, label: '17. Stay DA Amount (₹)' },
+        c18: { w: '4.5%', v: true, label: '18. Transport Expenses (₹)' },
     };
 
     const [colSettings, setColSettings] = useState(defaultColSettings);
@@ -170,10 +170,12 @@ export default function TADABill() {
 
     const handleMouseDown = (e, key) => {
         e.preventDefault();
+        const thEl = e.currentTarget.parentElement;
+        const currentPixelWidth = thEl ? thEl.offsetWidth : 60;
         resizing.current = {
             key,
             startX: e.pageX,
-            startWidth: colSettings[key].w
+            startWidth: currentPixelWidth
         };
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -184,10 +186,10 @@ export default function TADABill() {
         if (!resizing.current) return;
         const { key, startX, startWidth } = resizing.current;
         const diff = e.pageX - startX;
-        const newWidth = Math.max(10, startWidth + diff);
+        const newWidth = Math.max(20, startWidth + diff);
         setColSettings(prev => ({
             ...prev,
-            [key]: { ...prev[key], w: newWidth }
+            [key]: { ...prev[key], w: `${newWidth}px` }
         }));
     };
 
@@ -1027,13 +1029,16 @@ export default function TADABill() {
             {/* Official Treasury Form 21 Container */}
             <div className="bill-print-container" style={{
                 background: 'white',
-                padding: '15px',
-                maxWidth: '1280px',
+                padding: '16px 20px',
+                maxWidth: '1240px',
                 margin: '0 auto',
                 fontSize: `${fontSize}px`,
-                border: '1px solid black',
+                border: 'none',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+                borderRadius: '4px',
                 fontFamily: "'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
-                color: 'black'
+                color: 'black',
+                boxSizing: 'border-box'
             }}>
                 {/* Official Title Line */}
                 <div className="bill-title-header" style={{ position: 'relative', textAlign: 'center', marginBottom: '8px', paddingBottom: '4px' }}>
@@ -1149,7 +1154,7 @@ export default function TADABill() {
                     {/* Column 3: Fixed TA & Consolidated DA Rate */}
                     <div style={{ padding: '4px 8px' }}>
                         <div style={{ marginBottom: '3px' }}>
-                            <strong>{b.fixedTA}:</strong> {employee.fixed_ta ? `₹${employee.fixed_ta}` : ' - '}
+                            <strong>{b.fixedTA}:</strong> {employee.fixed_ta ? employee.fixed_ta : ' - '}
                         </div>
                         <div>
                             <strong>{b.consolidatedDA}:</strong> {defaultDaRate ? `₹${defaultDaRate}` : 'Nil'}
@@ -1163,7 +1168,7 @@ export default function TADABill() {
                 </div>
 
                 {/* The Prescribed 18-Column Table (Matching Official Department Standard) */}
-                <div className="table-scroll-wrapper" style={{ overflowX: 'auto' }}>
+                <div className="table-scroll-wrapper" style={{ width: '100%', overflowX: 'hidden' }}>
                     <table className="bill-21-table">
                         <colgroup>
                             {colSettings.c1.v && <col className="col-c1" style={{ width: colSettings.c1.w }} />}
@@ -1399,10 +1404,12 @@ export default function TADABill() {
                 {/* Bottom Section: Left = Certificates & Place/Date, Right = Summary Box & Signature */}
                 <div className="form21-bottom-section" style={{
                     display: 'grid',
-                    gridTemplateColumns: '56% 44%',
-                    gap: '20px',
+                    gridTemplateColumns: 'minmax(0, 56fr) minmax(0, 44fr)',
+                    gap: '16px',
                     marginTop: '10px',
-                    alignItems: 'start'
+                    alignItems: 'start',
+                    width: '100%',
+                    boxSizing: 'border-box'
                 }}>
                     {/* Left Column: Certificates & Place / Date */}
                     <div className="form21-bottom-left" style={{ fontSize: '9px', lineHeight: '1.38' }}>
@@ -1532,12 +1539,17 @@ export default function TADABill() {
 
             {/* Official Treasury Form 21 A4 Landscape Print Styles */}
             <style>{`
+                .table-scroll-wrapper {
+                    width: 100%;
+                    overflow-x: hidden;
+                }
                 .bill-21-table {
                     border-collapse: collapse;
                     width: 100%;
                     border: 1px solid black;
                     table-layout: fixed;
                     margin-bottom: 6px;
+                    box-sizing: border-box;
                 }
                 .resizer {
                     position: absolute;
@@ -1569,8 +1581,11 @@ export default function TADABill() {
                 .bill-21-table th {
                     background: #f1f5f9;
                     text-align: center;
-                    font-size: 0.88em;
+                    font-size: 0.82em;
                     font-weight: bold;
+                    word-break: normal;
+                    overflow-wrap: normal;
+                    hyphens: none;
                 }
                 .col-numbers td {
                     text-align: center;
@@ -1579,6 +1594,26 @@ export default function TADABill() {
                     font-weight: bold;
                     padding: 1px;
                 }
+
+                /* Proportional widths on screen (Exact 100% distribution matching print) */
+                .bill-21-table col.col-c1  { width: 5.5%; }
+                .bill-21-table col.col-c2  { width: 7.0%; }
+                .bill-21-table col.col-c3  { width: 5.5%; }
+                .bill-21-table col.col-c4  { width: 7.0%; }
+                .bill-21-table col.col-c5  { width: 15.0%; }
+                .bill-21-table col.col-c6  { width: 4.5%; }
+                .bill-21-table col.col-c7  { width: 3.5%; }
+                .bill-21-table col.col-c8  { width: 5.0%; }
+                .bill-21-table col.col-c9  { width: 3.5%; }
+                .bill-21-table col.col-c10 { width: 6.0%; }
+                .bill-21-table col.col-c11 { width: 4.5%; }
+                .bill-21-table col.col-c12 { width: 3.5%; }
+                .bill-21-table col.col-c13 { width: 6.0%; }
+                .bill-21-table col.col-c14 { width: 4.5%; }
+                .bill-21-table col.col-c15 { width: 3.5%; }
+                .bill-21-table col.col-c16 { width: 6.0%; }
+                .bill-21-table col.col-c17 { width: 5.0%; }
+                .bill-21-table col.col-c18 { width: 4.5%; }
                 @media (max-width: 850px) {
                     .form21-bottom-section {
                         grid-template-columns: 1fr !important;
@@ -1675,15 +1710,15 @@ export default function TADABill() {
                     .bill-21-table col.col-c7  { width: 3.5% !important; }
                     .bill-21-table col.col-c8  { width: 5.0% !important; }
                     .bill-21-table col.col-c9  { width: 3.5% !important; }
-                    .bill-21-table col.col-c10 { width: 6.5% !important; }
+                    .bill-21-table col.col-c10 { width: 6.0% !important; }
                     .bill-21-table col.col-c11 { width: 4.5% !important; }
                     .bill-21-table col.col-c12 { width: 3.5% !important; }
-                    .bill-21-table col.col-c13 { width: 5.5% !important; }
+                    .bill-21-table col.col-c13 { width: 6.0% !important; }
                     .bill-21-table col.col-c14 { width: 4.5% !important; }
                     .bill-21-table col.col-c15 { width: 3.5% !important; }
-                    .bill-21-table col.col-c16 { width: 5.5% !important; }
+                    .bill-21-table col.col-c16 { width: 6.0% !important; }
                     .bill-21-table col.col-c17 { width: 5.0% !important; }
-                    .bill-21-table col.col-c18 { width: 5.0% !important; }
+                    .bill-21-table col.col-c18 { width: 4.5% !important; }
 
                     .bill-21-table th, .bill-21-table td {
                         border: 1px solid black !important;
@@ -1719,11 +1754,12 @@ export default function TADABill() {
                     /* Bottom Section: 2 Columns Matching PDF */
                     .form21-bottom-section {
                         display: grid !important;
-                        grid-template-columns: ${printOrientation === 'landscape' ? '56% 44%' : '1fr'} !important;
+                        grid-template-columns: ${printOrientation === 'landscape' ? 'minmax(0, 56fr) minmax(0, 44fr)' : '1fr'} !important;
                         gap: 4mm !important;
                         margin-top: 1.5mm !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
+                        width: 100% !important;
                     }
                     .form21-bottom-left {
                         font-size: 5.8pt !important;

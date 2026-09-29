@@ -804,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `f3f672b` | 2026-09-29 | feat: match Form 21 TA/DA bill format to official department 18-column PDF standard |
 | `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 | `599c3e5` | 2026-09-29 | fix(bill): hide Form 21 Page 1 turnover continuation notice and Page 2 screen separator in individual login view |
 | `37e592a` | 2026-09-29 | feat: Restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control; hide from individual logins |
@@ -811,13 +812,13 @@ This automatically launches:
 | `0651770` | 2026-09-23 | feat(admin): zero auto-seeding policy, persistent disk storage, and admin-only data deletion with accidental deletion confirmation |
 | `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
 | `92f9b21` | 2026-09-23 | fix: add Render persistent disk so SQLite DB survives redeploys |
-| `be37afc` | 2026-09-23 | fix: add missing PUT /api/tour-diaries/:id route (Tour Diary save was broken) |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-29** | **Automated Update** | Fix Form 21 table border alignment, eliminate horizontal scrollbar, match 100% width on screen, and sync Fixed TA Rupee label |
 | **2026-09-29** | **Automated Update** | Aligned Form 21 TA/DA Bill layout, headers, 3-column top metadata box, 18-column table, statutory certificates, and summary calculation box to exact official department PDF standard |
 | **2026-09-29** | **Automated Update** | Optimize Form 21 TA/DA bill print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 | **2026-09-29** | **Automated Update** | Hide Form 21 Page 1 continuation turnover notice and screen separator in individual login view |
