@@ -1435,44 +1435,52 @@ export default function TADABill() {
                     </table>
                 </div>
 
-                {/* Page 1 Turnover / Continuation Notice (Print Only) */}
-                <div className="print-only form21-page1-notice" style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '6px',
-                    paddingTop: '4px',
-                    borderTop: '1px solid #94a3b8',
-                    fontSize: '7.8pt',
-                    color: '#334155'
-                }}>
-                    <span><strong>{language === 'hi' ? 'फॉर्म क्रमांक 21 (पृष्ठ 1 / 2) — यात्रा विवरण' : 'Form 21 (Page 1 of 2) — Journey Details'}</strong></span>
-                    <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>
-                        {language === 'hi' ? (showPassingOrder ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन एवं प्रमाण-पत्र)') : (showPassingOrder ? '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)' : '>> Please Turn Over: Part II (Adjustments & Certificates)')}
-                    </span>
-                </div>
-
-                {/* Visual Separator between Page 1 and Page 2 (Screen Only) */}
-                <div className="no-print form21-page-separator" style={{
-                    margin: '28px 0 20px 0',
-                    borderTop: '2px dashed #2563eb',
-                    textAlign: 'center',
-                    position: 'relative'
-                }}>
-                    <span style={{
-                        position: 'relative',
-                        top: '-12px',
-                        background: '#eff6ff',
-                        color: '#1d4ed8',
-                        padding: '3px 16px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: '700',
-                        border: '1px solid #bfdbfe'
+                {/* Page 1 Turnover / Continuation Notice (Print Only — Admin Control with Passing Order) */}
+                {showPassingOrder && (
+                    <div className="print-only form21-page1-notice" style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginTop: '6px',
+                        paddingTop: '4px',
+                        borderTop: '1px solid #94a3b8',
+                        fontSize: '7.8pt',
+                        color: '#334155'
                     }}>
-                        📄 {language === 'hi' ? (showPassingOrder ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)' : 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र एवं कटौती)') : (showPassingOrder ? 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)' : 'Form 21 - Page 2 (Part II: Certificates & Deductions)')}
-                    </span>
-                </div>
+                        <span><strong>{language === 'hi' ? 'फॉर्म क्रमांक 21 (पृष्ठ 1 / 2) — यात्रा विवरण' : 'Form 21 (Page 1 of 2) — Journey Details'}</strong></span>
+                        <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>
+                            {language === 'hi'
+                                ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)'
+                                : '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)'}
+                        </span>
+                    </div>
+                )}
+
+                {/* Visual Separator between Page 1 and Page 2 (Screen Only — Admin Control with Passing Order) */}
+                {showPassingOrder && (
+                    <div className="no-print form21-page-separator" style={{
+                        margin: '28px 0 20px 0',
+                        borderTop: '2px dashed #2563eb',
+                        textAlign: 'center',
+                        position: 'relative'
+                    }}>
+                        <span style={{
+                            position: 'relative',
+                            top: '-12px',
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            padding: '3px 16px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            border: '1px solid #bfdbfe'
+                        }}>
+                            📄 {language === 'hi'
+                                ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)'
+                                : 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)'}
+                        </span>
+                    </div>
+                )}
 
                 {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                     PAGE 2: PART II (Certificates, Net Adjustments & Sanction)

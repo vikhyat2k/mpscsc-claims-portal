@@ -804,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `37e592a` | 2026-09-29 | feat: Restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control; hide from individual logins |
 | `b50abc2` | 2026-09-23 | fix(ui): make '+ New claim' dropdown completely opaque and solid with crisp typography and colored icon badges |
 | `0651770` | 2026-09-23 | feat(admin): zero auto-seeding policy, persistent disk storage, and admin-only data deletion with accidental deletion confirmation |
 | `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
@@ -811,13 +812,13 @@ This automatically launches:
 | `be37afc` | 2026-09-23 | fix: add missing PUT /api/tour-diaries/:id route (Tour Diary save was broken) |
 | `cb3a198` | 2026-09-23 | fix(MedicalClaim): enforce strict 2-page split in print layout - Page 1 (points 1-11): removed conflicting break-inside:avoid that was causing overflow spill; kept only break-after:page; compacted landscape CSS (logo 36px, table padding 3/5px, cert box padding 5/8px, sig-space 16px, smaller fonts) so all 11 points fit cleanly on one A4 landscape sheet - Page 2 (PART II Itemized Details): guaranteed fresh page with break-before:page only |
 | `3dfecca` | 2026-09-23 | feat: optimise A4 landscape print layouts for all 4 forms - TADABill: default landscape, remove Part II forced page-break, compress column widths/fonts for 1-page; TourDiary: tighten margins/font/padding for 1-page; MedicalClaim: landscape recommended, 2-col grid on Page 2, smaller fonts/padding; TransferClaim: add orientation toggle, handlePrint, formal print-only bill section with full CSS |
-| `5ed9f36` | 2026-09-23 | feat: Hide bill passing order from individual users; add A4 print orientation toggles across all modules |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-29** | **Automated Update** | Hide Form 21 Page 1 continuation turnover notice and screen separator in individual login view |
 | **2026-09-29** | **Automated Update** | feat(tada-bill): restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control with active action-bar toggle |
 | **2026-09-24** | **Automated Update** | Added fly.toml configuration for Fly.io deployment with persistent volume |
 | **2026-09-23** | **Automated Update** | Fix: '+ New claim' dropdown transparency resolved with opaque solid background, crisp typography, and colored badge icons |
