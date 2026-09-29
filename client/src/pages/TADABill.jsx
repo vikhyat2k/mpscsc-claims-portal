@@ -33,19 +33,45 @@ function formatPayLevelAndGradePay(emp, lang) {
     return emp.category ? `Category ${emp.category}` : '—';
 }
 
+function formatDateDMY(dStr) {
+    if (!dStr) return '';
+    const s = String(dStr).trim();
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+    const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+        return `${match[3]}/${match[2]}/${match[1]}`;
+    }
+    return s;
+}
+
+function formatTime12Hr(tStr) {
+    if (!tStr) return '';
+    const s = String(tStr).trim();
+    if (/am|pm/i.test(s)) return s;
+    const match = s.match(/^(\d{1,2}):(\d{2})/);
+    if (!match) return s;
+    let hrs = parseInt(match[1], 10);
+    const mins = match[2];
+    const ampm = hrs >= 12 ? 'PM' : 'AM';
+    hrs = hrs % 12;
+    if (hrs === 0) hrs = 12;
+    const hrsStr = hrs < 10 ? `0${hrs}` : `${hrs}`;
+    return `${hrsStr}:${mins} ${ampm}`;
+}
+
 function formatDACount(factor, lang, compact = false) {
     const f = parseFloat(factor) || 0;
-    if (f <= 0) return lang === 'hi' ? 'निरंक' : 'Nil';
+    if (f <= 0) return compact ? '' : (lang === 'hi' ? 'निरंक' : 'Nil');
 
     const fullCount = Math.floor(f);
     const hasHalf = (f - fullCount) >= 0.4;
 
     if (compact) {
         if (fullCount === 0 && hasHalf) return 'Half';
-        if (fullCount === 1 && !hasHalf) return 'Full';
-        if (fullCount === 1 && hasHalf) return '1 Full 1 Half';
+        if (fullCount === 1 && !hasHalf) return '1 Full';
+        if (fullCount === 1 && hasHalf) return '1 Full Half';
         if (fullCount > 1 && !hasHalf) return `${fullCount} Full`;
-        if (fullCount > 1 && hasHalf) return `${fullCount} Full 1 Half`;
+        if (fullCount > 1 && hasHalf) return `${fullCount} Full Half`;
         return `${f}`;
     }
 
@@ -53,7 +79,7 @@ function formatDACount(factor, lang, compact = false) {
         return lang === 'hi' ? 'Half (आधा)' : 'Half';
     }
     if (fullCount === 1 && !hasHalf) {
-        return lang === 'hi' ? 'Full (पूर्ण)' : 'Full';
+        return lang === 'hi' ? '1 Full (1 पूर्ण)' : '1 Full';
     }
     if (fullCount === 1 && hasHalf) {
         return lang === 'hi' ? '1 Full 1 Half (1 पूर्ण 1 आधा)' : '1 Full 1 Half';
@@ -108,7 +134,7 @@ export default function TADABill() {
         return p === 'portrait' ? 'portrait' : 'landscape';
     });
     const [billData, setBillData] = useState(null);
-    const [fontSize, setFontSize] = useState(9); // Default 9px for 21-column official layout
+    const [fontSize, setFontSize] = useState(9.5); // Default 9.5px for official 18-column layout
     const [showSettings, setShowSettings] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditingPayInfo, setIsEditingPayInfo] = useState(false);
@@ -116,29 +142,26 @@ export default function TADABill() {
     const [gradePayInput, setGradePayInput] = useState('');
     const [isSavingPayInfo, setIsSavingPayInfo] = useState(false);
 
-    // Official 21-Column widths and visibility
+    // Official 18-Column widths and visibility (matching department PDF standard)
     const defaultColSettings = {
-        c1: { w: 65, v: true, label: '1. प्रस्थान स्थान' },
-        c2: { w: 75, v: true, label: '2. प्रस्थान तारीख/समय' },
-        c3: { w: 65, v: true, label: '3. आगमन स्थान' },
-        c4: { w: 75, v: true, label: '4. आगमन तारीख/समय' },
-        c5: { w: 90, v: true, label: '5. यात्रा का प्रयोजन' },
-        c6: { w: 85, v: true, label: '6. स्थानांतरण ब्यौरा' },
-        c7: { w: 50, v: true, label: '7. स्थानांतरण राशि' },
-        c8: { w: 65, v: true, label: '8. दर्जा/साधन' },
-        c9: { w: 40, v: true, label: '9. किलोमीटर' },
-        c10: { w: 65, v: true, label: '10. टिकट/PNR' },
-        c11: { w: 55, v: true, label: '11. किराया राशि' },
-        c12: { w: 40, v: true, label: '12. यात्रा समय (घंटे)' },
-        c13: { w: 55, v: true, label: '13. यात्रा भत्ता सीमा (DA Limit)' },
-        c14: { w: 55, v: true, label: '14. यात्रा भत्ता राशि' },
-        c15: { w: 40, v: true, label: '15. मुकाम समय (घंटे)' },
-        c16: { w: 55, v: true, label: '16. मुकाम भत्ता सीमा (DA Limit)' },
-        c17: { w: 55, v: true, label: '17. मुकाम भत्ता राशि' },
-        c18: { w: 50, v: true, label: '18. परिवहन व्यय' },
-        c19: { w: 55, v: true, label: '19. होटल व्यय' },
-        c20: { w: 65, v: true, label: '20. पंक्ति योग' },
-        c21: { w: 80, v: true, label: '21. अभियुक्ति' },
+        c1: { w: 60, v: true, label: '1. Departure Station' },
+        c2: { w: 80, v: true, label: '2. Departure Date / Time' },
+        c3: { w: 60, v: true, label: '3. Arrival Station' },
+        c4: { w: 80, v: true, label: '4. Arrival Date / Time' },
+        c5: { w: 120, v: true, label: '5. Purpose of Journey' },
+        c6: { w: 75, v: true, label: '6. Transfer Description' },
+        c7: { w: 55, v: true, label: '7. Transfer Amount (₹)' },
+        c8: { w: 70, v: true, label: '8. Class of Travel Undertaken' },
+        c9: { w: 45, v: true, label: '9. Distance (KM)' },
+        c10: { w: 75, v: true, label: '10. Ticket PNR' },
+        c11: { w: 60, v: true, label: '11. Fare Amount (₹)' },
+        c12: { w: 45, v: true, label: '12. Journey DA Time (Hrs)' },
+        c13: { w: 60, v: true, label: '13. Journey DA Limit' },
+        c14: { w: 60, v: true, label: '14. Journey DA Amount (₹)' },
+        c15: { w: 45, v: true, label: '15. Stay DA Time (Hrs)' },
+        c16: { w: 60, v: true, label: '16. Stay DA Limit' },
+        c17: { w: 60, v: true, label: '17. Stay DA Amount (₹)' },
+        c18: { w: 65, v: true, label: '18. Transport Expenses (₹)' },
     };
 
     const [colSettings, setColSettings] = useState(defaultColSettings);
@@ -321,29 +344,26 @@ export default function TADABill() {
             }
         });
 
-        // 21 Column Widths tailored to fit A4 Landscape perfectly without any text clipping
+        // 18 Column Widths tailored to fit A4 Landscape perfectly without any text clipping
         ws.columns = [
-            { width: 14 }, // 1. Departure Station
-            { width: 15 }, // 2. Departure Date/Time
-            { width: 14 }, // 3. Arrival Station
-            { width: 15 }, // 4. Arrival Date/Time
+            { width: 14 }, // 1. Station (Departure)
+            { width: 17 }, // 2. Date / Time (Departure)
+            { width: 14 }, // 3. Station (Arrival)
+            { width: 17 }, // 4. Date / Time (Arrival)
             { width: 30 }, // 5. Purpose of Journey
             { width: 16 }, // 6. Transfer Description
             { width: 12 }, // 7. Transfer Amount
-            { width: 14 }, // 8. Mode / Class
+            { width: 14 }, // 8. Class of Travel Undertaken
             { width: 10 }, // 9. Distance (KM)
-            { width: 14 }, // 10. Ticket / PNR
+            { width: 16 }, // 10. Ticket PNR
             { width: 12 }, // 11. Fare Amount
-            { width: 10 }, // 12. Travel Time (Hrs)
-            { width: 13 }, // 13. Journey DA Limit
+            { width: 11 }, // 12. Journey DA Time (Hrs)
+            { width: 14 }, // 13. Journey DA Limit
             { width: 13 }, // 14. Journey DA Amount
-            { width: 10 }, // 15. Stay Time (Hrs)
-            { width: 13 }, // 16. Halt DA Limit
+            { width: 11 }, // 15. Stay DA Time (Hrs)
+            { width: 14 }, // 16. Stay DA Limit
             { width: 13 }, // 17. Stay DA Amount
-            { width: 12 }, // 18. Transport Exp
-            { width: 12 }, // 19. Hotel Exp
-            { width: 13 }, // 20. Row Total
-            { width: 15 }  // 21. Remarks
+            { width: 14 }  // 18. Transport Expenses
         ];
 
         const fontName = 'Calibri';
@@ -386,22 +406,22 @@ export default function TADABill() {
         }
 
         // Row 1: Title
-        ws.mergeCells(1, 1, 1, 21);
+        ws.mergeCells(1, 1, 1, 18);
         ws.getCell(1, 1).value = b.title;
         ws.getRow(1).height = 26;
-        styleRange(1, 1, 1, 21, {
+        styleRange(1, 1, 1, 18, {
             font: { name: fontName, size: 14, bold: true, color: { argb: 'FF000000' } },
             alignment: { horizontal: 'center', vertical: 'middle' }
         });
 
         // Row 2: Subtitle
         const dateRangeText = language === 'hi'
-            ? `${employee.start_date || claim.start_date || '_________'} ${b.periodFrom} ${employee.end_date || claim.end_date || '_________'} ${b.periodTo}`
-            : `${employee.start_date || claim.start_date || '_________'} ${b.periodTo} ${employee.end_date || claim.end_date || '_________'}`;
-        ws.mergeCells(2, 1, 2, 21);
+            ? `${formatDateDMY(employee.start_date || claim.start_date || '_________')} ${b.periodFrom} ${formatDateDMY(employee.end_date || claim.end_date || '_________')} ${b.periodTo}`
+            : `${formatDateDMY(employee.start_date || claim.start_date || '_________')} ${b.periodTo} ${formatDateDMY(employee.end_date || claim.end_date || '_________')}`;
+        ws.mergeCells(2, 1, 2, 18);
         ws.getCell(2, 1).value = `${billSubTitle} (${b.periodLabel}: ${dateRangeText})`;
         ws.getRow(2).height = 20;
-        styleRange(2, 1, 2, 21, {
+        styleRange(2, 1, 2, 18, {
             font: { name: fontName, size: 11, bold: true, color: { argb: 'FF000000' } },
             alignment: { horizontal: 'center', vertical: 'middle' }
         });
@@ -412,30 +432,30 @@ export default function TADABill() {
         // Rows 4 & 5: Top 6-Field Box
         ws.mergeCells(4, 1, 4, 5);
         ws.getCell(4, 1).value = `${b.name}: ${empDisplayName}`;
-        ws.mergeCells(4, 6, 4, 12);
+        ws.mergeCells(4, 6, 4, 11);
         ws.getCell(4, 6).value = `${b.gradePay}: ${formatPayLevelAndGradePay(employee, language)}`;
-        ws.mergeCells(4, 13, 4, 21);
-        ws.getCell(4, 13).value = `${b.fixedTA}: —`;
+        ws.mergeCells(4, 12, 4, 18);
+        ws.getCell(4, 12).value = `${b.fixedTA} ₹: ${employee.fixed_ta ? employee.fixed_ta : '-'}`;
 
         ws.mergeCells(5, 1, 5, 5);
         ws.getCell(5, 1).value = `${b.designation}: ${employee.designation || '—'}`;
-        ws.mergeCells(5, 6, 5, 12);
+        ws.mergeCells(5, 6, 5, 11);
         ws.getCell(5, 6).value = `${b.headquarter}: ${employee.headquarters || '—'}`;
-        ws.mergeCells(5, 13, 5, 21);
-        ws.getCell(5, 13).value = `${b.consolidatedDA}: ${defaultDaRate ? '₹' + defaultDaRate : '—'}`;
+        ws.mergeCells(5, 12, 5, 18);
+        ws.getCell(5, 12).value = `${b.consolidatedDA}: ${defaultDaRate ? '₹' + defaultDaRate : '-'}`;
 
         ws.getRow(4).height = 22;
         ws.getRow(5).height = 22;
-        styleRange(4, 1, 5, 21, {
+        styleRange(4, 1, 5, 18, {
             font: { name: fontName, size: 9.5, color: { argb: 'FF000000' } },
             border: blackThinBorder,
             alignment: { horizontal: 'left', vertical: 'middle', wrapText: true }
         });
 
         // Row 6: Currency indicator
-        ws.getCell(6, 21).value = b.amountInRupees;
-        ws.getCell(6, 21).font = { name: fontName, size: 8.5, bold: true, italic: true, color: { argb: 'FF333333' } };
-        ws.getCell(6, 21).alignment = { horizontal: 'right', vertical: 'middle' };
+        ws.getCell(6, 18).value = b.amountInRupees;
+        ws.getCell(6, 18).font = { name: fontName, size: 8.5, bold: true, italic: true, color: { argb: 'FF333333' } };
+        ws.getCell(6, 18).alignment = { horizontal: 'right', vertical: 'middle' };
         ws.getRow(6).height = 16;
 
         // Row 7: Header Tier 1 (Groups)
@@ -447,25 +467,17 @@ export default function TADABill() {
         ws.getCell(7, 6).value = b.transferFamilyTitle;
         ws.mergeCells(7, 8, 7, 11);
         ws.getCell(7, 8).value = b.fareSectionTitle;
-        ws.mergeCells(7, 12, 7, 14);
-        ws.getCell(7, 12).value = b.journeyDA.title;
-        ws.mergeCells(7, 15, 7, 17);
-        ws.getCell(7, 15).value = b.haltDA.title;
+        ws.mergeCells(7, 12, 7, 17);
+        ws.getCell(7, 12).value = b.allowancesTitle;
         ws.mergeCells(7, 18, 8, 18);
         ws.getCell(7, 18).value = b.transportExp;
-        ws.mergeCells(7, 19, 8, 19);
-        ws.getCell(7, 19).value = b.hotelExp;
-        ws.mergeCells(7, 20, 8, 20);
-        ws.getCell(7, 20).value = b.rowTotal;
-        ws.mergeCells(7, 21, 8, 21);
-        ws.getCell(7, 21).value = b.remarks;
         ws.getRow(7).height = 28;
 
         // Row 8: Header Tier 2 (Sub-headers)
-        ws.getCell(8, 1).value = `${b.departure.title}\n${b.departure.place}`;
-        ws.getCell(8, 2).value = `${b.departure.title}\n${b.departure.dateTime}`;
-        ws.getCell(8, 3).value = `${b.arrival.title}\n${b.arrival.place}`;
-        ws.getCell(8, 4).value = `${b.arrival.title}\n${b.arrival.dateTime}`;
+        ws.getCell(8, 1).value = `${b.departure.place}`;
+        ws.getCell(8, 2).value = `${b.departure.dateTime}`;
+        ws.getCell(8, 3).value = `${b.arrival.place}`;
+        ws.getCell(8, 4).value = `${b.arrival.dateTime}`;
         ws.getCell(8, 6).value = b.transferDescription;
         ws.getCell(8, 7).value = b.transferAmount;
         ws.getCell(8, 8).value = b.classOfTravel;
@@ -480,16 +492,16 @@ export default function TADABill() {
         ws.getCell(8, 17).value = b.haltDA.amount;
         ws.getRow(8).height = 28;
 
-        styleRange(7, 1, 8, 21, {
+        styleRange(7, 1, 8, 18, {
             font: { name: fontName, size: 9, bold: true, color: { argb: 'FF000000' } },
             fill: headerFill,
             border: blackThinBorder,
             alignment: { horizontal: 'center', vertical: 'middle', wrapText: true }
         });
 
-        // Row 9: Header Tier 3 (Numbers 1-21)
+        // Row 9: Header Tier 3 (Numbers 1-18)
         ws.getRow(9).height = 18;
-        for (let c = 1; c <= 21; c++) {
+        for (let c = 1; c <= 18; c++) {
             const cell = ws.getCell(9, c);
             cell.value = c;
             cell.font = { name: fontName, size: 8, bold: true, color: { argb: 'FF334155' } };
@@ -538,13 +550,13 @@ export default function TADABill() {
             row.getCell(1).value = r.departure_station || '';
             row.getCell(1).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
 
-            row.getCell(2).value = (r.departure_date || '') + (r.departure_time ? '\n' + r.departure_time : '');
+            row.getCell(2).value = formatDateDMY(r.departure_date) + (r.departure_time ? '\n' + formatTime12Hr(r.departure_time) : '');
             row.getCell(2).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
             row.getCell(3).value = r.arrival_station || '';
             row.getCell(3).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
 
-            row.getCell(4).value = (r.arrival_date || '') + (r.arrival_time ? '\n' + r.arrival_time : '');
+            row.getCell(4).value = formatDateDMY(r.arrival_date) + (r.arrival_time ? '\n' + formatTime12Hr(r.arrival_time) : '');
             row.getCell(4).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
             // Purpose cell with vertical merge support
@@ -605,21 +617,7 @@ export default function TADABill() {
             row.getCell(18).numFmt = '#,##0.00';
             row.getCell(18).alignment = { horizontal: 'right', vertical: 'middle' };
 
-            const stayAllw = parseFloat(r.stay_allowance || 0);
-            row.getCell(19).value = stayAllw > 0 ? stayAllw : null;
-            row.getCell(19).numFmt = '#,##0.00';
-            row.getCell(19).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            const rowTotalVal = parseFloat(r.total_amount || 0);
-            row.getCell(20).value = rowTotalVal > 0 ? rowTotalVal : null;
-            row.getCell(20).numFmt = '#,##0.00';
-            row.getCell(20).alignment = { horizontal: 'right', vertical: 'middle' };
-            row.getCell(20).font = { name: fontName, size: 9, bold: true };
-
-            row.getCell(21).value = r.remarks || '';
-            row.getCell(21).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-
-            for (let c = 1; c <= 21; c++) {
+            for (let c = 1; c <= 18; c++) {
                 const cell = row.getCell(c);
                 if (!cell.font) cell.font = { name: fontName, size: 9 };
                 cell.border = thinBorder;
@@ -639,26 +637,17 @@ export default function TADABill() {
         ws.getCell(curRow, 11).value = totals.totalFare ? parseFloat(totals.totalFare) : null;
         ws.getCell(curRow, 11).numFmt = '#,##0.00';
 
-        // Columns 13 & 16: Kept completely BLANK (no half+half math)
-        ws.getCell(curRow, 13).value = null;
         ws.getCell(curRow, 14).value = totals.totalJourneyDA ? parseFloat(totals.totalJourneyDA) : null;
         ws.getCell(curRow, 14).numFmt = '#,##0.00';
 
-        ws.getCell(curRow, 16).value = null;
         ws.getCell(curRow, 17).value = totals.totalStayDA ? parseFloat(totals.totalStayDA) : null;
         ws.getCell(curRow, 17).numFmt = '#,##0.00';
 
         ws.getCell(curRow, 18).value = totals.totalLocalTransport > 0 ? parseFloat(totals.totalLocalTransport) : null;
         ws.getCell(curRow, 18).numFmt = '#,##0.00';
 
-        ws.getCell(curRow, 19).value = totals.totalStayAllowance > 0 ? parseFloat(totals.totalStayAllowance) : null;
-        ws.getCell(curRow, 19).numFmt = '#,##0.00';
-
-        ws.getCell(curRow, 20).value = totals.grandTotal ? parseFloat(totals.grandTotal) : null;
-        ws.getCell(curRow, 20).numFmt = '#,##0.00';
-
         ws.getRow(curRow).height = 22;
-        styleRange(curRow, 1, curRow, 21, {
+        styleRange(curRow, 1, curRow, 18, {
             font: { name: fontName, size: 9, bold: true, color: { argb: 'FF000000' } },
             fill: totalRowFill,
             border: doubleBottomBorder
@@ -666,10 +655,10 @@ export default function TADABill() {
         curRow++;
 
         // Summary Row: Consolidated DA Limit
-        ws.mergeCells(curRow, 1, curRow, 21);
+        ws.mergeCells(curRow, 1, curRow, 4);
         ws.getCell(curRow, 1).value = `${b.consolidatedDALimit}: ${claimDALimitText}`;
         ws.getRow(curRow).height = 22;
-        styleRange(curRow, 1, curRow, 21, {
+        styleRange(curRow, 1, curRow, 18, {
             font: { name: fontName, size: 9.5, bold: true, color: { argb: 'FF1E3A8A' } },
             fill: summaryBannerFill,
             border: blackThinBorder,
@@ -677,50 +666,50 @@ export default function TADABill() {
         });
         curRow += 2;
 
-        // Deductions & Net Payable Box (Cols 13 to 21)
-        ws.mergeCells(curRow, 13, curRow, 17);
-        ws.getCell(curRow, 13).value = `${b.grossTotal}:`;
-        ws.mergeCells(curRow, 18, curRow, 21);
-        ws.getCell(curRow, 18).value = totals.grandTotal ? parseFloat(totals.grandTotal) : 0;
-        ws.getCell(curRow, 18).numFmt = '#,##0.00';
+        // Deductions & Net Payable Box (Cols 11 to 18)
+        ws.mergeCells(curRow, 11, curRow, 14);
+        ws.getCell(curRow, 11).value = `${b.grossTotal}:`;
+        ws.mergeCells(curRow, 15, curRow, 18);
+        ws.getCell(curRow, 15).value = totals.grandTotal ? parseFloat(totals.grandTotal) : 0;
+        ws.getCell(curRow, 15).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, 11, curRow, 18, {
             font: { name: fontName, size: 9, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 13, curRow, 17);
-        ws.getCell(curRow, 13).value = `${b.lessAdvance}:`;
-        ws.mergeCells(curRow, 18, curRow, 21);
-        ws.getCell(curRow, 18).value = totals.advanceAmount ? parseFloat(totals.advanceAmount) : 0;
-        ws.getCell(curRow, 18).numFmt = '#,##0.00';
+        ws.mergeCells(curRow, 11, curRow, 14);
+        ws.getCell(curRow, 11).value = `${b.lessAdvance}:`;
+        ws.mergeCells(curRow, 15, curRow, 18);
+        ws.getCell(curRow, 15).value = totals.advanceAmount ? parseFloat(totals.advanceAmount) : 0;
+        ws.getCell(curRow, 15).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, 11, curRow, 18, {
             font: { name: fontName, size: 9, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 13, curRow, 17);
-        ws.getCell(curRow, 13).value = `${b.netPayable}:`;
-        ws.mergeCells(curRow, 18, curRow, 21);
-        ws.getCell(curRow, 18).value = netAmount ? parseFloat(netAmount) : 0;
-        ws.getCell(curRow, 18).numFmt = '#,##0.00';
+        ws.mergeCells(curRow, 11, curRow, 14);
+        ws.getCell(curRow, 11).value = `${b.netPayable}:`;
+        ws.mergeCells(curRow, 15, curRow, 18);
+        ws.getCell(curRow, 15).value = netAmount ? parseFloat(netAmount) : 0;
+        ws.getCell(curRow, 15).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, 11, curRow, 18, {
             font: { name: fontName, size: 9.5, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 13, curRow, 21);
-        ws.getCell(curRow, 13).value = `${b.amountInWordsLabel}: ${words}`;
+        ws.mergeCells(curRow, 11, curRow, 18);
+        ws.getCell(curRow, 11).value = `${b.amountInWordsLabel}: ${words}`;
         ws.getRow(curRow).height = 24;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, 11, curRow, 18, {
             font: { name: fontName, size: 9, bold: true },
             border: blackThinBorder,
             alignment: { horizontal: 'left', vertical: 'middle', wrapText: true }
@@ -728,14 +717,22 @@ export default function TADABill() {
         curRow += 2;
 
         // Official Certificates
-        ws.mergeCells(curRow, 1, curRow, 21);
+        ws.mergeCells(curRow, 1, curRow, 18);
         ws.getCell(curRow, 1).value = b.certificatesTitle;
         ws.getCell(curRow, 1).font = { name: fontName, size: 9.5, bold: true, underline: true };
         ws.getRow(curRow).height = 18;
         curRow++;
 
-        [b.cert1, b.cert2, b.cert3, b.cert4].forEach(cert => {
-            ws.mergeCells(curRow, 1, curRow, 21);
+        const excelPnrTickets = billRows
+            .map(r => (r.ticket_no || '').trim())
+            .filter(t => t && (t.length > 2 || isNaN(Number(t))));
+        const excelDisplayTickets = excelPnrTickets.length > 0
+            ? excelPnrTickets.map((t, idx) => `${idx + 1}. ${t}`).join(' ')
+            : (billRows.map(r => r.ticket_no).filter(Boolean).map((t, idx) => `${idx + 1}. ${t}`).join(' ') || '');
+
+        const cert1Text = `${b.cert1} ${excelDisplayTickets}`;
+        [cert1Text, b.cert2, b.cert3, b.cert4].forEach(cert => {
+            ws.mergeCells(curRow, 1, curRow, 18);
             ws.getCell(curRow, 1).value = cert;
             ws.getCell(curRow, 1).font = { name: fontName, size: 8.5 };
             ws.getCell(curRow, 1).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
@@ -750,15 +747,15 @@ export default function TADABill() {
         ws.getCell(signRow, 1).value = `${b.place}: ${employee.headquarters || '__________'}`;
         ws.getCell(signRow, 1).font = { name: fontName, size: 9, bold: true };
 
-        ws.mergeCells(signRow, 13, signRow, 21);
-        ws.getCell(signRow, 13).value = `${b.claimantSignature}: ${empDisplayName}`;
-        ws.getCell(signRow, 13).font = { name: fontName, size: 9, bold: true };
-        ws.getCell(signRow, 13).alignment = { horizontal: 'right', vertical: 'middle' };
+        ws.mergeCells(signRow, 11, signRow, 18);
+        ws.getCell(signRow, 11).value = `${b.claimantSignature}: ${empDisplayName}`;
+        ws.getCell(signRow, 11).font = { name: fontName, size: 9, bold: true };
+        ws.getCell(signRow, 11).alignment = { horizontal: 'right', vertical: 'middle' };
         ws.getRow(signRow).height = 20;
         curRow++;
 
         ws.mergeCells(curRow, 1, curRow, 7);
-        ws.getCell(curRow, 1).value = `${b.date}: ${claim.declaration_date || '__________'}`;
+        ws.getCell(curRow, 1).value = `${b.date}: ${formatDateDMY(claim.declaration_date || claim.end_date || '__________')}`;
         ws.getCell(curRow, 1).font = { name: fontName, size: 9, bold: true };
         ws.getRow(curRow).height = 20;
 
@@ -830,7 +827,13 @@ export default function TADABill() {
         ? (totals.amountInWordsHi || numberToWordsHindi(netAmount))
         : (totals.amountInWords || numberToWordsEnglish(netAmount));
 
-    const pnrList = billRows.map(r => r.ticket_no).filter(Boolean).join(', ');
+    const pnrTickets = billRows
+        .map(r => (r.ticket_no || '').trim())
+        .filter(t => t && (t.length > 2 || isNaN(Number(t))));
+    const formattedTicketsList = pnrTickets.length > 0
+        ? pnrTickets.map((t, idx) => `${idx + 1}. ${t}`).join(' ')
+        : (billRows.map(r => r.ticket_no).filter(Boolean).map((t, idx) => `${idx + 1}. ${t}`).join(' ') || '');
+    const pnrList = formattedTicketsList;
 
     const defaultDaRate = billRows.find(r => r.da_rate > 0)?.da_rate 
         || billRows.find(r => r.stay_rate > 0)?.stay_rate 
@@ -998,7 +1001,7 @@ export default function TADABill() {
             {showSettings && (
                 <div className="card no-print glass-control-bar" style={{ marginBottom: '1rem', padding: '1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <h5 style={{ margin: 0, fontSize: '0.95rem' }}>Column Visibility & Width Settings (Columns 1 to 21)</h5>
+                        <h5 style={{ margin: 0, fontSize: '0.95rem' }}>Column Visibility & Width Settings (Columns 1 to 18)</h5>
                         <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
                             <MousePointer2 size={13} style={{ verticalAlign: 'middle' }} /> Drag column headers in the table to resize.
                         </div>
@@ -1033,140 +1036,133 @@ export default function TADABill() {
                 color: 'black'
             }}>
                 {/* Official Title Line */}
-                <div className="bill-title-header" style={{ textAlign: 'center', marginBottom: '12px', borderBottom: '1px solid black', paddingBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-                        <img
-                            src={logoIco}
-                            alt="MPSCSC Logo"
-                            className="print-logo"
-                            style={{
-                                width: '64px',
-                                height: '64px',
-                                minWidth: '64px',
-                                minHeight: '64px',
-                                maxWidth: '64px',
-                                maxHeight: '64px',
-                                flexShrink: 0,
-                                objectFit: 'contain',
-                                aspectRatio: '1 / 1',
-                                display: 'block'
-                            }}
-                        />
-                        <div>
-                            <h2 className="bill-main-title" style={{ margin: '0', fontSize: '18px', fontWeight: 'bold', textDecoration: 'underline', letterSpacing: '0.5px' }}>
-                                {b.title}
-                            </h2>
-                            <h3 className="bill-sub-title" style={{ margin: '4px 0 0 0', fontSize: '14px', fontWeight: 'normal' }}>
-                                <strong>{billSubTitle}</strong> ({b.periodLabel}: {language === 'hi' 
-                                    ? `${employee.start_date || claim.start_date || '_________'} ${b.periodFrom} ${employee.end_date || claim.end_date || '_________'} ${b.periodTo}`
-                                    : `${employee.start_date || claim.start_date || '_________'} ${b.periodTo} ${employee.end_date || claim.end_date || '_________'}`})
-                            </h3>
+                <div className="bill-title-header" style={{ position: 'relative', textAlign: 'center', marginBottom: '8px', paddingBottom: '4px' }}>
+                    <img
+                        src={logoIco}
+                        alt="MPSCSC Logo"
+                        className="print-logo"
+                        style={{
+                            position: 'absolute',
+                            left: '4px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: '46px',
+                            height: '46px',
+                            minWidth: '46px',
+                            minHeight: '46px',
+                            objectFit: 'contain'
+                        }}
+                    />
+                    <div style={{ padding: '0 52px' }}>
+                        <h2 className="bill-main-title" style={{ margin: '0', fontSize: '16px', fontWeight: 'bold', letterSpacing: '0.4px', textTransform: 'uppercase' }}>
+                            {b.title}
+                        </h2>
+                        <div className="bill-sub-title" style={{ margin: '3px 0 0 0', fontSize: '13px', textDecoration: 'underline' }}>
+                            <strong>{billSubTitle}</strong> ({b.periodLabel}: {formatDateDMY(claim.start_date || employee.start_date || billRows[0]?.departure_date)} {b.periodTo} {formatDateDMY(claim.end_date || employee.end_date || billRows[billRows.length - 1]?.arrival_date)})
                         </div>
                     </div>
                 </div>
 
-                {/* 6-Field Official Metadata Grid (Matching Image Top Box) */}
+                {/* 3-Column Official Metadata Box (Matching PDF Standard) */}
                 <div className="form21-meta-box" style={{
                     display: 'grid',
-                    gridTemplateColumns: '1.2fr 1fr 1.2fr',
-                    gap: '4px 20px',
+                    gridTemplateColumns: '1fr 1fr 1fr',
                     fontSize: '11px',
-                    marginBottom: '8px',
-                    padding: '6px 8px',
+                    lineHeight: '1.4',
+                    marginBottom: '4px',
                     border: '1px solid black'
                 }}>
-                    <div>
-                        <strong>{b.name}:</strong> {language === 'hi' && employee.name_hi ? employee.name_hi : employee.name}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                        <strong>{b.gradePay}:</strong>{' '}
-                        {isEditingPayInfo ? (
-                            <span className="no-print" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    style={{ width: '85px', height: '22px', fontSize: '11px', padding: '1px 5px' }}
-                                    placeholder="e.g. Level 12"
-                                    value={payLevelInput}
-                                    onChange={(e) => setPayLevelInput(e.target.value)}
-                                    title={t.employees.payLevel}
-                                />
-                                <span style={{ fontSize: '10px', color: '#64748b' }}>/ GP:</span>
-                                <input
-                                    type="text"
-                                    className="form-input"
-                                    style={{ width: '75px', height: '22px', fontSize: '11px', padding: '1px 5px' }}
-                                    placeholder="e.g. 5400"
-                                    value={gradePayInput}
-                                    onChange={(e) => setGradePayInput(e.target.value)}
-                                    title={t.employees.gradePay}
-                                />
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-success"
-                                    style={{ padding: '0 4px', height: '22px' }}
-                                    onClick={handleSavePayInfo}
-                                    disabled={isSavingPayInfo}
-                                    title={t.common.save}
-                                >
-                                    <Check size={12} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-secondary"
-                                    style={{ padding: '0 4px', height: '22px' }}
-                                    onClick={() => setIsEditingPayInfo(false)}
-                                    disabled={isSavingPayInfo}
-                                    title={t.common.cancel}
-                                >
-                                    <X size={12} />
-                                </button>
-                            </span>
-                        ) : (
-                            <span>
-                                {formatPayLevelAndGradePay(employee, language)}
-                                <button
-                                    type="button"
-                                    className="btn-text no-print"
-                                    onClick={handleStartEditPayInfo}
-                                    style={{
-                                        marginLeft: '6px',
-                                        color: '#2563eb',
-                                        cursor: 'pointer',
-                                        background: 'none',
-                                        border: 'none',
-                                        padding: '0 2px',
-                                        display: 'inline-flex',
-                                        alignItems: 'center'
-                                    }}
-                                    title={language === 'hi' ? 'वेतन स्तर और ग्रेड वेतन दर्ज/संपादित करें' : 'Enter/Edit Pay Level & Grade Pay'}
-                                >
-                                    <Edit size={12} />
-                                </button>
-                            </span>
-                        )}
-                    </div>
-                    <div>
-                        <strong>{b.fixedTA}:</strong> {employee.fixed_ta ? `₹${employee.fixed_ta}` : 'Nil'}
+                    {/* Column 1: Name & Designation */}
+                    <div style={{ padding: '4px 8px', borderRight: '1px solid black' }}>
+                        <div style={{ marginBottom: '3px' }}>
+                            <strong>{b.name}:</strong> {empDisplayName}
+                        </div>
+                        <div>
+                            <strong>{b.designation}:</strong> {employee.designation || '—'}
+                        </div>
                     </div>
 
-                    <div>
-                        <strong>{b.designation}:</strong> {employee.designation || '—'}
+                    {/* Column 2: Grade Pay / Pay Level & Headquarters */}
+                    <div style={{ padding: '4px 8px', borderRight: '1px solid black' }}>
+                        <div style={{ marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                            <strong>{b.gradePay}:</strong>{' '}
+                            {isEditingPayInfo ? (
+                                <span className="no-print" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        style={{ width: '80px', height: '20px', fontSize: '10px', padding: '1px 4px' }}
+                                        placeholder="e.g. Level 12 / C"
+                                        value={payLevelInput}
+                                        onChange={(e) => setPayLevelInput(e.target.value)}
+                                        title={t.employees.payLevel}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-success"
+                                        style={{ padding: '0 4px', height: '20px' }}
+                                        onClick={handleSavePayInfo}
+                                        disabled={isSavingPayInfo}
+                                        title={t.common.save}
+                                    >
+                                        <Check size={11} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-secondary"
+                                        style={{ padding: '0 4px', height: '20px' }}
+                                        onClick={() => setIsEditingPayInfo(false)}
+                                        disabled={isSavingPayInfo}
+                                        title={t.common.cancel}
+                                    >
+                                        <X size={11} />
+                                    </button>
+                                </span>
+                            ) : (
+                                <span>
+                                    {formatPayLevelAndGradePay(employee, language)}
+                                    <button
+                                        type="button"
+                                        className="btn-text no-print"
+                                        onClick={handleStartEditPayInfo}
+                                        style={{
+                                            marginLeft: '4px',
+                                            color: '#2563eb',
+                                            cursor: 'pointer',
+                                            background: 'none',
+                                            border: 'none',
+                                            padding: 0,
+                                            verticalAlign: 'middle'
+                                        }}
+                                        title={language === 'hi' ? 'वेतन स्तर और ग्रेड वेतन दर्ज/संपादित करें' : 'Enter/Edit Pay Level & Grade Pay'}
+                                    >
+                                        <Edit size={11} />
+                                    </button>
+                                </span>
+                            )}
+                        </div>
+                        <div>
+                            <strong>{b.headquarter}:</strong> {employee.headquarters || '—'}
+                        </div>
                     </div>
-                    <div>
-                        <strong>{b.headquarter}:</strong> {employee.headquarters || '—'}
-                    </div>
-                    <div>
-                        <strong>{b.consolidatedDA}:</strong> {defaultDaRate ? `₹${defaultDaRate}` : 'Nil'}
+
+                    {/* Column 3: Fixed TA & Consolidated DA Rate */}
+                    <div style={{ padding: '4px 8px' }}>
+                        <div style={{ marginBottom: '3px' }}>
+                            <strong>{b.fixedTA}:</strong> {employee.fixed_ta ? `₹${employee.fixed_ta}` : ' - '}
+                        </div>
+                        <div>
+                            <strong>{b.consolidatedDA}:</strong> {defaultDaRate ? `₹${defaultDaRate}` : 'Nil'}
+                        </div>
                     </div>
                 </div>
 
                 {/* Currency Unit Indicator */}
-                <div style={{ textAlign: 'right', fontSize: '10px', fontWeight: 'bold', marginBottom: '3px' }}>
+                <div style={{ textAlign: 'right', fontSize: '9.5px', fontWeight: 'bold', marginBottom: '2px' }}>
                     {b.amountInRupees}
                 </div>
 
-                {/* The Prescribed 21-Column Table */}
+                {/* The Prescribed 18-Column Table (Matching Official Department Standard) */}
                 <div className="table-scroll-wrapper" style={{ overflowX: 'auto' }}>
                     <table className="bill-21-table">
                         <colgroup>
@@ -1188,13 +1184,10 @@ export default function TADABill() {
                             {colSettings.c16.v && <col className="col-c16" style={{ width: colSettings.c16.w }} />}
                             {colSettings.c17.v && <col className="col-c17" style={{ width: colSettings.c17.w }} />}
                             {colSettings.c18.v && <col className="col-c18" style={{ width: colSettings.c18.w }} />}
-                            {colSettings.c19.v && <col className="col-c19" style={{ width: colSettings.c19.w }} />}
-                            {colSettings.c20.v && <col className="col-c20" style={{ width: colSettings.c20.w }} />}
-                            {colSettings.c21.v && <col className="col-c21" style={{ width: colSettings.c21.w }} />}
                         </colgroup>
 
                         <thead>
-                            {/* Header Level 1 */}
+                            {/* Header Tier 1 (Section Groups) */}
                             <tr>
                                 {(colSettings.c1.v || colSettings.c2.v || colSettings.c3.v || colSettings.c4.v) && (
                                     <th colSpan={(colSettings.c1.v ? 1 : 0) + (colSettings.c2.v ? 1 : 0) + (colSettings.c3.v ? 1 : 0) + (colSettings.c4.v ? 1 : 0)}>
@@ -1236,30 +1229,9 @@ export default function TADABill() {
                                         <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c18')}></div>
                                     </th>
                                 )}
-
-                                {colSettings.c19.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c19.w }}>
-                                        {b.hotelExp}
-                                        <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c19')}></div>
-                                    </th>
-                                )}
-
-                                {colSettings.c20.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c20.w }}>
-                                        {b.rowTotal}
-                                        <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c20')}></div>
-                                    </th>
-                                )}
-
-                                {colSettings.c21.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c21.w }}>
-                                        {b.remarks}
-                                        <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c21')}></div>
-                                    </th>
-                                )}
                             </tr>
 
-                            {/* Header Level 2 */}
+                            {/* Header Tier 2 (Specific Columns) */}
                             <tr>
                                 {colSettings.c1.v && <th style={{ position: 'relative', width: colSettings.c1.w }}>{b.departure.place} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c1')}></div></th>}
                                 {colSettings.c2.v && <th style={{ position: 'relative', width: colSettings.c2.w }}>{b.departure.dateTime} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c2')}></div></th>}
@@ -1283,7 +1255,7 @@ export default function TADABill() {
                                 {colSettings.c17.v && <th style={{ position: 'relative', width: colSettings.c17.w }}>{b.haltDA.amount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c17')}></div></th>}
                             </tr>
 
-                            {/* Header Level 3: Column Numbers 1 to 21 */}
+                            {/* Header Tier 3: Column Numbers 1 to 18 */}
                             <tr className="col-numbers">
                                 {colSettings.c1.v && <td>1</td>}
                                 {colSettings.c2.v && <td>2</td>}
@@ -1303,9 +1275,6 @@ export default function TADABill() {
                                 {colSettings.c16.v && <td>16</td>}
                                 {colSettings.c17.v && <td>17</td>}
                                 {colSettings.c18.v && <td>18</td>}
-                                {colSettings.c19.v && <td>19</td>}
-                                {colSettings.c20.v && <td>20</td>}
-                                {colSettings.c21.v && <td>21</td>}
                             </tr>
                         </thead>
 
@@ -1344,62 +1313,68 @@ export default function TADABill() {
                                     return (
                                         <tr key={i}>
                                             {colSettings.c1.v && <td className="wrap">{r.departure_station}</td>}
-                                            {colSettings.c2.v && <td style={{ whiteSpace: 'nowrap' }}>{r.departure_date}<br />{r.departure_time}</td>}
+                                            {colSettings.c2.v && (
+                                                <td style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
+                                                    {formatDateDMY(r.departure_date)}<br />{formatTime12Hr(r.departure_time)}
+                                                </td>
+                                            )}
                                             {colSettings.c3.v && <td className="wrap">{r.arrival_station}</td>}
-                                            {colSettings.c4.v && <td style={{ whiteSpace: 'nowrap' }}>{r.arrival_date}<br />{r.arrival_time}</td>}
+                                            {colSettings.c4.v && (
+                                                <td style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
+                                                    {formatDateDMY(r.arrival_date)}<br />{formatTime12Hr(r.arrival_time)}
+                                                </td>
+                                            )}
                                             {colSettings.c5.v && !mInfo.isChild && (
                                                 <td className="wrap" rowSpan={mInfo.span} style={{ verticalAlign: 'middle' }}>
                                                     {r.purpose || '—'}
                                                 </td>
                                             )}
 
-                                        {colSettings.c6.v && <td className="wrap" style={{ fontSize: '0.85em' }}>{transferDesc}</td>}
-                                        {colSettings.c7.v && <td style={{ textAlign: 'right' }}>{transferAmt}</td>}
+                                            {colSettings.c6.v && <td className="wrap" style={{ fontSize: '0.85em' }}>{transferDesc}</td>}
+                                            {colSettings.c7.v && <td style={{ textAlign: 'right' }}>{transferAmt}</td>}
 
-                                        {colSettings.c8.v && <td>{r.mode + (r.class_of_travel ? ` (${r.class_of_travel})` : '')}</td>}
-                                        {colSettings.c9.v && <td style={{ textAlign: 'center' }}>{r.distance_km || ''}</td>}
-                                        {colSettings.c10.v && <td style={{ wordBreak: 'break-all' }}>{r.ticket_no || ''}</td>}
-                                        {colSettings.c11.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.ta_approved || 0) > 0 ? r.ta_approved : (r.fare_amount || '')}</td>}
+                                            {colSettings.c8.v && <td>{r.class_of_travel || r.mode}</td>}
+                                            {colSettings.c9.v && <td style={{ textAlign: 'center' }}>{r.distance_km || ''}</td>}
+                                            {colSettings.c10.v && <td style={{ wordBreak: 'break-all', textAlign: 'center' }}>{r.ticket_no || ''}</td>}
+                                            {colSettings.c11.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.ta_approved || 0) > 0 ? r.ta_approved : (r.fare_amount || '')}</td>}
 
-                                        {colSettings.c12.v && <td style={{ textAlign: 'center' }}>{r.travel_hrs !== '0.0' ? r.travel_hrs : ''}</td>}
-                                        {colSettings.c13.v && (
-                                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                                {(() => {
-                                                    const jFactor = r.da_rate > 0 ? (parseFloat(r.journey_da) || 0) / r.da_rate : 0;
-                                                    return jFactor > 0 ? formatDACount(jFactor, language, true) : '';
-                                                })()}
-                                            </td>
-                                        )}
-                                        {colSettings.c14.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.journey_da || 0) > 0 ? r.journey_da : ''}</td>}
+                                            {colSettings.c12.v && <td style={{ textAlign: 'center' }}>{r.travel_hrs !== '0.0' ? r.travel_hrs : ''}</td>}
+                                            {colSettings.c13.v && (
+                                                <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                                    {(() => {
+                                                        const jFactor = r.da_rate > 0 ? (parseFloat(r.journey_da) || 0) / r.da_rate : 0;
+                                                        return jFactor > 0 ? formatDACount(jFactor, language, true) : '';
+                                                    })()}
+                                                </td>
+                                            )}
+                                            {colSettings.c14.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.journey_da || 0) > 0 ? parseFloat(r.journey_da).toFixed(2) : ''}</td>}
 
-                                        {colSettings.c15.v && <td style={{ textAlign: 'center' }}>{r.stay_hrs !== '0.0' ? r.stay_hrs : ''}</td>}
-                                        {colSettings.c16.v && (
-                                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                                {(() => {
-                                                    const sFactor = r.stay_rate > 0 ? (parseFloat(r.stay_da) || 0) / r.stay_rate : 0;
-                                                    return sFactor > 0 ? formatDACount(sFactor, language, true) : '';
-                                                })()}
-                                            </td>
-                                        )}
-                                        {colSettings.c17.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.stay_da || 0) > 0 ? r.stay_da : ''}</td>}
+                                            {colSettings.c15.v && <td style={{ textAlign: 'center' }}>{r.stay_hrs !== '0.0' ? r.stay_hrs : ''}</td>}
+                                            {colSettings.c16.v && (
+                                                <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                                    {(() => {
+                                                        const sFactor = r.stay_rate > 0 ? (parseFloat(r.stay_da) || 0) / r.stay_rate : 0;
+                                                        return sFactor > 0 ? formatDACount(sFactor, language, true) : '';
+                                                    })()}
+                                                </td>
+                                            )}
+                                            {colSettings.c17.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.stay_da || 0) > 0 ? parseFloat(r.stay_da).toFixed(2) : ''}</td>}
 
-                                        {colSettings.c18.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.local_transport || 0) > 0 ? r.local_transport : ''}</td>}
-                                        {colSettings.c19.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.stay_allowance || 0) > 0 ? r.stay_allowance.toFixed(2) : ''}</td>}
-                                        {colSettings.c20.v && <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{r.total_amount}</td>}
-                                        {colSettings.c21.v && <td className="wrap" style={{ fontSize: '0.85em' }}>{r.remarks || ''}</td>}
-                                    </tr>
-                                );
-                            });
-                        })()}
+                                            {colSettings.c18.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.local_transport || 0) > 0 ? parseFloat(r.local_transport).toFixed(2) : ''}</td>}
+                                        </tr>
+                                    );
+                                });
+                            })()}
 
                             {/* Grand Total Row */}
-                            <tr style={{ fontWeight: 'bold', background: '#f8fafc' }}>
-                                <td colSpan={
-                                    (colSettings.c1.v ? 1 : 0) + (colSettings.c2.v ? 1 : 0) + (colSettings.c3.v ? 1 : 0) +
-                                    (colSettings.c4.v ? 1 : 0) + (colSettings.c5.v ? 1 : 0)
-                                } style={{ textAlign: 'right', paddingRight: '8px' }}>
-                                    <span>{b.grossTotal}:</span>
+                            <tr style={{ fontWeight: 'bold' }}>
+                                <td
+                                    colSpan={(colSettings.c1.v ? 1 : 0) + (colSettings.c2.v ? 1 : 0) + (colSettings.c3.v ? 1 : 0) + (colSettings.c4.v ? 1 : 0)}
+                                    style={{ textAlign: 'left', padding: '2px 4px', fontSize: '9px', fontWeight: 'bold' }}
+                                >
+                                    <span>{b.consolidatedDALimit}: {claimDALimitText}</span>
                                 </td>
+                                {colSettings.c5.v && <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{b.grossTotal}:</td>}
                                 {colSettings.c6.v && <td></td>}
                                 {colSettings.c7.v && <td style={{ textAlign: 'right' }}>{claim.claim_type === 'TRANSFER' && (totals.transferAllowance || totals.totalTransport) ? (totals.transferAllowance || totals.totalTransport) : ''}</td>}
                                 {colSettings.c8.v && <td></td>}
@@ -1416,289 +1391,153 @@ export default function TADABill() {
                                 {colSettings.c17.v && <td style={{ textAlign: 'right' }}>{(totals.totalStayDA || 0).toFixed(2)}</td>}
 
                                 {colSettings.c18.v && <td style={{ textAlign: 'right' }}>{totals.totalLocalTransport > 0 ? totals.totalLocalTransport.toFixed(2) : ''}</td>}
-                                {colSettings.c19.v && <td style={{ textAlign: 'right' }}>{totals.totalStayAllowance > 0 ? totals.totalStayAllowance.toFixed(2) : ''}</td>}
-                                {colSettings.c20.v && <td style={{ textAlign: 'right', fontSize: '11px' }}>{totals.grandTotal.toFixed(2)}</td>}
-                                {colSettings.c21.v && <td></td>}
-                            </tr>
-
-                            {/* Consolidated DA Limit Summary Row */}
-                            <tr style={{ background: '#f1f5f9', fontWeight: 'bold', fontSize: '10px' }}>
-                                <td
-                                    colSpan={Object.keys(colSettings).reduce((sum, key) => sum + (colSettings[key].v ? 1 : 0), 0)}
-                                    style={{ textAlign: 'left', padding: '4px 8px' }}
-                                >
-                                    <span>{b.consolidatedDALimit}: </span>
-                                    <span style={{ color: '#1e3a8a', marginLeft: '4px' }}>{claimDALimitText}</span>
-                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                {/* Page 1 Turnover / Continuation Notice (Print Only — Admin Control with Passing Order) */}
-                {showPassingOrder && (
-                    <div className="print-only form21-page1-notice" style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginTop: '6px',
-                        paddingTop: '4px',
-                        borderTop: '1px solid #94a3b8',
-                        fontSize: '7.8pt',
-                        color: '#334155'
-                    }}>
-                        <span><strong>{language === 'hi' ? 'फॉर्म क्रमांक 21 (पृष्ठ 1 / 2) — यात्रा विवरण' : 'Form 21 (Page 1 of 2) — Journey Details'}</strong></span>
-                        <span style={{ fontStyle: 'italic', fontWeight: 'bold' }}>
-                            {language === 'hi'
-                                ? '>> कृपया पृष्ठ पलटें: भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)'
-                                : '>> Please Turn Over: Part II (Adjustments, Certificates & Passing Order)'}
-                        </span>
-                    </div>
-                )}
-
-                {/* Visual Separator between Page 1 and Page 2 (Screen Only — Admin Control with Passing Order) */}
-                {showPassingOrder && (
-                    <div className="no-print form21-page-separator" style={{
-                        margin: '28px 0 20px 0',
-                        borderTop: '2px dashed #2563eb',
-                        textAlign: 'center',
-                        position: 'relative'
-                    }}>
-                        <span style={{
-                            position: 'relative',
-                            top: '-12px',
-                            background: '#eff6ff',
-                            color: '#1d4ed8',
-                            padding: '3px 16px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: '700',
-                            border: '1px solid #bfdbfe'
-                        }}>
-                            📄 {language === 'hi'
-                                ? 'फॉर्म 21 - पृष्ठ 2 (भाग 2: प्रमाण-पत्र, कटौती एवं पारित आदेश)'
-                                : 'Form 21 - Page 2 (Part II: Certificates, Deductions & Passing Order)'}
-                        </span>
-                    </div>
-                )}
-
-                {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-                    PAGE 2: PART II (Certificates, Net Adjustments & Sanction)
-                   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-                <div className="form21-page2-container" style={{
+                {/* Bottom Section: Left = Certificates & Place/Date, Right = Summary Box & Signature */}
+                <div className="form21-bottom-section" style={{
+                    display: 'grid',
+                    gridTemplateColumns: '56% 44%',
+                    gap: '20px',
                     marginTop: '10px',
-                    paddingTop: '4px',
-                    borderTop: '1px solid #cbd5e1'
+                    alignItems: 'start'
                 }}>
-                    {/* Part II Section Header Banner */}
-                    <div className="form21-part2-banner" style={{
-                        fontWeight: 'bold',
-                        fontSize: '9.5pt',
-                        background: '#f1f5f9',
-                        border: '1px solid black',
-                        borderBottom: 'none',
-                        padding: '3px 8px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                    }}>
-                        <span style={{ color: '#1e3a8a', fontWeight: 'bold' }}>
-                            {language === 'hi'
-                                ? (showPassingOrder ? 'प्रपत्र 21 — भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'प्रपत्र 21 — भाग-2 (देयक समायोजन एवं प्रमाण-पत्र)')
-                                : (showPassingOrder ? 'Form 21 — Part II (Adjustments, Certificates & Passing Order)' : 'Form 21 — Part II (Adjustments & Certificates)')}
-                        </span>
-                        <span style={{ fontSize: '8.5pt', fontWeight: '500', color: '#334155' }}>
-                            <strong>{language === 'hi' ? 'कर्मचारी' : 'Employee'}:</strong> {empDisplayName} ({employee.designation || '—'}) | <strong>{language === 'hi' ? 'मुख्यालय' : 'HQ'}:</strong> {employee.headquarters || '—'}
-                        </span>
-                    </div>
-
-                    {/* Part II 2-Column Grid (Calculation + Signature on Left, Certificates on Right) */}
-                    <div className="form21-part2-grid" style={{
-                        display: 'grid',
-                        gridTemplateColumns: '43% 57%',
-                        border: '1px solid black',
-                        background: '#ffffff'
-                    }}>
-                        {/* Left Column: Calculation & Signature */}
-                        <div className="form21-part2-left" style={{
-                            borderRight: '1px solid black',
-                            padding: '6px 8px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            background: '#fafafa'
-                        }}>
-                            {/* Section 1: Bill Calculation & Net Payable Details */}
-                            <div className="form21-calc-box">
-                                <div style={{
-                                    fontWeight: 'bold',
-                                    fontSize: '9pt',
-                                    borderBottom: '1px solid black',
-                                    paddingBottom: '2px',
-                                    marginBottom: '4px'
-                                }}>
-                                    {language === 'hi' ? '1. देयक राशि गणना एवं शुद्ध भुगतान' : '1. Bill Calculation & Net Payable'}
-                                </div>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8.5pt', lineHeight: '1.45' }}>
-                                    <tbody>
-                                        <tr>
-                                            <td style={{ width: '65%', padding: '1.5px 0' }}>
-                                                <strong>{language === 'hi' ? '(क) कुल सकल देयक (Gross):' : '(A) Total Gross Approved:'}</strong>
-                                            </td>
-                                            <td style={{ textAlign: 'right', fontWeight: 'bold' }}>₹{totals.grandTotal.toFixed(2)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{ padding: '1.5px 0' }}>
-                                                <strong>{language === 'hi' ? '(ख) घटाइये: यात्रा अग्रिम (Advance):' : '(B) Less: Advance Drawn:'}</strong>
-                                            </td>
-                                            <td style={{ textAlign: 'right', color: totals.advanceAmount > 0 ? '#b91c1c' : 'inherit' }}>
-                                                ₹{(totals.advanceAmount || 0).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                        <tr style={{ borderTop: '1px solid black', borderBottom: '1px solid black', fontSize: '9pt' }}>
-                                            <td style={{ padding: '2px 0' }}>
-                                                <strong>{language === 'hi' ? '(ग) शुद्ध देय राशि (Net Payable):' : '(C) Net Payable Amount:'}</strong>
-                                            </td>
-                                            <td style={{ textAlign: 'right', fontWeight: 'bold' }}>₹{netAmount.toFixed(2)}</td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan="2" style={{ paddingTop: '3px', fontStyle: 'italic', fontSize: '7.8pt', lineHeight: '1.2' }}>
-                                                <strong>{b.amountInWordsLabel}:</strong> {words}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Section 3: Place, Date and Claimant Signature */}
-                            <div className="form21-claimant-sig-box" style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'flex-end',
-                                marginTop: '6px',
-                                paddingTop: '4px',
-                                borderTop: '1px dashed #cbd5e1',
-                                fontSize: '8.2pt'
-                            }}>
-                                <div>
-                                    <div style={{ marginBottom: '2px' }}>
-                                        <strong>{b.place}:</strong> {employee.headquarters || '__________'}
-                                    </div>
-                                    <div>
-                                        <strong>{b.date}:</strong> {claim.declaration_date ? claim.declaration_date.split('-').reverse().join('/') : '__________'}
-                                    </div>
-                                </div>
-
-                                <div style={{ textAlign: 'center', minWidth: '140px' }}>
-                                    <div style={{ height: '12px' }}></div>
-                                    <div style={{ borderBottom: '1px dotted black', width: '120px', margin: '0 auto 2px auto' }}></div>
-                                    <div style={{ fontWeight: 'bold', fontSize: '8.2pt' }}>{b.claimantSignature}</div>
-                                    <div style={{ fontSize: '7.8pt', color: '#475569' }}>({empDisplayName})</div>
-                                </div>
-                            </div>
+                    {/* Left Column: Certificates & Place / Date */}
+                    <div className="form21-bottom-left" style={{ fontSize: '9px', lineHeight: '1.38' }}>
+                        <div style={{ fontWeight: 'bold', textDecoration: 'underline', marginBottom: '5px', fontSize: '10px' }}>
+                            {b.certificatesTitle}
+                        </div>
+                        <div style={{ marginBottom: '3px' }}>
+                            {b.cert1} {pnrList ? <span style={{ fontWeight: 'bold' }}>{pnrList}</span> : <span>({language === 'hi' ? 'लागू नहीं' : 'Nil'})</span>}
+                        </div>
+                        <div style={{ marginBottom: '3px' }}>
+                            {b.cert2}
+                        </div>
+                        <div style={{ marginBottom: '3px' }}>
+                            {b.cert3}
+                        </div>
+                        <div style={{ marginBottom: '6px' }}>
+                            {b.cert4}
                         </div>
 
-                        {/* Right Column: Four Statutory Certificates */}
-                        <div className="form21-part2-right" style={{
-                            padding: '6px 8px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between'
-                        }}>
-                            <div className="form21-cert-box" style={{ fontSize: '7.8pt', lineHeight: '1.3' }}>
-                                <div style={{ fontWeight: 'bold', textDecoration: 'underline', marginBottom: '3px', fontSize: '8.2pt' }}>
-                                    2. {b.certificatesTitle} (Mandatory MP Travelling Allowance Rules Certificates)
-                                </div>
-                                <p style={{ margin: '2px 0' }}>
-                                    (1) {b.cert1} {pnrList ? <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>{pnrList}</span> : <span>({language === 'hi' ? 'संलग्न / लागू नहीं' : 'Attached / Nil'})</span>}
-                                </p>
-                                <p style={{ margin: '2px 0' }}>(2) {b.cert2}</p>
-                                <p style={{ margin: '2px 0' }}>(3) {b.cert3}</p>
-                                <p style={{ margin: '2px 0' }}>(4) {b.cert4}</p>
+                        <div style={{ marginTop: '22px', fontSize: '9.5px' }}>
+                            <div style={{ marginBottom: '3px' }}>
+                                <strong>{b.place}:</strong> {employee.headquarters || '__________'}
+                            </div>
+                            <div>
+                                <strong>{b.date}:</strong> {formatDateDMY(claim.declaration_date || claim.submission_date || claim.end_date || '__________')}
                             </div>
                         </div>
                     </div>
 
-                    {/* Section 4: Controlling Officer Certificate & Bill Sanction Order (Admin Control Only) */}
-                    {showPassingOrder && (
-                    <div style={{
+                    {/* Right Column: Calculation Box & Claimant Signature */}
+                    <div className="form21-bottom-right" style={{ display: 'flex', flexDirection: 'column' }}>
+                        {/* Summary Calculation Box */}
+                        <div className="form21-calc-box" style={{
+                            border: '1px solid black',
+                            fontSize: '9.5px',
+                            lineHeight: '1.35',
+                            background: '#ffffff'
+                        }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <tbody>
+                                    <tr>
+                                        <td style={{ padding: '3px 8px', fontWeight: 'bold', width: '58%' }}>
+                                            {b.grossTotal}:
+                                        </td>
+                                        <td style={{ padding: '3px 8px', textAlign: 'right', fontWeight: 'bold' }}>
+                                            ₹{totals.grandTotal.toFixed(2)}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: '3px 8px', fontWeight: 'bold' }}>
+                                            {b.lessAdvance}:
+                                        </td>
+                                        <td style={{ padding: '3px 8px', textAlign: 'right' }}>
+                                            ₹{(totals.advanceAmount || 0).toFixed(2)}
+                                        </td>
+                                    </tr>
+                                    <tr style={{ borderTop: '1px solid black', borderBottom: '1px solid black' }}>
+                                        <td style={{ padding: '4px 8px', fontWeight: 'bold' }}>
+                                            {b.netPayable}:
+                                        </td>
+                                        <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 'bold' }}>
+                                            ₹{netAmount.toFixed(2)}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan="2" style={{ padding: '4px 8px', fontSize: '8.5px', fontStyle: 'italic', lineHeight: '1.25' }}>
+                                            <strong>{b.amountInWordsLabel}:</strong> {words}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Claimant Signature */}
+                        <div className="form21-signature-block" style={{
+                            marginTop: '22px',
+                            textAlign: 'center',
+                            alignSelf: 'center',
+                            width: '100%'
+                        }}>
+                            <div style={{ borderTop: '1px solid black', width: '230px', margin: '0 auto 4px auto' }}></div>
+                            <div style={{ fontWeight: 'bold', fontSize: '9.5px' }}>{b.claimantSignature}</div>
+                            <div style={{ fontSize: '9px', marginTop: '1px' }}>({empDisplayName})</div>
+                            <div style={{ fontSize: '8.5px', color: '#1e293b' }}>{employee.designation || '—'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Admin Controlling Officer Passing Order (Admin Control Only) */}
+                {showPassingOrder && (
+                    <div className="form21-passing-box" style={{
+                        marginTop: '12px',
                         border: '1px solid black',
-                        borderTop: 'none',
                         padding: '6px 8px',
                         fontSize: '8pt',
-                        lineHeight: '1.3',
                         background: '#fafafa'
-                    }} className="form21-passing-box">
-                        <div style={{
-                            fontWeight: 'bold',
-                            fontSize: '8.5pt',
-                            borderBottom: '1px solid black',
-                            paddingBottom: '2px',
-                            marginBottom: '4px'
-                        }}>
-                            {language === 'hi' ? '3. नियंत्रण अधिकारी का प्रमाण-पत्र एवं देयक पारित आदेश' : '3. Controlling Officer Certificate & Bill Passing Order'}
+                    }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '8.5pt', borderBottom: '1px solid black', paddingBottom: '2px', marginBottom: '4px' }}>
+                            {language === 'hi' ? 'नियंत्रण अधिकारी का प्रमाण-पत्र एवं देयक पारित आदेश' : 'Controlling Officer Certificate & Bill Passing Order'}
                         </div>
                         <p style={{ margin: '2px 0', fontSize: '7.8pt' }}>
                             {language === 'hi'
                                 ? 'प्रमाणित किया जाता है कि कर्मचारी द्वारा प्रस्तुत दौरा डायरी एवं देयक का सत्यापन कर लिया गया है तथा यात्राएं शासकीय कार्य संपादन हेतु की गई हैं एवं नियमानुसार देय हैं।'
                                 : 'Certified that the tour diary and submitted claim have been verified. Journeys were undertaken in official interest and are admissible as per rules.'}
                         </p>
-
-                        <div style={{
-                            marginTop: '4px',
-                            padding: '4px 6px',
-                            border: '1px dashed #64748b',
-                            background: 'white',
-                            fontSize: '8pt'
-                        }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '1px' }}>
-                                {language === 'hi' ? 'देयक पारित / स्वीकृति आदेश (Order Passed for Payment):' : 'Order Passed for Payment:'}
-                            </div>
-                            <div>
-                                {language === 'hi'
-                                    ? `देयक परीक्षणोपरांत शुद्ध राशि ₹ ${netAmount.toFixed(2)} (अक्षरी: ${words}) का भुगतान पारित / स्वीकृत किया जाता है।`
-                                    : `After due audit and verification, net amount of ₹ ${netAmount.toFixed(2)} (${words}) is hereby passed for payment.`}
-                            </div>
+                        <div style={{ marginTop: '4px', padding: '3px 6px', border: '1px dashed #64748b', background: 'white', fontSize: '8pt' }}>
+                            <strong>{language === 'hi' ? 'देयक पारित / स्वीकृति आदेश:' : 'Order Passed for Payment:'} </strong>
+                            {language === 'hi'
+                                ? `देयक परीक्षणोपरांत शुद्ध राशि ₹ ${netAmount.toFixed(2)} (अक्षरी: ${words}) का भुगतान पारित / स्वीकृत किया जाता है।`
+                                : `After due audit and verification, net amount of ₹ ${netAmount.toFixed(2)} (${words}) is hereby passed for payment.`}
                         </div>
-
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-end',
-                            marginTop: '16px',
-                            padding: '0 6px'
-                        }}>
-                            <div style={{ textAlign: 'center', minWidth: '140px' }}>
-                                <div style={{ borderBottom: '1px dotted black', width: '120px', margin: '0 auto 2px auto' }}></div>
-                                <div style={{ fontWeight: '600', fontSize: '8pt' }}>
-                                    {language === 'hi' ? 'लेखापाल / सहायक लेखाधिकारी' : 'Accountant / AAO'}
-                                </div>
-                                <div style={{ fontSize: '7.2pt', color: '#64748b' }}>MPSCSC</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '14px', padding: '0 8px' }}>
+                            <div style={{ textAlign: 'center', minWidth: '130px' }}>
+                                <div style={{ borderBottom: '1px dotted black', width: '110px', margin: '0 auto 2px auto' }}></div>
+                                <div style={{ fontWeight: '600', fontSize: '7.8pt' }}>{language === 'hi' ? 'लेखापाल' : 'Accountant'}</div>
+                                <div style={{ fontSize: '7pt', color: '#64748b' }}>MPSCSC</div>
                             </div>
-
-                            <div style={{ textAlign: 'center', minWidth: '180px' }}>
-                                <div style={{ borderBottom: '1px dotted black', width: '150px', margin: '0 auto 2px auto' }}></div>
-                                <div style={{ fontWeight: 'bold', fontSize: '8.5pt' }}>
-                                    {language === 'hi' ? 'नियंत्रण अधिकारी / जिला प्रबंधक' : 'Controlling Officer / District Manager'}
-                                </div>
-                                <div style={{ fontSize: '7.2pt', color: '#64748b' }}>
-                                    {language === 'hi' ? 'म.प्र. स्टेट सिविल सप्लाइज कॉर्पोरेशन लि.' : 'MPSCSC Ltd.'}
-                                </div>
+                            <div style={{ textAlign: 'center', minWidth: '160px' }}>
+                                <div style={{ borderBottom: '1px dotted black', width: '140px', margin: '0 auto 2px auto' }}></div>
+                                <div style={{ fontWeight: 'bold', fontSize: '8.2pt' }}>{language === 'hi' ? 'नियंत्रण अधिकारी / जिला प्रबंधक' : 'Controlling Officer / District Manager'}</div>
+                                <div style={{ fontSize: '7pt', color: '#64748b' }}>{language === 'hi' ? 'म.प्र. स्टेट सिविल सप्लाइज कॉर्पोरेशन लि.' : 'MPSCSC Ltd.'}</div>
                             </div>
                         </div>
                     </div>
-                    )}
-                </div>
+                )}
             </div>
 
-            {/* Treasury Form 21 A4 Landscape & Portrait Print Styles */}
+            {/* Official Treasury Form 21 A4 Landscape Print Styles */}
             <style>{`
                 .bill-21-table {
                     border-collapse: collapse;
                     width: 100%;
                     border: 1px solid black;
                     table-layout: fixed;
-                    margin-bottom: 8px;
+                    margin-bottom: 6px;
                 }
                 .resizer {
                     position: absolute;
@@ -1721,7 +1560,6 @@ export default function TADABill() {
                     text-align: left;
                     line-height: 1.15;
                     word-break: normal;
-                    hyphens: manual;
                 }
                 .bill-21-table td.wrap, .bill-21-table th.wrap {
                     white-space: normal;
@@ -1742,18 +1580,14 @@ export default function TADABill() {
                     padding: 1px;
                 }
                 @media (max-width: 850px) {
-                    .form21-part2-grid {
+                    .form21-bottom-section {
                         grid-template-columns: 1fr !important;
-                    }
-                    .form21-part2-left {
-                        border-right: none !important;
-                        border-bottom: 1px solid black !important;
                     }
                 }
                 @media print {
                     @page {
                         size: A4 ${printOrientation};
-                        margin: ${printOrientation === 'landscape' ? '3.2mm 4mm 3mm 4mm' : '5mm 5mm 6mm 5mm'};
+                        margin: ${printOrientation === 'landscape' ? '3.5mm 5mm 3.5mm 5mm' : '5mm 5mm 6mm 5mm'};
                     }
                     html, body {
                         width: 100% !important;
@@ -1784,40 +1618,39 @@ export default function TADABill() {
                         box-shadow: none !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
-                        page-break-after: avoid !important;
-                        break-after: avoid !important;
                     }
                     .bill-title-header {
-                        margin-bottom: 1.5mm !important;
-                        padding-bottom: 1.5mm !important;
-                        border-bottom: 1px solid black !important;
+                        margin-bottom: 1.2mm !important;
+                        padding-bottom: 1mm !important;
                     }
                     .print-logo {
-                        width: 28px !important;
-                        height: 28px !important;
-                        min-width: 28px !important;
-                        min-height: 28px !important;
+                        width: 32px !important;
+                        height: 32px !important;
+                        min-width: 32px !important;
+                        min-height: 32px !important;
                     }
                     .bill-main-title {
-                        font-size: 10pt !important;
+                        font-size: 10.5pt !important;
                         line-height: 1.15 !important;
                         letter-spacing: 0.2px !important;
                         margin: 0 !important;
                     }
                     .bill-sub-title {
-                        font-size: 7.5pt !important;
+                        font-size: 7.8pt !important;
                         line-height: 1.15 !important;
-                        margin: 1px 0 0 0 !important;
+                        margin: 1.5px 0 0 0 !important;
                     }
                     .form21-meta-box {
                         display: grid !important;
-                        grid-template-columns: 1.2fr 1fr 1.2fr !important;
-                        font-size: 6.6pt !important;
-                        line-height: 1.15 !important;
-                        padding: 1.5px 5px !important;
-                        margin-bottom: 1.5mm !important;
-                        gap: 1px 10px !important;
+                        grid-template-columns: 1fr 1fr 1fr !important;
+                        font-size: 6.8pt !important;
+                        line-height: 1.2 !important;
+                        padding: 0 !important;
+                        margin-bottom: 1.2mm !important;
                         border: 1px solid black !important;
+                    }
+                    .form21-meta-box > div {
+                        padding: 1.5px 4px !important;
                     }
                     .table-scroll-wrapper {
                         overflow: visible !important;
@@ -1832,30 +1665,26 @@ export default function TADABill() {
                         break-inside: avoid !important;
                     }
 
-                    /* A4 Landscape Optimised Column Proportions (Exact 100% distribution across 289mm) */
-                    .bill-21-table col.col-c1 { width: 5.2% !important; }
-                    .bill-21-table col.col-c2 { width: 6.4% !important; }
-                    .bill-21-table col.col-c3 { width: 5.2% !important; }
-                    .bill-21-table col.col-c4 { width: 6.4% !important; }
-                    .bill-21-table col.col-c5 { width: 9.2% !important; }
-                    .bill-21-table col.col-c6 { width: 4.8% !important; }
-                    .bill-21-table col.col-c7 { width: 3.8% !important; }
-                    .bill-21-table col.col-c8 { width: 4.8% !important; }
-                    .bill-21-table col.col-c9 { width: 3.0% !important; }
-                    .bill-21-table col.col-c10 { width: 4.6% !important; }
-                    .bill-21-table col.col-c11 { width: 4.4% !important; }
-                    .bill-21-table col.col-c12 { width: 2.8% !important; }
-                    .bill-21-table col.col-c13 { width: 4.2% !important; }
-                    .bill-21-table col.col-c14 { width: 4.2% !important; }
-                    .bill-21-table col.col-c15 { width: 2.8% !important; }
-                    .bill-21-table col.col-c16 { width: 4.2% !important; }
-                    .bill-21-table col.col-c17 { width: 4.2% !important; }
-                    .bill-21-table col.col-c18 { width: 4.0% !important; }
-                    .bill-21-table col.col-c19 { width: 4.2% !important; }
-                    .bill-21-table col.col-c20 { width: 5.5% !important; }
-                    .bill-21-table col.col-c21 { width: 5.1% !important; }
+                    /* A4 Landscape 18-Column Proportions (Exact 100% distribution) */
+                    .bill-21-table col.col-c1  { width: 5.5% !important; }
+                    .bill-21-table col.col-c2  { width: 7.0% !important; }
+                    .bill-21-table col.col-c3  { width: 5.5% !important; }
+                    .bill-21-table col.col-c4  { width: 7.0% !important; }
+                    .bill-21-table col.col-c5  { width: 15.0% !important; }
+                    .bill-21-table col.col-c6  { width: 4.5% !important; }
+                    .bill-21-table col.col-c7  { width: 3.5% !important; }
+                    .bill-21-table col.col-c8  { width: 5.0% !important; }
+                    .bill-21-table col.col-c9  { width: 3.5% !important; }
+                    .bill-21-table col.col-c10 { width: 6.5% !important; }
+                    .bill-21-table col.col-c11 { width: 4.5% !important; }
+                    .bill-21-table col.col-c12 { width: 3.5% !important; }
+                    .bill-21-table col.col-c13 { width: 5.5% !important; }
+                    .bill-21-table col.col-c14 { width: 4.5% !important; }
+                    .bill-21-table col.col-c15 { width: 3.5% !important; }
+                    .bill-21-table col.col-c16 { width: 5.5% !important; }
+                    .bill-21-table col.col-c17 { width: 5.0% !important; }
+                    .bill-21-table col.col-c18 { width: 5.0% !important; }
 
-                    /* All cells wrap cleanly, preventing clipping or overflow */
                     .bill-21-table th, .bill-21-table td {
                         border: 1px solid black !important;
                         padding: 1px 1.5px !important;
@@ -1869,7 +1698,7 @@ export default function TADABill() {
                     }
                     .bill-21-table th {
                         background: #f8fafc !important;
-                        font-size: ${printOrientation === 'landscape' ? '5.5pt' : '5.8pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '5.6pt' : '5.8pt'} !important;
                         font-weight: bold !important;
                         text-align: center !important;
                         padding: 1px 1px !important;
@@ -1877,7 +1706,7 @@ export default function TADABill() {
                     }
                     .col-numbers td {
                         background: #f1f5f9 !important;
-                        font-size: ${printOrientation === 'landscape' ? '4.8pt' : '5.2pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '4.8pt' : '5.0pt'} !important;
                         padding: 0.5px !important;
                         text-align: center !important;
                         font-weight: bold !important;
@@ -1887,91 +1716,54 @@ export default function TADABill() {
                         break-inside: avoid !important;
                     }
 
-                    /* Part II Container */
-                    .form21-page2-container {
-                        margin-top: 1.5mm !important;
-                        padding-top: 0 !important;
-                        border-top: none !important;
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                    }
-                    .form21-part2-banner {
-                        font-size: ${printOrientation === 'landscape' ? '6.8pt' : '8pt'} !important;
-                        padding: 1px 5px !important;
-                        margin-bottom: 0 !important;
-                        line-height: 1.12 !important;
-                        background: #f1f5f9 !important;
-                        border: 1px solid black !important;
-                        border-bottom: none !important;
-                        display: flex !important;
-                    }
-                    .form21-part2-banner span {
-                        font-size: inherit !important;
-                    }
-                    .form21-part2-grid {
+                    /* Bottom Section: 2 Columns Matching PDF */
+                    .form21-bottom-section {
                         display: grid !important;
-                        grid-template-columns: ${printOrientation === 'landscape' ? '43% 57%' : '1fr'} !important;
-                        border: 1px solid black !important;
+                        grid-template-columns: ${printOrientation === 'landscape' ? '56% 44%' : '1fr'} !important;
+                        gap: 4mm !important;
+                        margin-top: 1.5mm !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                     }
-                    .form21-part2-left {
-                        border-right: ${printOrientation === 'landscape' ? '1px solid black' : 'none'} !important;
-                        border-bottom: ${printOrientation === 'landscape' ? 'none' : '1px solid black'} !important;
-                        padding: 2.5px 5px !important;
-                        display: flex !important;
-                        flex-direction: column !important;
-                        justifyContent: space-between !important;
+                    .form21-bottom-left {
+                        font-size: 5.8pt !important;
+                        line-height: 1.2 !important;
                     }
-                    .form21-part2-right {
-                        padding: 2.5px 5px !important;
+                    .form21-bottom-left div {
+                        margin-bottom: 0.8mm !important;
+                    }
+                    .form21-bottom-right {
                         display: flex !important;
                         flex-direction: column !important;
-                        justifyContent: space-between !important;
                     }
                     .form21-calc-box {
-                        font-size: 6.2pt !important;
-                        margin-bottom: 1.5mm !important;
-                    }
-                    .form21-calc-box div {
-                        font-size: 6.8pt !important;
-                        margin-bottom: 1.5px !important;
-                        padding-bottom: 1px !important;
-                    }
-                    .form21-calc-box table {
+                        border: 1px solid black !important;
                         font-size: 6.0pt !important;
-                        line-height: 1.25 !important;
+                        line-height: 1.22 !important;
                     }
-                    .form21-cert-box {
-                        font-size: 5.6pt !important;
-                        line-height: 1.16 !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
+                    .form21-calc-box table td {
+                        padding: 1px 3px !important;
+                        font-size: 6.0pt !important;
                     }
-                    .form21-cert-box div {
-                        font-size: 6.2pt !important;
-                        margin-bottom: 1px !important;
+                    .form21-signature-block {
+                        margin-top: 3.5mm !important;
+                        font-size: 6.0pt !important;
+                        line-height: 1.15 !important;
                     }
-                    .form21-cert-box p {
-                        margin: 1px 0 !important;
-                    }
-                    .form21-claimant-sig-box {
-                        font-size: 6.2pt !important;
-                        margin-top: 1mm !important;
-                        padding: 1px 2px 0 2px !important;
+                    .form21-signature-block div {
+                        font-size: inherit !important;
                     }
                     .form21-passing-box {
-                        font-size: 6.0pt !important;
-                        padding: 2px 5px !important;
-                        margin-top: 0 !important;
+                        font-size: 5.8pt !important;
+                        padding: 1.5px 4px !important;
+                        margin-top: 1.5mm !important;
                         border: 1px solid black !important;
-                        border-top: none !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                     }
                     .form21-passing-box p {
                         margin: 1px 0 !important;
-                        font-size: 5.8pt !important;
+                        font-size: 5.6pt !important;
                     }
                 }
             `}</style>

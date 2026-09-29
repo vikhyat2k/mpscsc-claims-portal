@@ -804,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 | `599c3e5` | 2026-09-29 | fix(bill): hide Form 21 Page 1 turnover continuation notice and Page 2 screen separator in individual login view |
 | `37e592a` | 2026-09-29 | feat: Restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control; hide from individual logins |
 | `b50abc2` | 2026-09-23 | fix(ui): make '+ New claim' dropdown completely opaque and solid with crisp typography and colored icon badges |
@@ -811,13 +812,13 @@ This automatically launches:
 | `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
 | `92f9b21` | 2026-09-23 | fix: add Render persistent disk so SQLite DB survives redeploys |
 | `be37afc` | 2026-09-23 | fix: add missing PUT /api/tour-diaries/:id route (Tour Diary save was broken) |
-| `cb3a198` | 2026-09-23 | fix(MedicalClaim): enforce strict 2-page split in print layout - Page 1 (points 1-11): removed conflicting break-inside:avoid that was causing overflow spill; kept only break-after:page; compacted landscape CSS (logo 36px, table padding 3/5px, cert box padding 5/8px, sig-space 16px, smaller fonts) so all 11 points fit cleanly on one A4 landscape sheet - Page 2 (PART II Itemized Details): guaranteed fresh page with break-before:page only |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-09-29** | **Automated Update** | Aligned Form 21 TA/DA Bill layout, headers, 3-column top metadata box, 18-column table, statutory certificates, and summary calculation box to exact official department PDF standard |
 | **2026-09-29** | **Automated Update** | Optimize Form 21 TA/DA bill print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 | **2026-09-29** | **Automated Update** | Hide Form 21 Page 1 continuation turnover notice and screen separator in individual login view |
 | **2026-09-29** | **Automated Update** | feat(tada-bill): restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control with active action-bar toggle |
