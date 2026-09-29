@@ -904,6 +904,31 @@ export default function TADABill() {
                 <div style={{ display: 'inline-flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '8px', border: '1px solid #cbd5e1', gap: '3px' }}>
                     <button
                         type="button"
+                        onClick={() => setPrintOrientation('landscape')}
+                        title={language === 'hi' ? 'A4 लैंडस्केप (एकल पृष्ठ) में प्रिंट करें' : 'Print in A4 Landscape (Single Page)'}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '5px 10px',
+                            fontSize: '12.5px',
+                            fontWeight: printOrientation === 'landscape' ? '600' : '500',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: printOrientation === 'landscape' ? '#1e3a8a' : 'transparent',
+                            color: printOrientation === 'landscape' ? '#ffffff' : '#475569',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                        }}
+                    >
+                        <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
+                        {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
+                        <span style={{ fontSize: '10px', opacity: 0.95, background: printOrientation === 'landscape' ? '#22c55e' : '#e2e8f0', color: printOrientation === 'landscape' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>
+                            {language === 'hi' ? 'अनुशंसित (1 पृष्ठ)' : 'Rec. (1 Page)'}
+                        </span>
+                    </button>
+                    <button
+                        type="button"
                         onClick={() => setPrintOrientation('portrait')}
                         title={language === 'hi' ? 'फॉर्म 21 देयक A4 पोर्ट्रेट में प्रिंट करें' : 'Print Form 21 Bill in A4 Portrait'}
                         style={{
@@ -923,31 +948,6 @@ export default function TADABill() {
                     >
                         <span style={{ display: 'inline-block', width: '9px', height: '13px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
                         {language === 'hi' ? 'A4 पोर्ट्रेट' : 'A4 Portrait'}
-                        <span style={{ fontSize: '10px', opacity: 0.9, background: printOrientation === 'portrait' ? '#3b82f6' : '#e2e8f0', color: printOrientation === 'portrait' ? '#fff' : '#475569', padding: '1px 5px', borderRadius: '4px' }}>
-                            {language === 'hi' ? 'अनुशंसित' : 'Rec.'}
-                        </span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setPrintOrientation('landscape')}
-                        title={language === 'hi' ? 'A4 लैंडस्केप में प्रिंट करें' : 'Print in A4 Landscape'}
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            padding: '5px 10px',
-                            fontSize: '12.5px',
-                            fontWeight: printOrientation === 'landscape' ? '600' : '500',
-                            borderRadius: '6px',
-                            border: 'none',
-                            background: printOrientation === 'landscape' ? '#1e3a8a' : 'transparent',
-                            color: printOrientation === 'landscape' ? '#ffffff' : '#475569',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease'
-                        }}
-                    >
-                        <span style={{ display: 'inline-block', width: '13px', height: '9px', border: '1.5px solid currentColor', borderRadius: '1.5px' }}></span>
-                        {language === 'hi' ? 'A4 लैंडस्केप' : 'A4 Landscape'}
                     </button>
                 </div>
                 <button type="button" onClick={() => handlePrint(printOrientation)} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: '600' }}>
@@ -1033,7 +1033,7 @@ export default function TADABill() {
                 color: 'black'
             }}>
                 {/* Official Title Line */}
-                <div style={{ textAlign: 'center', marginBottom: '12px', borderBottom: '1px solid black', paddingBottom: '8px' }}>
+                <div className="bill-title-header" style={{ textAlign: 'center', marginBottom: '12px', borderBottom: '1px solid black', paddingBottom: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
                         <img
                             src={logoIco}
@@ -1053,10 +1053,10 @@ export default function TADABill() {
                             }}
                         />
                         <div>
-                            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: 'bold', textDecoration: 'underline', letterSpacing: '0.5px' }}>
+                            <h2 className="bill-main-title" style={{ margin: '0', fontSize: '18px', fontWeight: 'bold', textDecoration: 'underline', letterSpacing: '0.5px' }}>
                                 {b.title}
                             </h2>
-                            <h3 style={{ margin: '4px 0 0 0', fontSize: '14px', fontWeight: 'normal' }}>
+                            <h3 className="bill-sub-title" style={{ margin: '4px 0 0 0', fontSize: '14px', fontWeight: 'normal' }}>
                                 <strong>{billSubTitle}</strong> ({b.periodLabel}: {language === 'hi' 
                                     ? `${employee.start_date || claim.start_date || '_________'} ${b.periodFrom} ${employee.end_date || claim.end_date || '_________'} ${b.periodTo}`
                                     : `${employee.start_date || claim.start_date || '_________'} ${b.periodTo} ${employee.end_date || claim.end_date || '_________'}`})
@@ -1486,157 +1486,172 @@ export default function TADABill() {
                     PAGE 2: PART II (Certificates, Net Adjustments & Sanction)
                    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 <div className="form21-page2-container" style={{
-                    marginTop: '16px',
-                    paddingTop: '8px',
-                    borderTop: '1px solid #e2e8f0'
+                    marginTop: '10px',
+                    paddingTop: '4px',
+                    borderTop: '1px solid #cbd5e1'
                 }}>
-                    {/* Page 2 Running Header */}
-                    <div className="form21-page2-header" style={{
-                        borderBottom: '1.5px solid black',
-                        paddingBottom: '6px',
-                        marginBottom: '12px'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div>
-                                <h3 style={{ margin: 0, fontSize: '13pt', fontWeight: 'bold' }}>
-                                    {language === 'hi' ? 'मध्य प्रदेश स्टेट सिविल सप्लाइज कॉर्पोरेशन लिमिटेड' : 'M.P. State Civil Supplies Corporation Limited'}
-                                </h3>
-                                <h4 style={{ margin: '2px 0 0 0', fontSize: '10.5pt', fontWeight: 'bold', color: '#1e3a8a' }}>
-                                    {language === 'hi' ? (showPassingOrder ? 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'फॉर्म क्रमांक 21 — भाग 2 (देयक समायोजन एवं प्रमाण-पत्र)') : (showPassingOrder ? 'Form 21 — Part II (Adjustments, Certificates & Passing Order)' : 'Form 21 — Part II (Adjustments & Certificates)')}
-                                </h4>
-                            </div>
-                            <div style={{ textAlign: 'right', fontSize: '8.8pt', lineHeight: '1.35' }}>
-                                <div><strong>{language === 'hi' ? 'कर्मचारी' : 'Employee'}:</strong> {empDisplayName} ({employee.designation || '—'})</div>
-                                <div><strong>{language === 'hi' ? 'मुख्यालय' : 'HQ'}:</strong> {employee.headquarters || '—'}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 1: Bill Calculation & Net Payable Details */}
-                    <div style={{
-                        border: '1.5px solid black',
-                        padding: '10px 14px',
-                        marginBottom: '14px',
-                        background: '#fafafa'
-                    }} className="form21-calc-box">
-                        <div style={{
-                            fontWeight: 'bold',
-                            fontSize: '10pt',
-                            borderBottom: '1px solid black',
-                            paddingBottom: '4px',
-                            marginBottom: '6px'
-                        }}>
-                            {language === 'hi' ? '1. देयक राशि गणना एवं शुद्ध भुगतान विवरण' : '1. Bill Calculation & Net Payable Details'}
-                        </div>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9pt', lineHeight: '1.6' }}>
-                            <tbody>
-                                <tr>
-                                    <td style={{ width: '65%', padding: '2px 0' }}>
-                                        <strong>{language === 'hi' ? '(क) कुल सकल देयक राशि (Gross Approved Amount):' : '(A) Total Gross Approved Amount:'}</strong>
-                                    </td>
-                                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>₹{totals.grandTotal.toFixed(2)}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '2px 0' }}>
-                                        <strong>{language === 'hi' ? '(ख) घटाइये: यात्रा अग्रिम राशि (Less Advance Drawn):' : '(B) Less: Travel Advance Drawn:'}</strong>
-                                    </td>
-                                    <td style={{ textAlign: 'right', color: totals.advanceAmount > 0 ? '#b91c1c' : 'inherit' }}>
-                                        ₹{(totals.advanceAmount || 0).toFixed(2)}
-                                    </td>
-                                </tr>
-                                <tr style={{ borderTop: '1px solid black', borderBottom: '1.5px solid black', fontSize: '10pt' }}>
-                                    <td style={{ padding: '4px 0' }}>
-                                        <strong>{language === 'hi' ? '(ग) शुद्ध देय राशि (Net Payable Amount):' : '(C) Net Payable Amount:'}</strong>
-                                    </td>
-                                    <td style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '10.5pt' }}>₹{netAmount.toFixed(2)}</td>
-                                </tr>
-                                <tr>
-                                    <td colSpan="2" style={{ paddingTop: '5px', fontStyle: 'italic', fontSize: '8.8pt' }}>
-                                        <strong>{b.amountInWordsLabel}:</strong> {words}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Section 2: Four Statutory Certificates */}
-                    <div style={{
+                    {/* Part II Section Header Banner */}
+                    <div className="form21-part2-banner" style={{
+                        fontWeight: 'bold',
+                        fontSize: '9.5pt',
+                        background: '#f1f5f9',
                         border: '1px solid black',
-                        padding: '10px 14px',
-                        marginBottom: '14px',
-                        fontSize: '8.5pt',
-                        lineHeight: '1.45'
-                    }} className="form21-cert-box">
-                        <div style={{ fontWeight: 'bold', textDecoration: 'underline', marginBottom: '5px', fontSize: '9pt' }}>
-                            {b.certificatesTitle} (Mandatory Certificates under MP Travelling Allowance Rules)
-                        </div>
-                        <p style={{ margin: '3px 0' }}>
-                            {b.cert1} {pnrList ? <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>{pnrList}</span> : <span>({language === 'hi' ? 'संलग्न / लागू नहीं' : 'Attached / Nil'})</span>}
-                        </p>
-                        <p style={{ margin: '3px 0' }}>{b.cert2}</p>
-                        <p style={{ margin: '3px 0' }}>{b.cert3}</p>
-                        <p style={{ margin: '3px 0' }}>{b.cert4}</p>
-                    </div>
-
-                    {/* Section 3: Place, Date and Claimant Signature */}
-                    <div style={{
+                        borderBottom: 'none',
+                        padding: '3px 8px',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'flex-end',
-                        marginBottom: '18px',
-                        padding: '0 8px',
-                        fontSize: '9pt'
-                    }} className="form21-claimant-sig-box">
-                        <div>
-                            <div style={{ marginBottom: '4px' }}>
-                                <strong>{b.place}:</strong> {employee.headquarters || '__________'}
+                        alignItems: 'center'
+                    }}>
+                        <span style={{ color: '#1e3a8a', fontWeight: 'bold' }}>
+                            {language === 'hi'
+                                ? (showPassingOrder ? 'प्रपत्र 21 — भाग-2 (देयक समायोजन, प्रमाण-पत्र एवं पारित आदेश)' : 'प्रपत्र 21 — भाग-2 (देयक समायोजन एवं प्रमाण-पत्र)')
+                                : (showPassingOrder ? 'Form 21 — Part II (Adjustments, Certificates & Passing Order)' : 'Form 21 — Part II (Adjustments & Certificates)')}
+                        </span>
+                        <span style={{ fontSize: '8.5pt', fontWeight: '500', color: '#334155' }}>
+                            <strong>{language === 'hi' ? 'कर्मचारी' : 'Employee'}:</strong> {empDisplayName} ({employee.designation || '—'}) | <strong>{language === 'hi' ? 'मुख्यालय' : 'HQ'}:</strong> {employee.headquarters || '—'}
+                        </span>
+                    </div>
+
+                    {/* Part II 2-Column Grid (Calculation + Signature on Left, Certificates on Right) */}
+                    <div className="form21-part2-grid" style={{
+                        display: 'grid',
+                        gridTemplateColumns: '43% 57%',
+                        border: '1px solid black',
+                        background: '#ffffff'
+                    }}>
+                        {/* Left Column: Calculation & Signature */}
+                        <div className="form21-part2-left" style={{
+                            borderRight: '1px solid black',
+                            padding: '6px 8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            background: '#fafafa'
+                        }}>
+                            {/* Section 1: Bill Calculation & Net Payable Details */}
+                            <div className="form21-calc-box">
+                                <div style={{
+                                    fontWeight: 'bold',
+                                    fontSize: '9pt',
+                                    borderBottom: '1px solid black',
+                                    paddingBottom: '2px',
+                                    marginBottom: '4px'
+                                }}>
+                                    {language === 'hi' ? '1. देयक राशि गणना एवं शुद्ध भुगतान' : '1. Bill Calculation & Net Payable'}
+                                </div>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8.5pt', lineHeight: '1.45' }}>
+                                    <tbody>
+                                        <tr>
+                                            <td style={{ width: '65%', padding: '1.5px 0' }}>
+                                                <strong>{language === 'hi' ? '(क) कुल सकल देयक (Gross):' : '(A) Total Gross Approved:'}</strong>
+                                            </td>
+                                            <td style={{ textAlign: 'right', fontWeight: 'bold' }}>₹{totals.grandTotal.toFixed(2)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style={{ padding: '1.5px 0' }}>
+                                                <strong>{language === 'hi' ? '(ख) घटाइये: यात्रा अग्रिम (Advance):' : '(B) Less: Advance Drawn:'}</strong>
+                                            </td>
+                                            <td style={{ textAlign: 'right', color: totals.advanceAmount > 0 ? '#b91c1c' : 'inherit' }}>
+                                                ₹{(totals.advanceAmount || 0).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                        <tr style={{ borderTop: '1px solid black', borderBottom: '1px solid black', fontSize: '9pt' }}>
+                                            <td style={{ padding: '2px 0' }}>
+                                                <strong>{language === 'hi' ? '(ग) शुद्ध देय राशि (Net Payable):' : '(C) Net Payable Amount:'}</strong>
+                                            </td>
+                                            <td style={{ textAlign: 'right', fontWeight: 'bold' }}>₹{netAmount.toFixed(2)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan="2" style={{ paddingTop: '3px', fontStyle: 'italic', fontSize: '7.8pt', lineHeight: '1.2' }}>
+                                                <strong>{b.amountInWordsLabel}:</strong> {words}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div>
-                                <strong>{b.date}:</strong> {claim.declaration_date ? claim.declaration_date.split('-').reverse().join('/') : '__________'}
+
+                            {/* Section 3: Place, Date and Claimant Signature */}
+                            <div className="form21-claimant-sig-box" style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-end',
+                                marginTop: '6px',
+                                paddingTop: '4px',
+                                borderTop: '1px dashed #cbd5e1',
+                                fontSize: '8.2pt'
+                            }}>
+                                <div>
+                                    <div style={{ marginBottom: '2px' }}>
+                                        <strong>{b.place}:</strong> {employee.headquarters || '__________'}
+                                    </div>
+                                    <div>
+                                        <strong>{b.date}:</strong> {claim.declaration_date ? claim.declaration_date.split('-').reverse().join('/') : '__________'}
+                                    </div>
+                                </div>
+
+                                <div style={{ textAlign: 'center', minWidth: '140px' }}>
+                                    <div style={{ height: '12px' }}></div>
+                                    <div style={{ borderBottom: '1px dotted black', width: '120px', margin: '0 auto 2px auto' }}></div>
+                                    <div style={{ fontWeight: 'bold', fontSize: '8.2pt' }}>{b.claimantSignature}</div>
+                                    <div style={{ fontSize: '7.8pt', color: '#475569' }}>({empDisplayName})</div>
+                                </div>
                             </div>
                         </div>
 
-                        <div style={{ textAlign: 'center', minWidth: '220px' }}>
-                            <div style={{ height: '24px' }}></div>
-                            <div style={{ borderBottom: '1px dotted black', width: '180px', margin: '0 auto 4px auto' }}></div>
-                            <div style={{ fontWeight: 'bold' }}>{b.claimantSignature}</div>
-                            <div>({empDisplayName})</div>
-                            <div style={{ fontSize: '8pt', color: '#475569' }}>{employee.designation}</div>
+                        {/* Right Column: Four Statutory Certificates */}
+                        <div className="form21-part2-right" style={{
+                            padding: '6px 8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div className="form21-cert-box" style={{ fontSize: '7.8pt', lineHeight: '1.3' }}>
+                                <div style={{ fontWeight: 'bold', textDecoration: 'underline', marginBottom: '3px', fontSize: '8.2pt' }}>
+                                    2. {b.certificatesTitle} (Mandatory MP Travelling Allowance Rules Certificates)
+                                </div>
+                                <p style={{ margin: '2px 0' }}>
+                                    (1) {b.cert1} {pnrList ? <span style={{ fontWeight: 'bold', textDecoration: 'underline' }}>{pnrList}</span> : <span>({language === 'hi' ? 'संलग्न / लागू नहीं' : 'Attached / Nil'})</span>}
+                                </p>
+                                <p style={{ margin: '2px 0' }}>(2) {b.cert2}</p>
+                                <p style={{ margin: '2px 0' }}>(3) {b.cert3}</p>
+                                <p style={{ margin: '2px 0' }}>(4) {b.cert4}</p>
+                            </div>
                         </div>
                     </div>
 
                     {/* Section 4: Controlling Officer Certificate & Bill Sanction Order (Admin Control Only) */}
                     {showPassingOrder && (
                     <div style={{
-                        border: '1.5px solid black',
-                        padding: '10px 14px',
-                        fontSize: '8.8pt',
-                        lineHeight: '1.45',
+                        border: '1px solid black',
+                        borderTop: 'none',
+                        padding: '6px 8px',
+                        fontSize: '8pt',
+                        lineHeight: '1.3',
                         background: '#fafafa'
                     }} className="form21-passing-box">
                         <div style={{
                             fontWeight: 'bold',
-                            fontSize: '9.5pt',
+                            fontSize: '8.5pt',
                             borderBottom: '1px solid black',
-                            paddingBottom: '3px',
-                            marginBottom: '6px'
+                            paddingBottom: '2px',
+                            marginBottom: '4px'
                         }}>
-                            {language === 'hi' ? '2. नियंत्रण अधिकारी का प्रमाण-पत्र एवं देयक पारित आदेश' : '2. Controlling Officer Certificate & Bill Passing Order'}
+                            {language === 'hi' ? '3. नियंत्रण अधिकारी का प्रमाण-पत्र एवं देयक पारित आदेश' : '3. Controlling Officer Certificate & Bill Passing Order'}
                         </div>
-                        <p style={{ margin: '3px 0', fontSize: '8.3pt' }}>
+                        <p style={{ margin: '2px 0', fontSize: '7.8pt' }}>
                             {language === 'hi'
                                 ? 'प्रमाणित किया जाता है कि कर्मचारी द्वारा प्रस्तुत दौरा डायरी एवं देयक का सत्यापन कर लिया गया है तथा यात्राएं शासकीय कार्य संपादन हेतु की गई हैं एवं नियमानुसार देय हैं।'
                                 : 'Certified that the tour diary and submitted claim have been verified. Journeys were undertaken in official interest and are admissible as per rules.'}
                         </p>
 
                         <div style={{
-                            marginTop: '8px',
-                            padding: '6px 10px',
+                            marginTop: '4px',
+                            padding: '4px 6px',
                             border: '1px dashed #64748b',
                             background: 'white',
-                            fontSize: '8.8pt'
+                            fontSize: '8pt'
                         }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '1px' }}>
                                 {language === 'hi' ? 'देयक पारित / स्वीकृति आदेश (Order Passed for Payment):' : 'Order Passed for Payment:'}
                             </div>
                             <div>
@@ -1650,23 +1665,23 @@ export default function TADABill() {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'flex-end',
-                            marginTop: '32px',
-                            padding: '0 8px'
+                            marginTop: '16px',
+                            padding: '0 6px'
                         }}>
-                            <div style={{ textAlign: 'center', minWidth: '160px' }}>
-                                <div style={{ borderBottom: '1px dotted black', width: '140px', margin: '0 auto 4px auto' }}></div>
-                                <div style={{ fontWeight: '600', fontSize: '8.5pt' }}>
+                            <div style={{ textAlign: 'center', minWidth: '140px' }}>
+                                <div style={{ borderBottom: '1px dotted black', width: '120px', margin: '0 auto 2px auto' }}></div>
+                                <div style={{ fontWeight: '600', fontSize: '8pt' }}>
                                     {language === 'hi' ? 'लेखापाल / सहायक लेखाधिकारी' : 'Accountant / AAO'}
                                 </div>
-                                <div style={{ fontSize: '7.8pt', color: '#64748b' }}>MPSCSC</div>
+                                <div style={{ fontSize: '7.2pt', color: '#64748b' }}>MPSCSC</div>
                             </div>
 
-                            <div style={{ textAlign: 'center', minWidth: '200px' }}>
-                                <div style={{ borderBottom: '1px dotted black', width: '170px', margin: '0 auto 4px auto' }}></div>
-                                <div style={{ fontWeight: 'bold', fontSize: '9pt' }}>
+                            <div style={{ textAlign: 'center', minWidth: '180px' }}>
+                                <div style={{ borderBottom: '1px dotted black', width: '150px', margin: '0 auto 2px auto' }}></div>
+                                <div style={{ fontWeight: 'bold', fontSize: '8.5pt' }}>
                                     {language === 'hi' ? 'नियंत्रण अधिकारी / जिला प्रबंधक' : 'Controlling Officer / District Manager'}
                                 </div>
-                                <div style={{ fontSize: '7.8pt', color: '#64748b' }}>
+                                <div style={{ fontSize: '7.2pt', color: '#64748b' }}>
                                     {language === 'hi' ? 'म.प्र. स्टेट सिविल सप्लाइज कॉर्पोरेशन लि.' : 'MPSCSC Ltd.'}
                                 </div>
                             </div>
@@ -1676,7 +1691,7 @@ export default function TADABill() {
                 </div>
             </div>
 
-            {/* Treasury Form 21 A4 Portrait Print Styles */}
+            {/* Treasury Form 21 A4 Landscape & Portrait Print Styles */}
             <style>{`
                 .bill-21-table {
                     border-collapse: collapse;
@@ -1726,10 +1741,27 @@ export default function TADABill() {
                     font-weight: bold;
                     padding: 1px;
                 }
+                @media (max-width: 850px) {
+                    .form21-part2-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .form21-part2-left {
+                        border-right: none !important;
+                        border-bottom: 1px solid black !important;
+                    }
+                }
                 @media print {
                     @page {
                         size: A4 ${printOrientation};
-                        margin: ${printOrientation === 'landscape' ? '4mm 5mm 4mm 5mm' : '5mm 5mm 6mm 5mm'};
+                        margin: ${printOrientation === 'landscape' ? '3.2mm 4mm 3mm 4mm' : '5mm 5mm 6mm 5mm'};
+                    }
+                    html, body {
+                        width: 100% !important;
+                        height: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: white !important;
+                        overflow: hidden !important;
                     }
                     .no-print { display: none !important; }
                     .print-only { display: block !important; }
@@ -1741,16 +1773,7 @@ export default function TADABill() {
                         print-color-adjust: exact !important;
                     }
                     body {
-                        background: white !important;
                         font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-                    .print-logo {
-                        width: 42px !important;
-                        height: 42px !important;
-                        min-width: 42px !important;
-                        min-height: 42px !important;
                     }
                     .bill-print-container { 
                         width: 100% !important; 
@@ -1759,12 +1782,42 @@ export default function TADABill() {
                         padding: 0 !important;
                         margin: 0 !important;
                         box-shadow: none !important;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                        page-break-after: avoid !important;
+                        break-after: avoid !important;
+                    }
+                    .bill-title-header {
+                        margin-bottom: 1.5mm !important;
+                        padding-bottom: 1.5mm !important;
+                        border-bottom: 1px solid black !important;
+                    }
+                    .print-logo {
+                        width: 28px !important;
+                        height: 28px !important;
+                        min-width: 28px !important;
+                        min-height: 28px !important;
+                    }
+                    .bill-main-title {
+                        font-size: 10pt !important;
+                        line-height: 1.15 !important;
+                        letter-spacing: 0.2px !important;
+                        margin: 0 !important;
+                    }
+                    .bill-sub-title {
+                        font-size: 7.5pt !important;
+                        line-height: 1.15 !important;
+                        margin: 1px 0 0 0 !important;
                     }
                     .form21-meta-box {
-                        font-size: ${printOrientation === 'landscape' ? '6.8pt' : '7.2pt'} !important;
-                        padding: ${printOrientation === 'landscape' ? '2px 5px' : '3px 6px'} !important;
-                        margin-bottom: ${printOrientation === 'landscape' ? '3px' : '4px'} !important;
-                        gap: ${printOrientation === 'landscape' ? '1px 10px' : '2px 14px'} !important;
+                        display: grid !important;
+                        grid-template-columns: 1.2fr 1fr 1.2fr !important;
+                        font-size: 6.6pt !important;
+                        line-height: 1.15 !important;
+                        padding: 1.5px 5px !important;
+                        margin-bottom: 1.5mm !important;
+                        gap: 1px 10px !important;
+                        border: 1px solid black !important;
                     }
                     .table-scroll-wrapper {
                         overflow: visible !important;
@@ -1774,115 +1827,151 @@ export default function TADABill() {
                         width: 100% !important;
                         table-layout: fixed !important;
                         border-collapse: collapse !important;
-                        margin-bottom: 2px !important;
-                        page-break-inside: auto;
+                        margin-bottom: 1.5mm !important;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
 
-                    /* A4 Landscape Optimised Column Proportions (277mm usable width) */
+                    /* A4 Landscape Optimised Column Proportions (Exact 100% distribution across 289mm) */
                     .bill-21-table col.col-c1 { width: 5.2% !important; }
                     .bill-21-table col.col-c2 { width: 6.4% !important; }
                     .bill-21-table col.col-c3 { width: 5.2% !important; }
                     .bill-21-table col.col-c4 { width: 6.4% !important; }
-                    .bill-21-table col.col-c5 { width: 9.0% !important; }
-                    .bill-21-table col.col-c6 { width: 5.0% !important; }
-                    .bill-21-table col.col-c7 { width: 4.0% !important; }
-                    .bill-21-table col.col-c8 { width: 5.0% !important; }
-                    .bill-21-table col.col-c9 { width: 3.2% !important; }
-                    .bill-21-table col.col-c10 { width: 4.5% !important; }
-                    .bill-21-table col.col-c11 { width: 4.3% !important; }
-                    .bill-21-table col.col-c12 { width: 3.0% !important; }
-                    .bill-21-table col.col-c13 { width: 4.3% !important; }
-                    .bill-21-table col.col-c14 { width: 4.3% !important; }
-                    .bill-21-table col.col-c15 { width: 3.0% !important; }
-                    .bill-21-table col.col-c16 { width: 4.3% !important; }
-                    .bill-21-table col.col-c17 { width: 4.3% !important; }
+                    .bill-21-table col.col-c5 { width: 9.2% !important; }
+                    .bill-21-table col.col-c6 { width: 4.8% !important; }
+                    .bill-21-table col.col-c7 { width: 3.8% !important; }
+                    .bill-21-table col.col-c8 { width: 4.8% !important; }
+                    .bill-21-table col.col-c9 { width: 3.0% !important; }
+                    .bill-21-table col.col-c10 { width: 4.6% !important; }
+                    .bill-21-table col.col-c11 { width: 4.4% !important; }
+                    .bill-21-table col.col-c12 { width: 2.8% !important; }
+                    .bill-21-table col.col-c13 { width: 4.2% !important; }
+                    .bill-21-table col.col-c14 { width: 4.2% !important; }
+                    .bill-21-table col.col-c15 { width: 2.8% !important; }
+                    .bill-21-table col.col-c16 { width: 4.2% !important; }
+                    .bill-21-table col.col-c17 { width: 4.2% !important; }
                     .bill-21-table col.col-c18 { width: 4.0% !important; }
                     .bill-21-table col.col-c19 { width: 4.2% !important; }
-                    .bill-21-table col.col-c20 { width: 5.4% !important; }
-                    .bill-21-table col.col-c21 { width: 5.0% !important; }
+                    .bill-21-table col.col-c20 { width: 5.5% !important; }
+                    .bill-21-table col.col-c21 { width: 5.1% !important; }
 
+                    /* All cells wrap cleanly, preventing clipping or overflow */
                     .bill-21-table th, .bill-21-table td {
                         border: 1px solid black !important;
-                        padding: ${printOrientation === 'landscape' ? '1px 1px' : '1.5px 1.5px'} !important;
-                        line-height: 1.10 !important;
-                        font-size: ${printOrientation === 'landscape' ? '5.8pt' : '6.0pt'} !important;
+                        padding: 1px 1.5px !important;
+                        line-height: 1.12 !important;
+                        font-size: ${printOrientation === 'landscape' ? '6.0pt' : '6.2pt'} !important;
                         vertical-align: middle !important;
-                        word-break: normal !important;
+                        word-break: break-word !important;
                         overflow-wrap: break-word !important;
-                        hyphens: manual !important;
+                        white-space: normal !important;
+                        overflow: visible !important;
                     }
                     .bill-21-table th {
                         background: #f8fafc !important;
-                        font-size: ${printOrientation === 'landscape' ? '5.4pt' : '5.6pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '5.5pt' : '5.8pt'} !important;
                         font-weight: bold !important;
                         text-align: center !important;
+                        padding: 1px 1px !important;
                         letter-spacing: -0.15px !important;
                     }
                     .col-numbers td {
                         background: #f1f5f9 !important;
-                        font-size: ${printOrientation === 'landscape' ? '5.2pt' : '5.4pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '4.8pt' : '5.2pt'} !important;
                         padding: 0.5px !important;
                         text-align: center !important;
                         font-weight: bold !important;
                     }
                     .bill-21-table tr {
-                        page-break-inside: avoid;
-                        page-break-after: auto;
-                    }
-                    .bill-21-table thead {
-                        display: table-header-group;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
 
-                    /* Form 21 Page 1 Footer */
-                    .form21-page1-notice {
-                        display: flex !important;
-                        font-size: 7.2pt !important;
-                    }
-
-                    /* Form 21 Page 2: Part II Container */
+                    /* Part II Container */
                     .form21-page2-container {
-                        padding-top: 4mm !important;
-                        display: block !important;
+                        margin-top: 1.5mm !important;
+                        padding-top: 0 !important;
                         border-top: none !important;
-                        margin-top: 0 !important;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
-                    .form21-page2-header {
-                        display: block !important;
-                        margin-bottom: 8px !important;
+                    .form21-part2-banner {
+                        font-size: ${printOrientation === 'landscape' ? '6.8pt' : '8pt'} !important;
+                        padding: 1px 5px !important;
+                        margin-bottom: 0 !important;
+                        line-height: 1.12 !important;
+                        background: #f1f5f9 !important;
+                        border: 1px solid black !important;
+                        border-bottom: none !important;
+                        display: flex !important;
                     }
-                    .form21-page2-header {
-                        margin-bottom: ${printOrientation === 'landscape' ? '4px' : '8px'} !important;
+                    .form21-part2-banner span {
+                        font-size: inherit !important;
                     }
-                    .form21-page2-header h3 {
-                        font-size: ${printOrientation === 'landscape' ? '9pt' : '13pt'} !important;
-                        margin: 0 !important;
+                    .form21-part2-grid {
+                        display: grid !important;
+                        grid-template-columns: ${printOrientation === 'landscape' ? '43% 57%' : '1fr'} !important;
+                        border: 1px solid black !important;
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
-                    .form21-page2-header h4 {
-                        font-size: ${printOrientation === 'landscape' ? '8pt' : '10.5pt'} !important;
-                        margin: 1px 0 0 0 !important;
+                    .form21-part2-left {
+                        border-right: ${printOrientation === 'landscape' ? '1px solid black' : 'none'} !important;
+                        border-bottom: ${printOrientation === 'landscape' ? 'none' : '1px solid black'} !important;
+                        padding: 2.5px 5px !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        justifyContent: space-between !important;
+                    }
+                    .form21-part2-right {
+                        padding: 2.5px 5px !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        justifyContent: space-between !important;
                     }
                     .form21-calc-box {
-                        font-size: ${printOrientation === 'landscape' ? '7.8pt' : '8.5pt'} !important;
-                        padding: ${printOrientation === 'landscape' ? '4px 8px' : '6px 10px'} !important;
-                        margin-bottom: ${printOrientation === 'landscape' ? '6px' : '10px'} !important;
+                        font-size: 6.2pt !important;
+                        margin-bottom: 1.5mm !important;
                     }
-                    .form21-calc-box table { font-size: inherit !important; line-height: 1.4 !important; }
+                    .form21-calc-box div {
+                        font-size: 6.8pt !important;
+                        margin-bottom: 1.5px !important;
+                        padding-bottom: 1px !important;
+                    }
+                    .form21-calc-box table {
+                        font-size: 6.0pt !important;
+                        line-height: 1.25 !important;
+                    }
                     .form21-cert-box {
-                        font-size: ${printOrientation === 'landscape' ? '7.4pt' : '8.0pt'} !important;
-                        padding: ${printOrientation === 'landscape' ? '4px 8px' : '6px 10px'} !important;
-                        margin-bottom: ${printOrientation === 'landscape' ? '6px' : '10px'} !important;
-                        line-height: ${printOrientation === 'landscape' ? '1.3' : '1.4'} !important;
+                        font-size: 5.6pt !important;
+                        line-height: 1.16 !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
                     }
-                    .form21-cert-box p { margin: ${printOrientation === 'landscape' ? '2px 0' : '3px 0'} !important; }
+                    .form21-cert-box div {
+                        font-size: 6.2pt !important;
+                        margin-bottom: 1px !important;
+                    }
+                    .form21-cert-box p {
+                        margin: 1px 0 !important;
+                    }
                     .form21-claimant-sig-box {
-                        font-size: ${printOrientation === 'landscape' ? '8pt' : '8.5pt'} !important;
-                        margin-bottom: ${printOrientation === 'landscape' ? '6px' : '12px'} !important;
-                        padding: 0 4px !important;
+                        font-size: 6.2pt !important;
+                        margin-top: 1mm !important;
+                        padding: 1px 2px 0 2px !important;
                     }
                     .form21-passing-box {
-                        font-size: ${printOrientation === 'landscape' ? '7.8pt' : '8.2pt'} !important;
-                        padding: ${printOrientation === 'landscape' ? '4px 8px' : '6px 10px'} !important;
+                        font-size: 6.0pt !important;
+                        padding: 2px 5px !important;
+                        margin-top: 0 !important;
+                        border: 1px solid black !important;
+                        border-top: none !important;
                         page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                    }
+                    .form21-passing-box p {
+                        margin: 1px 0 !important;
+                        font-size: 5.8pt !important;
                     }
                 }
             `}</style>
