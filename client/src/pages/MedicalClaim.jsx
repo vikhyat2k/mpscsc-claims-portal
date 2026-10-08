@@ -663,10 +663,8 @@ const MedicalClaim = () => {
                         </div>
                     </div>
 
-                    {/* Container for all Page 2 itemized tables — 2-column in landscape */}
+                    {/* Container for all Page 2 itemized tables */}
                     <div className="page2-tables-container">
-                        {/* LEFT COLUMN: Consultation + Medicines */}
-                        <div className="p2-col p2-col-left">
                         {/* 01. Consultation Charges */}
                         <div className="table-section">
                             <div className="table-section-header">
@@ -847,10 +845,8 @@ const MedicalClaim = () => {
                             </tbody>
                         </table>
                     </div>
-                        </div>{/* /p2-col-left */}
 
-                        {/* RIGHT COLUMN: Tests + Other */}
-                        <div className="p2-col p2-col-right">
+                    {/* 03. Tests & Investigations */}
                     <div className="table-section">
                         <div className="table-section-header">
                             <h4 className="table-section-title">
@@ -954,10 +950,8 @@ const MedicalClaim = () => {
                             </tbody>
                         </table>
                     </div>
-                        </div>{/* /p2-col-right */}
 
-                        {/* 04. Other Charges */}
-                        <div className="p2-col-other">
+                    {/* 04. Other Charges */}
                     <div className="table-section">
                         <div className="table-section-header">
                             <h4 className="table-section-title">
@@ -1046,7 +1040,6 @@ const MedicalClaim = () => {
                             </tbody>
                         </table>
                     </div>{/* /table-section OTHER */}
-                        </div>{/* /p2-col-other */}
                     </div>{/* /page2-tables-container */}
 
                     {/* Page 2 Bottom Grand Total Summary & Signatures Box */}
@@ -1587,11 +1580,9 @@ const MedicalClaim = () => {
                     .medical-page-2 {
                         page-break-before: always !important;
                         break-before: page !important;
-                        display: flex !important;
-                        flex-direction: column !important;
-                        justify-content: flex-start !important;
+                        display: block !important;
                         margin-top: 0 !important;
-                        padding-bottom: 6mm !important;
+                        padding-bottom: 4mm !important;
                         box-sizing: border-box !important;
                     }
 
@@ -1599,11 +1590,13 @@ const MedicalClaim = () => {
                     .details-charges-header {
                         margin-bottom: 4px !important;
                         border-bottom: 1.5px solid black !important;
-                        padding-bottom: 3px !important;
+                        padding-bottom: 2px !important;
+                        break-after: avoid !important;
+                        page-break-after: avoid !important;
                     }
                     .details-charges-title {
                         margin: 0 !important;
-                        font-size: 10pt !important;
+                        font-size: 9.5pt !important;
                         font-weight: bold !important;
                         text-align: center !important;
                         letter-spacing: 0.3px !important;
@@ -1611,45 +1604,34 @@ const MedicalClaim = () => {
                     .details-charges-sub {
                         display: flex !important;
                         justify-content: space-between !important;
-                        font-size: 7.8pt !important;
+                        font-size: 7.6pt !important;
                         font-weight: bold !important;
-                        margin-top: 2px !important;
+                        margin-top: 1px !important;
                         color: black !important;
                     }
 
-                    /* Page 2 Tables Container — 2-column layout in landscape */
+                    /* Page 2 Tables Container — standard block flow to allow clean pagination without overlap */
                     .page2-tables-container {
-                        display: ${printOrientation === 'landscape' ? 'grid' : 'flex'} !important;
-                        grid-template-columns: ${printOrientation === 'landscape' ? '1fr 1fr' : 'unset'} !important;
-                        grid-template-rows: ${printOrientation === 'landscape' ? 'auto' : 'unset'} !important;
-                        flex-direction: ${printOrientation === 'landscape' ? 'unset' : 'column'} !important;
-                        gap: ${printOrientation === 'landscape' ? '0 8px' : '6px'} !important;
-                        align-items: start !important;
-                        flex: 1 !important;
-                        margin: 4px 0 !important;
-                    }
-                    .p2-col {
-                        display: flex !important;
-                        flex-direction: column !important;
-                        gap: 6px !important;
-                    }
-                    .p2-col-other {
-                        grid-column: ${printOrientation === 'landscape' ? '2' : 'unset'} !important;
-                        grid-row: ${printOrientation === 'landscape' ? '2' : 'unset'} !important;
+                        display: block !important;
+                        margin: 2px 0 !important;
                     }
 
                     /* Page 2 Data Tables */
                     .table-section {
-                        margin-top: 0 !important;
-                        break-inside: avoid !important;
-                        page-break-inside: avoid !important;
+                        display: block !important;
+                        margin-top: 4px !important;
+                        margin-bottom: 2px !important;
+                        break-inside: auto !important;
+                        page-break-inside: auto !important;
                     }
                     .table-section-header {
-                        margin-bottom: 2px !important;
+                        margin-bottom: 1px !important;
+                        break-after: avoid !important;
+                        page-break-after: avoid !important;
                     }
                     .table-section-title {
-                        margin: 0 0 2px 0 !important;
-                        font-size: 8.2pt !important;
+                        margin: 0 0 1px 0 !important;
+                        font-size: 7.8pt !important;
                         font-weight: bold !important;
                         text-transform: uppercase !important;
                     }
@@ -1658,14 +1640,25 @@ const MedicalClaim = () => {
                         border-collapse: collapse !important;
                         border: 1px solid black !important;
                         table-layout: fixed !important;
-                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '7pt' : '7.2pt'} !important;
                         margin-bottom: 0 !important;
+                        display: table !important;
+                    }
+                    .data-table thead {
+                        display: table-header-group !important;
+                    }
+                    .data-table tbody {
+                        display: table-row-group !important;
+                    }
+                    .data-table tr {
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
                     }
                     .data-table th, .data-table td {
                         border: 1px solid black !important;
-                        padding: ${printOrientation === 'landscape' ? '3px 4px' : '4.5px 6px'} !important;
-                        line-height: 1.25 !important;
-                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '2px 4px' : '2.2px 4px'} !important;
+                        line-height: 1.15 !important;
+                        font-size: ${printOrientation === 'landscape' ? '7pt' : '7.2pt'} !important;
                         vertical-align: middle !important;
                         word-break: break-word !important;
                         overflow-wrap: break-word !important;
@@ -1675,14 +1668,18 @@ const MedicalClaim = () => {
                         background: #f1f5f9 !important;
                         font-weight: bold !important;
                         text-align: center !important;
-                        padding: ${printOrientation === 'landscape' ? '3px 4px' : '4px 6px'} !important;
-                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '2.5px 4px' : '2.5px 4px'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '7pt' : '7.2pt'} !important;
+                    }
+                    .subtotal-row {
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
                     }
                     .subtotal-row td {
                         background: #f8fafc !important;
                         font-weight: bold !important;
-                        font-size: ${printOrientation === 'landscape' ? '7.2pt' : '7.8pt'} !important;
-                        padding: ${printOrientation === 'landscape' ? '3px 4px' : '4px 6px'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '7pt' : '7.2pt'} !important;
+                        padding: ${printOrientation === 'landscape' ? '2.5px 4px' : '2.5px 4px'} !important;
                     }
 
                     /* Text Wrapping in Table Cells */
@@ -1690,26 +1687,35 @@ const MedicalClaim = () => {
                         word-break: break-word !important;
                         overflow-wrap: break-word !important;
                         white-space: normal !important;
-                        line-height: 1.2 !important;
+                        line-height: 1.15 !important;
                         font-size: 7.2pt !important;
                     }
 
                     /* Page 2 Signatures and Summary */
                     .page2-summary-box {
                         border-top: 1.5px solid black !important;
-                        padding-top: 6px !important;
-                        margin-top: 8px !important;
+                        padding-top: 4px !important;
+                        margin-top: 4px !important;
+                        display: block !important;
                         break-inside: avoid !important;
                         page-break-inside: avoid !important;
+                    }
+                    .page2-summary-box .med-border-table td {
+                        padding: 2.5px 6px !important;
+                        font-size: 7.5pt !important;
+                        line-height: 1.15 !important;
                     }
                     .page2-signatures {
                         display: flex !important;
                         justify-content: space-between !important;
                         align-items: flex-end !important;
-                        margin-top: 24px !important;
-                        padding: 0 8px 4px 8px !important;
+                        margin-top: 8px !important;
+                        padding: 0 6px 1px 6px !important;
                         break-inside: avoid !important;
                         page-break-inside: avoid !important;
+                    }
+                    .page2-signatures .sig-space {
+                        height: 14px !important;
                     }
                     .sig-date-place {
                         font-size: 8.5pt !important;

@@ -12,7 +12,7 @@
 > **System:** Claims Portal Web Application  
 > **Stack:** Express.js (Node.js) · React 19 · Vite · Better-SQLite3 (WAL Mode) · React Router v7 · Lucide React · JWT (jsonwebtoken) · bcryptjs  
 > **Document Status:** LIVE — Maintained by developer / AI assistant on every project change  
-> **Last Sync:** 2026-09-29  
+> **Last Sync:** 2026-10-08  
 
 ---
 
@@ -804,6 +804,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `70a1253` | 2026-09-29 | style(bill): expand physical signing space above claimant signature block and place/date |
 | `23629ec` | 2026-09-29 | fix(bill): align Form 21 borders, eliminate scrollbar, set 100% width on screen and format Fixed TA label |
 | `f3f672b` | 2026-09-29 | feat: match Form 21 TA/DA bill format to official department 18-column PDF standard |
 | `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
@@ -811,13 +812,13 @@ This automatically launches:
 | `37e592a` | 2026-09-29 | feat: Restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control; hide from individual logins |
 | `b50abc2` | 2026-09-23 | fix(ui): make '+ New claim' dropdown completely opaque and solid with crisp typography and colored icon badges |
 | `0651770` | 2026-09-23 | feat(admin): zero auto-seeding policy, persistent disk storage, and admin-only data deletion with accidental deletion confirmation |
-| `0dbd9e8` | 2026-09-23 | fix(auth): make dmnanbetul1@gmail.com permanently persistent across Render restarts |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-10-08** | **Automated Update** | Fix Medical Claim print pagination text overlapping on Page 3 by replacing fragile flex column nesting with robust CSS paged media block flow and repeating table headers |
 | **2026-09-29** | **Automated Update** | Increase physical signing room above claimant signature block and place/date in Form 21 |
 | **2026-09-29** | **Automated Update** | Fix Form 21 table border alignment, eliminate horizontal scrollbar, match 100% width on screen, and sync Fixed TA Rupee label |
 | **2026-09-29** | **Automated Update** | Aligned Form 21 TA/DA Bill layout, headers, 3-column top metadata box, 18-column table, statutory certificates, and summary calculation box to exact official department PDF standard |
