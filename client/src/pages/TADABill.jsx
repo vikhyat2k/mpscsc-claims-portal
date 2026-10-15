@@ -142,26 +142,29 @@ export default function TADABill() {
     const [gradePayInput, setGradePayInput] = useState('');
     const [isSavingPayInfo, setIsSavingPayInfo] = useState(false);
 
-    // Official 18-Column widths and visibility (matching department PDF standard - exact 100% total)
+    // Statutory 21-Column widths and visibility (matching Treasury Form 21 standard - exact 100% total)
     const defaultColSettings = {
-        c1: { w: '5.5%', v: true, label: '1. Departure Station' },
-        c2: { w: '7.0%', v: true, label: '2. Departure Date / Time' },
-        c3: { w: '5.5%', v: true, label: '3. Arrival Station' },
-        c4: { w: '7.0%', v: true, label: '4. Arrival Date / Time' },
-        c5: { w: '15.0%', v: true, label: '5. Purpose of Journey' },
-        c6: { w: '4.5%', v: true, label: '6. Transfer Description' },
-        c7: { w: '3.5%', v: true, label: '7. Transfer Amount (₹)' },
-        c8: { w: '5.0%', v: true, label: '8. Class of Travel Undertaken' },
-        c9: { w: '3.5%', v: true, label: '9. Distance (KM)' },
-        c10: { w: '6.0%', v: true, label: '10. Ticket PNR' },
-        c11: { w: '4.5%', v: true, label: '11. Fare Amount (₹)' },
-        c12: { w: '3.5%', v: true, label: '12. Journey DA Time (Hrs)' },
-        c13: { w: '6.0%', v: true, label: '13. Journey DA Limit' },
-        c14: { w: '4.5%', v: true, label: '14. Journey DA Amount (₹)' },
-        c15: { w: '3.5%', v: true, label: '15. Stay DA Time (Hrs)' },
-        c16: { w: '6.0%', v: true, label: '16. Stay DA Limit' },
-        c17: { w: '5.0%', v: true, label: '17. Stay DA Amount (₹)' },
-        c18: { w: '4.5%', v: true, label: '18. Transport Expenses (₹)' },
+        c1: { w: '5.2%', v: true, label: '1. Departure Station' },
+        c2: { w: '6.4%', v: true, label: '2. Departure Date / Time' },
+        c3: { w: '5.2%', v: true, label: '3. Arrival Station' },
+        c4: { w: '6.4%', v: true, label: '4. Arrival Date / Time' },
+        c5: { w: '9.2%', v: true, label: '5. Purpose of Journey' },
+        c6: { w: '4.8%', v: true, label: '6. Transfer Description' },
+        c7: { w: '3.8%', v: true, label: '7. Transfer Amount (₹)' },
+        c8: { w: '4.8%', v: true, label: '8. Class of Travel Undertaken' },
+        c9: { w: '3.0%', v: true, label: '9. Distance (KM)' },
+        c10: { w: '4.6%', v: true, label: '10. Ticket PNR' },
+        c11: { w: '4.4%', v: true, label: '11. Fare Amount (₹)' },
+        c12: { w: '2.8%', v: true, label: '12. Journey DA Time (Hrs)' },
+        c13: { w: '4.2%', v: true, label: '13. Journey DA Limit' },
+        c14: { w: '4.2%', v: true, label: '14. Journey DA Amount (₹)' },
+        c15: { w: '2.8%', v: true, label: '15. Stay DA Time (Hrs)' },
+        c16: { w: '4.2%', v: true, label: '16. Stay DA Limit' },
+        c17: { w: '4.2%', v: true, label: '17. Stay DA Amount (₹)' },
+        c18: { w: '4.0%', v: true, label: '18. Transport Expenses (₹)' },
+        c19: { w: '4.2%', v: true, label: '19. Hotel Expenses (₹)' },
+        c20: { w: '5.5%', v: true, label: '20. Row Total (₹)' },
+        c21: { w: '6.1%', v: true, label: '21. Remarks' },
     };
 
     const [colSettings, setColSettings] = useState(defaultColSettings);
@@ -346,18 +349,18 @@ export default function TADABill() {
             }
         });
 
-        // 18 Column Widths tailored to fit A4 Landscape perfectly without any text clipping
+        // Statutory 21 Column Widths tailored to fit A4 Landscape perfectly without any text clipping
         ws.columns = [
             { width: 14 }, // 1. Station (Departure)
-            { width: 17 }, // 2. Date / Time (Departure)
+            { width: 16 }, // 2. Date / Time (Departure)
             { width: 14 }, // 3. Station (Arrival)
-            { width: 17 }, // 4. Date / Time (Arrival)
-            { width: 30 }, // 5. Purpose of Journey
+            { width: 16 }, // 4. Date / Time (Arrival)
+            { width: 28 }, // 5. Purpose of Journey
             { width: 16 }, // 6. Transfer Description
             { width: 12 }, // 7. Transfer Amount
             { width: 14 }, // 8. Class of Travel Undertaken
             { width: 10 }, // 9. Distance (KM)
-            { width: 16 }, // 10. Ticket PNR
+            { width: 15 }, // 10. Ticket PNR
             { width: 12 }, // 11. Fare Amount
             { width: 11 }, // 12. Journey DA Time (Hrs)
             { width: 14 }, // 13. Journey DA Limit
@@ -365,7 +368,10 @@ export default function TADABill() {
             { width: 11 }, // 15. Stay DA Time (Hrs)
             { width: 14 }, // 16. Stay DA Limit
             { width: 13 }, // 17. Stay DA Amount
-            { width: 14 }  // 18. Transport Expenses
+            { width: 14 }, // 18. Transport Expenses
+            { width: 13 }, // 19. Hotel Expenses
+            { width: 14 }, // 20. Total Amount
+            { width: 16 }  // 21. Remarks
         ];
 
         const fontName = 'Calibri';
@@ -408,10 +414,10 @@ export default function TADABill() {
         }
 
         // Row 1: Title
-        ws.mergeCells(1, 1, 1, 18);
+        ws.mergeCells(1, 1, 1, 21);
         ws.getCell(1, 1).value = b.title;
         ws.getRow(1).height = 26;
-        styleRange(1, 1, 1, 18, {
+        styleRange(1, 1, 1, 21, {
             font: { name: fontName, size: 14, bold: true, color: { argb: 'FF000000' } },
             alignment: { horizontal: 'center', vertical: 'middle' }
         });
@@ -420,10 +426,10 @@ export default function TADABill() {
         const dateRangeText = language === 'hi'
             ? `${formatDateDMY(employee.start_date || claim.start_date || '_________')} ${b.periodFrom} ${formatDateDMY(employee.end_date || claim.end_date || '_________')} ${b.periodTo}`
             : `${formatDateDMY(employee.start_date || claim.start_date || '_________')} ${b.periodTo} ${formatDateDMY(employee.end_date || claim.end_date || '_________')}`;
-        ws.mergeCells(2, 1, 2, 18);
+        ws.mergeCells(2, 1, 2, 21);
         ws.getCell(2, 1).value = `${billSubTitle} (${b.periodLabel}: ${dateRangeText})`;
         ws.getRow(2).height = 20;
-        styleRange(2, 1, 2, 18, {
+        styleRange(2, 1, 2, 21, {
             font: { name: fontName, size: 11, bold: true, color: { argb: 'FF000000' } },
             alignment: { horizontal: 'center', vertical: 'middle' }
         });
@@ -432,32 +438,32 @@ export default function TADABill() {
         ws.getRow(3).height = 8;
 
         // Rows 4 & 5: Top 6-Field Box
-        ws.mergeCells(4, 1, 4, 5);
+        ws.mergeCells(4, 1, 4, 6);
         ws.getCell(4, 1).value = `${b.name}: ${empDisplayName}`;
-        ws.mergeCells(4, 6, 4, 11);
-        ws.getCell(4, 6).value = `${b.gradePay}: ${formatPayLevelAndGradePay(employee, language)}`;
-        ws.mergeCells(4, 12, 4, 18);
-        ws.getCell(4, 12).value = `${b.fixedTA} ₹: ${employee.fixed_ta ? employee.fixed_ta : '-'}`;
+        ws.mergeCells(4, 7, 4, 13);
+        ws.getCell(4, 7).value = `${b.gradePay}: ${formatPayLevelAndGradePay(employee, language)}`;
+        ws.mergeCells(4, 14, 4, 21);
+        ws.getCell(4, 14).value = `${b.fixedTA} ₹: ${employee.fixed_ta ? employee.fixed_ta : '-'}`;
 
-        ws.mergeCells(5, 1, 5, 5);
+        ws.mergeCells(5, 1, 5, 6);
         ws.getCell(5, 1).value = `${b.designation}: ${employee.designation || '—'}`;
-        ws.mergeCells(5, 6, 5, 11);
-        ws.getCell(5, 6).value = `${b.headquarter}: ${employee.headquarters || '—'}`;
-        ws.mergeCells(5, 12, 5, 18);
-        ws.getCell(5, 12).value = `${b.consolidatedDA}: ${defaultDaRate ? '₹' + defaultDaRate : '-'}`;
+        ws.mergeCells(5, 7, 5, 13);
+        ws.getCell(5, 7).value = `${b.headquarter}: ${employee.headquarters || '—'}`;
+        ws.mergeCells(5, 14, 5, 21);
+        ws.getCell(5, 14).value = `${b.consolidatedDA}: ${defaultDaRate ? '₹' + defaultDaRate : '-'}`;
 
         ws.getRow(4).height = 22;
         ws.getRow(5).height = 22;
-        styleRange(4, 1, 5, 18, {
+        styleRange(4, 1, 5, 21, {
             font: { name: fontName, size: 9.5, color: { argb: 'FF000000' } },
             border: blackThinBorder,
             alignment: { horizontal: 'left', vertical: 'middle', wrapText: true }
         });
 
         // Row 6: Currency indicator
-        ws.getCell(6, 18).value = b.amountInRupees;
-        ws.getCell(6, 18).font = { name: fontName, size: 8.5, bold: true, italic: true, color: { argb: 'FF333333' } };
-        ws.getCell(6, 18).alignment = { horizontal: 'right', vertical: 'middle' };
+        ws.getCell(6, 21).value = b.amountInRupees;
+        ws.getCell(6, 21).font = { name: fontName, size: 8.5, bold: true, italic: true, color: { argb: 'FF333333' } };
+        ws.getCell(6, 21).alignment = { horizontal: 'right', vertical: 'middle' };
         ws.getRow(6).height = 16;
 
         // Row 7: Header Tier 1 (Groups)
@@ -473,6 +479,12 @@ export default function TADABill() {
         ws.getCell(7, 12).value = b.allowancesTitle;
         ws.mergeCells(7, 18, 8, 18);
         ws.getCell(7, 18).value = b.transportExp;
+        ws.mergeCells(7, 19, 8, 19);
+        ws.getCell(7, 19).value = b.hotelExp;
+        ws.mergeCells(7, 20, 8, 20);
+        ws.getCell(7, 20).value = b.rowTotal;
+        ws.mergeCells(7, 21, 8, 21);
+        ws.getCell(7, 21).value = b.remarks;
         ws.getRow(7).height = 28;
 
         // Row 8: Header Tier 2 (Sub-headers)
@@ -494,16 +506,16 @@ export default function TADABill() {
         ws.getCell(8, 17).value = b.haltDA.amount;
         ws.getRow(8).height = 28;
 
-        styleRange(7, 1, 8, 18, {
+        styleRange(7, 1, 8, 21, {
             font: { name: fontName, size: 9, bold: true, color: { argb: 'FF000000' } },
             fill: headerFill,
             border: blackThinBorder,
             alignment: { horizontal: 'center', vertical: 'middle', wrapText: true }
         });
 
-        // Row 9: Header Tier 3 (Numbers 1-18)
+        // Row 9: Header Tier 3 (Numbers 1-21)
         ws.getRow(9).height = 18;
-        for (let c = 1; c <= 18; c++) {
+        for (let c = 1; c <= 21; c++) {
             const cell = ws.getCell(9, c);
             cell.value = c;
             cell.font = { name: fontName, size: 8, bold: true, color: { argb: 'FF334155' } };
@@ -619,7 +631,20 @@ export default function TADABill() {
             row.getCell(18).numFmt = '#,##0.00';
             row.getCell(18).alignment = { horizontal: 'right', vertical: 'middle' };
 
-            for (let c = 1; c <= 18; c++) {
+            const stayAll = parseFloat(r.stay_allowance || 0);
+            row.getCell(19).value = stayAll > 0 ? stayAll : null;
+            row.getCell(19).numFmt = '#,##0.00';
+            row.getCell(19).alignment = { horizontal: 'right', vertical: 'middle' };
+
+            const rTotal = parseFloat(r.total_amount || 0);
+            row.getCell(20).value = rTotal > 0 ? rTotal : null;
+            row.getCell(20).numFmt = '#,##0.00';
+            row.getCell(20).alignment = { horizontal: 'right', vertical: 'middle' };
+
+            row.getCell(21).value = r.remarks || '';
+            row.getCell(21).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+
+            for (let c = 1; c <= 21; c++) {
                 const cell = row.getCell(c);
                 if (!cell.font) cell.font = { name: fontName, size: 9 };
                 cell.border = thinBorder;
@@ -648,8 +673,14 @@ export default function TADABill() {
         ws.getCell(curRow, 18).value = totals.totalLocalTransport > 0 ? parseFloat(totals.totalLocalTransport) : null;
         ws.getCell(curRow, 18).numFmt = '#,##0.00';
 
+        ws.getCell(curRow, 19).value = totals.totalStayAllowance > 0 ? parseFloat(totals.totalStayAllowance) : null;
+        ws.getCell(curRow, 19).numFmt = '#,##0.00';
+
+        ws.getCell(curRow, 20).value = totals.grandTotal ? parseFloat(totals.grandTotal) : null;
+        ws.getCell(curRow, 20).numFmt = '#,##0.00';
+
         ws.getRow(curRow).height = 22;
-        styleRange(curRow, 1, curRow, 18, {
+        styleRange(curRow, 1, curRow, 21, {
             font: { name: fontName, size: 9, bold: true, color: { argb: 'FF000000' } },
             fill: totalRowFill,
             border: doubleBottomBorder
@@ -657,10 +688,10 @@ export default function TADABill() {
         curRow++;
 
         // Summary Row: Consolidated DA Limit
-        ws.mergeCells(curRow, 1, curRow, 4);
+        ws.mergeCells(curRow, 1, curRow, 5);
         ws.getCell(curRow, 1).value = `${b.consolidatedDALimit}: ${claimDALimitText}`;
         ws.getRow(curRow).height = 22;
-        styleRange(curRow, 1, curRow, 18, {
+        styleRange(curRow, 1, curRow, 21, {
             font: { name: fontName, size: 9.5, bold: true, color: { argb: 'FF1E3A8A' } },
             fill: summaryBannerFill,
             border: blackThinBorder,
@@ -668,50 +699,50 @@ export default function TADABill() {
         });
         curRow += 2;
 
-        // Deductions & Net Payable Box (Cols 11 to 18)
-        ws.mergeCells(curRow, 11, curRow, 14);
-        ws.getCell(curRow, 11).value = `${b.grossTotal}:`;
-        ws.mergeCells(curRow, 15, curRow, 18);
-        ws.getCell(curRow, 15).value = totals.grandTotal ? parseFloat(totals.grandTotal) : 0;
-        ws.getCell(curRow, 15).numFmt = '#,##0.00';
+        // Deductions & Net Payable Box (Cols 13 to 21)
+        ws.mergeCells(curRow, 13, curRow, 17);
+        ws.getCell(curRow, 13).value = `${b.grossTotal}:`;
+        ws.mergeCells(curRow, 18, curRow, 21);
+        ws.getCell(curRow, 18).value = totals.grandTotal ? parseFloat(totals.grandTotal) : 0;
+        ws.getCell(curRow, 18).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 11, curRow, 18, {
+        styleRange(curRow, 13, curRow, 21, {
             font: { name: fontName, size: 9, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 11, curRow, 14);
-        ws.getCell(curRow, 11).value = `${b.lessAdvance}:`;
-        ws.mergeCells(curRow, 15, curRow, 18);
-        ws.getCell(curRow, 15).value = totals.advanceAmount ? parseFloat(totals.advanceAmount) : 0;
-        ws.getCell(curRow, 15).numFmt = '#,##0.00';
+        ws.mergeCells(curRow, 13, curRow, 17);
+        ws.getCell(curRow, 13).value = `${b.lessAdvance}:`;
+        ws.mergeCells(curRow, 18, curRow, 21);
+        ws.getCell(curRow, 18).value = totals.advanceAmount ? parseFloat(totals.advanceAmount) : 0;
+        ws.getCell(curRow, 18).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 11, curRow, 18, {
+        styleRange(curRow, 13, curRow, 21, {
             font: { name: fontName, size: 9, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 11, curRow, 14);
-        ws.getCell(curRow, 11).value = `${b.netPayable}:`;
-        ws.mergeCells(curRow, 15, curRow, 18);
-        ws.getCell(curRow, 15).value = netAmount ? parseFloat(netAmount) : 0;
-        ws.getCell(curRow, 15).numFmt = '#,##0.00';
+        ws.mergeCells(curRow, 13, curRow, 17);
+        ws.getCell(curRow, 13).value = `${b.netPayable}:`;
+        ws.mergeCells(curRow, 18, curRow, 21);
+        ws.getCell(curRow, 18).value = netAmount ? parseFloat(netAmount) : 0;
+        ws.getCell(curRow, 18).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 11, curRow, 18, {
+        styleRange(curRow, 13, curRow, 21, {
             font: { name: fontName, size: 9.5, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 11, curRow, 18);
-        ws.getCell(curRow, 11).value = `${b.amountInWordsLabel}: ${words}`;
+        ws.mergeCells(curRow, 13, curRow, 21);
+        ws.getCell(curRow, 13).value = `${b.amountInWordsLabel}: ${words}`;
         ws.getRow(curRow).height = 24;
-        styleRange(curRow, 11, curRow, 18, {
+        styleRange(curRow, 13, curRow, 21, {
             font: { name: fontName, size: 9, bold: true },
             border: blackThinBorder,
             alignment: { horizontal: 'left', vertical: 'middle', wrapText: true }
@@ -719,7 +750,7 @@ export default function TADABill() {
         curRow += 2;
 
         // Official Certificates
-        ws.mergeCells(curRow, 1, curRow, 18);
+        ws.mergeCells(curRow, 1, curRow, 21);
         ws.getCell(curRow, 1).value = b.certificatesTitle;
         ws.getCell(curRow, 1).font = { name: fontName, size: 9.5, bold: true, underline: true };
         ws.getRow(curRow).height = 18;
@@ -734,7 +765,7 @@ export default function TADABill() {
 
         const cert1Text = `${b.cert1} ${excelDisplayTickets}`;
         [cert1Text, b.cert2, b.cert3, b.cert4].forEach(cert => {
-            ws.mergeCells(curRow, 1, curRow, 18);
+            ws.mergeCells(curRow, 1, curRow, 21);
             ws.getCell(curRow, 1).value = cert;
             ws.getCell(curRow, 1).font = { name: fontName, size: 8.5 };
             ws.getCell(curRow, 1).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
@@ -749,10 +780,10 @@ export default function TADABill() {
         ws.getCell(signRow, 1).value = `${b.place}: ${employee.headquarters || '__________'}`;
         ws.getCell(signRow, 1).font = { name: fontName, size: 9, bold: true };
 
-        ws.mergeCells(signRow, 11, signRow, 18);
-        ws.getCell(signRow, 11).value = `${b.claimantSignature}: ${empDisplayName}`;
-        ws.getCell(signRow, 11).font = { name: fontName, size: 9, bold: true };
-        ws.getCell(signRow, 11).alignment = { horizontal: 'right', vertical: 'middle' };
+        ws.mergeCells(signRow, 13, signRow, 21);
+        ws.getCell(signRow, 13).value = `${b.claimantSignature}: ${empDisplayName}`;
+        ws.getCell(signRow, 13).font = { name: fontName, size: 9, bold: true };
+        ws.getCell(signRow, 13).alignment = { horizontal: 'right', vertical: 'middle' };
         ws.getRow(signRow).height = 20;
         curRow++;
 
@@ -1003,7 +1034,7 @@ export default function TADABill() {
             {showSettings && (
                 <div className="card no-print glass-control-bar" style={{ marginBottom: '1rem', padding: '1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <h5 style={{ margin: 0, fontSize: '0.95rem' }}>Column Visibility & Width Settings (Columns 1 to 18)</h5>
+                        <h5 style={{ margin: 0, fontSize: '0.95rem' }}>Column Visibility & Width Settings (Columns 1 to 21)</h5>
                         <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
                             <MousePointer2 size={13} style={{ verticalAlign: 'middle' }} /> Drag column headers in the table to resize.
                         </div>
@@ -1167,7 +1198,7 @@ export default function TADABill() {
                     {b.amountInRupees}
                 </div>
 
-                {/* The Prescribed 18-Column Table (Matching Official Department Standard) */}
+                {/* The Statutory 21-Column Table (Treasury Form 21 Standard) */}
                 <div className="table-scroll-wrapper" style={{ width: '100%', overflowX: 'hidden' }}>
                     <table className="bill-21-table">
                         <colgroup>
@@ -1189,6 +1220,9 @@ export default function TADABill() {
                             {colSettings.c16.v && <col className="col-c16" style={{ width: colSettings.c16.w }} />}
                             {colSettings.c17.v && <col className="col-c17" style={{ width: colSettings.c17.w }} />}
                             {colSettings.c18.v && <col className="col-c18" style={{ width: colSettings.c18.w }} />}
+                            {colSettings.c19.v && <col className="col-c19" style={{ width: colSettings.c19.w }} />}
+                            {colSettings.c20.v && <col className="col-c20" style={{ width: colSettings.c20.w }} />}
+                            {colSettings.c21.v && <col className="col-c21" style={{ width: colSettings.c21.w }} />}
                         </colgroup>
 
                         <thead>
@@ -1234,6 +1268,27 @@ export default function TADABill() {
                                         <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c18')}></div>
                                     </th>
                                 )}
+
+                                {colSettings.c19.v && (
+                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c19.w }}>
+                                        {b.hotelExp}
+                                        <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c19')}></div>
+                                    </th>
+                                )}
+
+                                {colSettings.c20.v && (
+                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c20.w }}>
+                                        {b.rowTotal}
+                                        <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c20')}></div>
+                                    </th>
+                                )}
+
+                                {colSettings.c21.v && (
+                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c21.w }}>
+                                        {b.remarks}
+                                        <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c21')}></div>
+                                    </th>
+                                )}
                             </tr>
 
                             {/* Header Tier 2 (Specific Columns) */}
@@ -1260,7 +1315,7 @@ export default function TADABill() {
                                 {colSettings.c17.v && <th style={{ position: 'relative', width: colSettings.c17.w }}>{b.haltDA.amount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c17')}></div></th>}
                             </tr>
 
-                            {/* Header Tier 3: Column Numbers 1 to 18 */}
+                            {/* Header Tier 3: Column Numbers 1 to 21 */}
                             <tr className="col-numbers">
                                 {colSettings.c1.v && <td>1</td>}
                                 {colSettings.c2.v && <td>2</td>}
@@ -1280,6 +1335,9 @@ export default function TADABill() {
                                 {colSettings.c16.v && <td>16</td>}
                                 {colSettings.c17.v && <td>17</td>}
                                 {colSettings.c18.v && <td>18</td>}
+                                {colSettings.c19.v && <td>19</td>}
+                                {colSettings.c20.v && <td>20</td>}
+                                {colSettings.c21.v && <td>21</td>}
                             </tr>
                         </thead>
 
@@ -1366,6 +1424,9 @@ export default function TADABill() {
                                             {colSettings.c17.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.stay_da || 0) > 0 ? parseFloat(r.stay_da).toFixed(2) : ''}</td>}
 
                                             {colSettings.c18.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.local_transport || 0) > 0 ? parseFloat(r.local_transport).toFixed(2) : ''}</td>}
+                                            {colSettings.c19.v && <td style={{ textAlign: 'right' }}>{parseFloat(r.stay_allowance || 0) > 0 ? parseFloat(r.stay_allowance).toFixed(2) : ''}</td>}
+                                            {colSettings.c20.v && <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{parseFloat(r.total_amount || 0) > 0 ? parseFloat(r.total_amount).toFixed(2) : ''}</td>}
+                                            {colSettings.c21.v && <td className="wrap" style={{ fontSize: '0.85em' }}>{r.remarks || ''}</td>}
                                         </tr>
                                     );
                                 });
@@ -1396,6 +1457,9 @@ export default function TADABill() {
                                 {colSettings.c17.v && <td style={{ textAlign: 'right' }}>{(totals.totalStayDA || 0).toFixed(2)}</td>}
 
                                 {colSettings.c18.v && <td style={{ textAlign: 'right' }}>{totals.totalLocalTransport > 0 ? totals.totalLocalTransport.toFixed(2) : ''}</td>}
+                                {colSettings.c19.v && <td style={{ textAlign: 'right' }}>{totals.totalStayAllowance > 0 ? totals.totalStayAllowance.toFixed(2) : ''}</td>}
+                                {colSettings.c20.v && <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{(totals.grandTotal || 0).toFixed(2)}</td>}
+                                {colSettings.c21.v && <td></td>}
                             </tr>
                         </tbody>
                     </table>
@@ -1596,24 +1660,27 @@ export default function TADABill() {
                 }
 
                 /* Proportional widths on screen (Exact 100% distribution matching print) */
-                .bill-21-table col.col-c1  { width: 5.5%; }
-                .bill-21-table col.col-c2  { width: 7.0%; }
-                .bill-21-table col.col-c3  { width: 5.5%; }
-                .bill-21-table col.col-c4  { width: 7.0%; }
-                .bill-21-table col.col-c5  { width: 15.0%; }
-                .bill-21-table col.col-c6  { width: 4.5%; }
-                .bill-21-table col.col-c7  { width: 3.5%; }
-                .bill-21-table col.col-c8  { width: 5.0%; }
-                .bill-21-table col.col-c9  { width: 3.5%; }
-                .bill-21-table col.col-c10 { width: 6.0%; }
-                .bill-21-table col.col-c11 { width: 4.5%; }
-                .bill-21-table col.col-c12 { width: 3.5%; }
-                .bill-21-table col.col-c13 { width: 6.0%; }
-                .bill-21-table col.col-c14 { width: 4.5%; }
-                .bill-21-table col.col-c15 { width: 3.5%; }
-                .bill-21-table col.col-c16 { width: 6.0%; }
-                .bill-21-table col.col-c17 { width: 5.0%; }
-                .bill-21-table col.col-c18 { width: 4.5%; }
+                .bill-21-table col.col-c1  { width: 5.2%; }
+                .bill-21-table col.col-c2  { width: 6.4%; }
+                .bill-21-table col.col-c3  { width: 5.2%; }
+                .bill-21-table col.col-c4  { width: 6.4%; }
+                .bill-21-table col.col-c5  { width: 9.2%; }
+                .bill-21-table col.col-c6  { width: 4.8%; }
+                .bill-21-table col.col-c7  { width: 3.8%; }
+                .bill-21-table col.col-c8  { width: 4.8%; }
+                .bill-21-table col.col-c9  { width: 3.0%; }
+                .bill-21-table col.col-c10 { width: 4.6%; }
+                .bill-21-table col.col-c11 { width: 4.4%; }
+                .bill-21-table col.col-c12 { width: 2.8%; }
+                .bill-21-table col.col-c13 { width: 4.2%; }
+                .bill-21-table col.col-c14 { width: 4.2%; }
+                .bill-21-table col.col-c15 { width: 2.8%; }
+                .bill-21-table col.col-c16 { width: 4.2%; }
+                .bill-21-table col.col-c17 { width: 4.2%; }
+                .bill-21-table col.col-c18 { width: 4.0%; }
+                .bill-21-table col.col-c19 { width: 4.2%; }
+                .bill-21-table col.col-c20 { width: 5.5%; }
+                .bill-21-table col.col-c21 { width: 6.1%; }
                 @media (max-width: 850px) {
                     .form21-bottom-section {
                         grid-template-columns: 1fr !important;
@@ -1700,31 +1767,34 @@ export default function TADABill() {
                         break-inside: avoid !important;
                     }
 
-                    /* A4 Landscape 18-Column Proportions (Exact 100% distribution) */
-                    .bill-21-table col.col-c1  { width: 5.5% !important; }
-                    .bill-21-table col.col-c2  { width: 7.0% !important; }
-                    .bill-21-table col.col-c3  { width: 5.5% !important; }
-                    .bill-21-table col.col-c4  { width: 7.0% !important; }
-                    .bill-21-table col.col-c5  { width: 15.0% !important; }
-                    .bill-21-table col.col-c6  { width: 4.5% !important; }
-                    .bill-21-table col.col-c7  { width: 3.5% !important; }
-                    .bill-21-table col.col-c8  { width: 5.0% !important; }
-                    .bill-21-table col.col-c9  { width: 3.5% !important; }
-                    .bill-21-table col.col-c10 { width: 6.0% !important; }
-                    .bill-21-table col.col-c11 { width: 4.5% !important; }
-                    .bill-21-table col.col-c12 { width: 3.5% !important; }
-                    .bill-21-table col.col-c13 { width: 6.0% !important; }
-                    .bill-21-table col.col-c14 { width: 4.5% !important; }
-                    .bill-21-table col.col-c15 { width: 3.5% !important; }
-                    .bill-21-table col.col-c16 { width: 6.0% !important; }
-                    .bill-21-table col.col-c17 { width: 5.0% !important; }
-                    .bill-21-table col.col-c18 { width: 4.5% !important; }
+                    /* A4 Landscape 21-Column Proportions (Exact 100% distribution) */
+                    .bill-21-table col.col-c1  { width: 5.2% !important; }
+                    .bill-21-table col.col-c2  { width: 6.4% !important; }
+                    .bill-21-table col.col-c3  { width: 5.2% !important; }
+                    .bill-21-table col.col-c4  { width: 6.4% !important; }
+                    .bill-21-table col.col-c5  { width: 9.2% !important; }
+                    .bill-21-table col.col-c6  { width: 4.8% !important; }
+                    .bill-21-table col.col-c7  { width: 3.8% !important; }
+                    .bill-21-table col.col-c8  { width: 4.8% !important; }
+                    .bill-21-table col.col-c9  { width: 3.0% !important; }
+                    .bill-21-table col.col-c10 { width: 4.6% !important; }
+                    .bill-21-table col.col-c11 { width: 4.4% !important; }
+                    .bill-21-table col.col-c12 { width: 2.8% !important; }
+                    .bill-21-table col.col-c13 { width: 4.2% !important; }
+                    .bill-21-table col.col-c14 { width: 4.2% !important; }
+                    .bill-21-table col.col-c15 { width: 2.8% !important; }
+                    .bill-21-table col.col-c16 { width: 4.2% !important; }
+                    .bill-21-table col.col-c17 { width: 4.2% !important; }
+                    .bill-21-table col.col-c18 { width: 4.0% !important; }
+                    .bill-21-table col.col-c19 { width: 4.2% !important; }
+                    .bill-21-table col.col-c20 { width: 5.5% !important; }
+                    .bill-21-table col.col-c21 { width: 6.1% !important; }
 
                     .bill-21-table th, .bill-21-table td {
                         border: 1px solid black !important;
                         padding: 1px 1.5px !important;
                         line-height: 1.12 !important;
-                        font-size: ${printOrientation === 'landscape' ? '6.0pt' : '6.2pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '5.7pt' : '6.0pt'} !important;
                         vertical-align: middle !important;
                         word-break: break-word !important;
                         overflow-wrap: break-word !important;
@@ -1733,7 +1803,7 @@ export default function TADABill() {
                     }
                     .bill-21-table th {
                         background: #f8fafc !important;
-                        font-size: ${printOrientation === 'landscape' ? '5.6pt' : '5.8pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '5.3pt' : '5.6pt'} !important;
                         font-weight: bold !important;
                         text-align: center !important;
                         padding: 1px 1px !important;
@@ -1741,7 +1811,7 @@ export default function TADABill() {
                     }
                     .col-numbers td {
                         background: #f1f5f9 !important;
-                        font-size: ${printOrientation === 'landscape' ? '4.8pt' : '5.0pt'} !important;
+                        font-size: ${printOrientation === 'landscape' ? '4.6pt' : '4.8pt'} !important;
                         padding: 0.5px !important;
                         text-align: center !important;
                         font-weight: bold !important;

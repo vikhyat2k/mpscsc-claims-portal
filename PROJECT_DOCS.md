@@ -805,6 +805,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `ab63ca0` | 2026-10-15 | feat(claim-editor): make class of travel a dynamic dropdown filtered by conveyance mode |
 | `1644962` | 2026-10-09 | fix(medical-claim): resolve print pagination text overlapping on Page 3 |
 | `70a1253` | 2026-09-29 | style(bill): expand physical signing space above claimant signature block and place/date |
 | `23629ec` | 2026-09-29 | fix(bill): align Form 21 borders, eliminate scrollbar, set 100% width on screen and format Fixed TA label |
@@ -812,13 +813,13 @@ This automatically launches:
 | `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 | `599c3e5` | 2026-09-29 | fix(bill): hide Form 21 Page 1 turnover continuation notice and Page 2 screen separator in individual login view |
 | `37e592a` | 2026-09-29 | feat: Restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control; hide from individual logins |
-| `b50abc2` | 2026-09-23 | fix(ui): make '+ New claim' dropdown completely opaque and solid with crisp typography and colored icon badges |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-10-15** | **Automated Update** | Restore statutory 21-column Form 21 TA/DA Bill format across screen, print, Excel export, and customizer |
 | **2026-10-15** | **Automated Update** | Add dynamic mode-dependent class of travel dropdown in ClaimEditor journey table |
 | **2026-10-08** | **Automated Update** | Fix Medical Claim print pagination text overlapping on Page 3 by replacing fragile flex column nesting with robust CSS paged media block flow and repeating table headers |
 | **2026-09-29** | **Automated Update** | Increase physical signing room above claimant signature block and place/date in Form 21 |
