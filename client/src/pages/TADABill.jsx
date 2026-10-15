@@ -1,7 +1,7 @@
 import api, { apiRequest } from '../utils/api';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Printer, ArrowLeft, FileSpreadsheet, MousePointer2, Receipt, Edit, Check, X, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Printer, ArrowLeft, FileSpreadsheet, MousePointer2, Receipt, Edit, Check, X, ShieldCheck, Eye, EyeOff, Sparkles, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getTranslations } from '../utils/translations';
@@ -142,32 +142,166 @@ export default function TADABill() {
     const [gradePayInput, setGradePayInput] = useState('');
     const [isSavingPayInfo, setIsSavingPayInfo] = useState(false);
 
+    // Base proportional weights for all 21 Form 21 statutory columns (sum = 100.0)
+    const baseColWeights = {
+        c1: 5.2,
+        c2: 6.4,
+        c3: 5.2,
+        c4: 6.4,
+        c5: 9.2,
+        c6: 4.8,
+        c7: 3.8,
+        c8: 4.8,
+        c9: 3.0,
+        c10: 4.6,
+        c11: 4.4,
+        c12: 2.8,
+        c13: 4.2,
+        c14: 4.2,
+        c15: 2.8,
+        c16: 4.2,
+        c17: 4.2,
+        c18: 4.0,
+        c19: 4.2,
+        c20: 5.5,
+        c21: 6.1
+    };
+
+    const colKeys = Object.keys(baseColWeights);
+
     // Statutory 21-Column widths and visibility (matching Treasury Form 21 standard - exact 100% total)
     const defaultColSettings = {
-        c1: { w: '5.2%', v: true, label: '1. Departure Station' },
-        c2: { w: '6.4%', v: true, label: '2. Departure Date / Time' },
-        c3: { w: '5.2%', v: true, label: '3. Arrival Station' },
-        c4: { w: '6.4%', v: true, label: '4. Arrival Date / Time' },
-        c5: { w: '9.2%', v: true, label: '5. Purpose of Journey' },
-        c6: { w: '4.8%', v: true, label: '6. Transfer Description' },
-        c7: { w: '3.8%', v: true, label: '7. Transfer Amount (₹)' },
-        c8: { w: '4.8%', v: true, label: '8. Class of Travel Undertaken' },
-        c9: { w: '3.0%', v: true, label: '9. Distance (KM)' },
-        c10: { w: '4.6%', v: true, label: '10. Ticket PNR' },
-        c11: { w: '4.4%', v: true, label: '11. Fare Amount (₹)' },
-        c12: { w: '2.8%', v: true, label: '12. Journey DA Time (Hrs)' },
-        c13: { w: '4.2%', v: true, label: '13. Journey DA Limit' },
-        c14: { w: '4.2%', v: true, label: '14. Journey DA Amount (₹)' },
-        c15: { w: '2.8%', v: true, label: '15. Stay DA Time (Hrs)' },
-        c16: { w: '4.2%', v: true, label: '16. Stay DA Limit' },
-        c17: { w: '4.2%', v: true, label: '17. Stay DA Amount (₹)' },
-        c18: { w: '4.0%', v: true, label: '18. Transport Expenses (₹)' },
-        c19: { w: '4.2%', v: true, label: '19. Hotel Expenses (₹)' },
-        c20: { w: '5.5%', v: true, label: '20. Row Total (₹)' },
-        c21: { w: '6.1%', v: true, label: '21. Remarks' },
+        c1: { w: '5.2%', v: true, label: 'Departure Station' },
+        c2: { w: '6.4%', v: true, label: 'Departure Date / Time' },
+        c3: { w: '5.2%', v: true, label: 'Arrival Station' },
+        c4: { w: '6.4%', v: true, label: 'Arrival Date / Time' },
+        c5: { w: '9.2%', v: true, label: 'Purpose of Journey' },
+        c6: { w: '4.8%', v: true, label: 'Transfer Description' },
+        c7: { w: '3.8%', v: true, label: 'Transfer Amount (₹)' },
+        c8: { w: '4.8%', v: true, label: 'Class of Travel Undertaken' },
+        c9: { w: '3.0%', v: true, label: 'Distance (KM)' },
+        c10: { w: '4.6%', v: true, label: 'Ticket PNR' },
+        c11: { w: '4.4%', v: true, label: 'Fare Amount (₹)' },
+        c12: { w: '2.8%', v: true, label: 'Journey DA Time (Hrs)' },
+        c13: { w: '4.2%', v: true, label: 'Journey DA Limit' },
+        c14: { w: '4.2%', v: true, label: 'Journey DA Amount (₹)' },
+        c15: { w: '2.8%', v: true, label: 'Stay DA Time (Hrs)' },
+        c16: { w: '4.2%', v: true, label: 'Stay DA Limit' },
+        c17: { w: '4.2%', v: true, label: 'Stay DA Amount (₹)' },
+        c18: { w: '4.0%', v: true, label: 'Transport Expenses (₹)' },
+        c19: { w: '4.2%', v: true, label: 'Hotel Expenses (₹)' },
+        c20: { w: '5.5%', v: true, label: 'Row Total (₹)' },
+        c21: { w: '6.1%', v: true, label: 'Remarks' },
     };
 
     const [colSettings, setColSettings] = useState(defaultColSettings);
+    const [isHidingBlank, setIsHidingBlank] = useState(false);
+
+    // Dynamic sequential column numbering (1 to N) for only visible columns
+    const colNumbers = useMemo(() => {
+        const map = {};
+        let seq = 1;
+        colKeys.forEach(k => {
+            if (colSettings[k]?.v) {
+                map[k] = seq++;
+            }
+        });
+        return map;
+    }, [colSettings]);
+
+    const visibleColCount = useMemo(() => {
+        return colKeys.filter(k => colSettings[k]?.v).length;
+    }, [colSettings]);
+
+    // Proportional column width dynamically scaling visible columns to exactly 100%
+    const getColWidth = (key) => {
+        if (colSettings[key]?.w && typeof colSettings[key].w === 'string' && colSettings[key].w.endsWith('px')) {
+            return colSettings[key].w;
+        }
+        const visibleWeightSum = colKeys.reduce((sum, k) => {
+            return sum + (colSettings[k]?.v ? baseColWeights[k] : 0);
+        }, 0) || 100;
+        const pct = ((baseColWeights[key] / visibleWeightSum) * 100).toFixed(2);
+        return `${pct}%`;
+    };
+
+    // Detect which columns are empty / unnecessary in the current bill
+    const detectBlankColumns = (data) => {
+        if (!data) return {};
+        const { claim = {}, billRows = [], totals = {} } = data;
+        const isTransfer = claim?.claim_type === 'TRANSFER';
+
+        return {
+            c1: false, // Departure Station
+            c2: false, // Departure Date/Time
+            c3: false, // Arrival Station
+            c4: false, // Arrival Date/Time
+            c5: false, // Purpose of Journey
+            c6: !isTransfer || !billRows.some((r, idx) => idx === 0 && (totals.transferGrant > 0 || totals.totalTransport > 0 || claim?.family_details || claim?.baggage_weight)),
+            c7: !isTransfer || !(parseFloat(totals.transferAllowance || totals.totalTransport || 0) > 0),
+            c8: !billRows.some(r => (r.class_of_travel || r.mode || '').trim().length > 0),
+            c9: !billRows.some(r => parseFloat(r.distance_km || 0) > 0),
+            c10: !billRows.some(r => (r.ticket_no || '').trim().length > 0),
+            c11: !billRows.some(r => parseFloat(r.ta_approved || r.fare_amount || 0) > 0),
+            c12: !billRows.some(r => parseFloat(r.travel_hrs || 0) > 0 || parseFloat(r.journey_da || 0) > 0),
+            c13: !billRows.some(r => parseFloat(r.travel_hrs || 0) > 0 || parseFloat(r.journey_da || 0) > 0),
+            c14: !billRows.some(r => parseFloat(r.journey_da || 0) > 0),
+            c15: !billRows.some(r => parseFloat(r.stay_hrs || 0) > 0 || parseFloat(r.stay_da || 0) > 0),
+            c16: !billRows.some(r => parseFloat(r.stay_hrs || 0) > 0 || parseFloat(r.stay_da || 0) > 0),
+            c17: !billRows.some(r => parseFloat(r.stay_da || 0) > 0),
+            c18: !billRows.some(r => parseFloat(r.local_transport || 0) > 0) && !(totals.totalLocalTransport > 0),
+            c19: !billRows.some(r => parseFloat(r.stay_allowance || 0) > 0) && !(totals.totalStayAllowance > 0),
+            c20: false, // Row total
+            c21: !billRows.some(r => (r.remarks || '').trim().length > 0)
+        };
+    };
+
+    const blankMap = useMemo(() => {
+        return detectBlankColumns(billData);
+    }, [billData]);
+
+    const handleToggleBlankColumns = () => {
+        if (!billData) return;
+        if (isHidingBlank) {
+            // Restore all 21 columns
+            setColSettings(prev => {
+                const next = { ...prev };
+                colKeys.forEach(k => {
+                    next[k] = { ...next[k], v: true };
+                });
+                return next;
+            });
+            setIsHidingBlank(false);
+        } else {
+            // Hide blank columns
+            setColSettings(prev => {
+                const next = { ...prev };
+                colKeys.forEach(k => {
+                    if (blankMap[k]) {
+                        next[k] = { ...next[k], v: false };
+                    }
+                });
+                return next;
+            });
+            setIsHidingBlank(true);
+        }
+    };
+
+    const handleShowAllColumns = () => {
+        setColSettings(prev => {
+            const next = { ...prev };
+            colKeys.forEach(k => {
+                next[k] = { ...next[k], v: true };
+            });
+            return next;
+        });
+        setIsHidingBlank(false);
+    };
+
+    const handleResetColSettings = () => {
+        setColSettings(defaultColSettings);
+        setIsHidingBlank(false);
+    };
 
     const resizing = useRef(null);
 
@@ -349,30 +483,21 @@ export default function TADABill() {
             }
         });
 
-        // Statutory 21 Column Widths tailored to fit A4 Landscape perfectly without any text clipping
-        ws.columns = [
-            { width: 14 }, // 1. Station (Departure)
-            { width: 16 }, // 2. Date / Time (Departure)
-            { width: 14 }, // 3. Station (Arrival)
-            { width: 16 }, // 4. Date / Time (Arrival)
-            { width: 28 }, // 5. Purpose of Journey
-            { width: 16 }, // 6. Transfer Description
-            { width: 12 }, // 7. Transfer Amount
-            { width: 14 }, // 8. Class of Travel Undertaken
-            { width: 10 }, // 9. Distance (KM)
-            { width: 15 }, // 10. Ticket PNR
-            { width: 12 }, // 11. Fare Amount
-            { width: 11 }, // 12. Journey DA Time (Hrs)
-            { width: 14 }, // 13. Journey DA Limit
-            { width: 13 }, // 14. Journey DA Amount
-            { width: 11 }, // 15. Stay DA Time (Hrs)
-            { width: 14 }, // 16. Stay DA Limit
-            { width: 13 }, // 17. Stay DA Amount
-            { width: 14 }, // 18. Transport Expenses
-            { width: 13 }, // 19. Hotel Expenses
-            { width: 14 }, // 20. Total Amount
-            { width: 16 }  // 21. Remarks
-        ];
+        const visibleKeys = colKeys.filter(k => colSettings[k]?.v);
+        const totalCols = visibleKeys.length;
+
+        const colExcelWidths = {
+            c1: 14, c2: 16, c3: 14, c4: 16, c5: 28, c6: 16, c7: 12, c8: 14,
+            c9: 10, c10: 15, c11: 12, c12: 11, c13: 14, c14: 13, c15: 11,
+            c16: 14, c17: 13, c18: 14, c19: 13, c20: 14, c21: 16
+        };
+
+        ws.columns = visibleKeys.map(k => ({ width: colExcelWidths[k] || 14 }));
+
+        const excelColMap = {};
+        visibleKeys.forEach((k, idx) => {
+            excelColMap[k] = idx + 1; // 1-based index in Excel
+        });
 
         const fontName = 'Calibri';
         const thinBorder = {
@@ -414,10 +539,10 @@ export default function TADABill() {
         }
 
         // Row 1: Title
-        ws.mergeCells(1, 1, 1, 21);
+        ws.mergeCells(1, 1, 1, totalCols);
         ws.getCell(1, 1).value = b.title;
         ws.getRow(1).height = 26;
-        styleRange(1, 1, 1, 21, {
+        styleRange(1, 1, 1, totalCols, {
             font: { name: fontName, size: 14, bold: true, color: { argb: 'FF000000' } },
             alignment: { horizontal: 'center', vertical: 'middle' }
         });
@@ -426,10 +551,10 @@ export default function TADABill() {
         const dateRangeText = language === 'hi'
             ? `${formatDateDMY(employee.start_date || claim.start_date || '_________')} ${b.periodFrom} ${formatDateDMY(employee.end_date || claim.end_date || '_________')} ${b.periodTo}`
             : `${formatDateDMY(employee.start_date || claim.start_date || '_________')} ${b.periodTo} ${formatDateDMY(employee.end_date || claim.end_date || '_________')}`;
-        ws.mergeCells(2, 1, 2, 21);
+        ws.mergeCells(2, 1, 2, totalCols);
         ws.getCell(2, 1).value = `${billSubTitle} (${b.periodLabel}: ${dateRangeText})`;
         ws.getRow(2).height = 20;
-        styleRange(2, 1, 2, 21, {
+        styleRange(2, 1, 2, totalCols, {
             font: { name: fontName, size: 11, bold: true, color: { argb: 'FF000000' } },
             alignment: { horizontal: 'center', vertical: 'middle' }
         });
@@ -438,84 +563,122 @@ export default function TADABill() {
         ws.getRow(3).height = 8;
 
         // Rows 4 & 5: Top 6-Field Box
-        ws.mergeCells(4, 1, 4, 6);
-        ws.getCell(4, 1).value = `${b.name}: ${empDisplayName}`;
-        ws.mergeCells(4, 7, 4, 13);
-        ws.getCell(4, 7).value = `${b.gradePay}: ${formatPayLevelAndGradePay(employee, language)}`;
-        ws.mergeCells(4, 14, 4, 21);
-        ws.getCell(4, 14).value = `${b.fixedTA} ₹: ${employee.fixed_ta ? employee.fixed_ta : '-'}`;
+        const cPart1 = Math.max(1, Math.floor(totalCols / 3));
+        const cPart2 = Math.max(cPart1 + 1, Math.floor((totalCols * 2) / 3));
 
-        ws.mergeCells(5, 1, 5, 6);
+        ws.mergeCells(4, 1, 4, cPart1);
+        ws.getCell(4, 1).value = `${b.name}: ${empDisplayName}`;
+        ws.mergeCells(4, cPart1 + 1, 4, cPart2);
+        ws.getCell(4, cPart1 + 1).value = `${b.gradePay}: ${formatPayLevelAndGradePay(employee, language)}`;
+        ws.mergeCells(4, cPart2 + 1, 4, totalCols);
+        ws.getCell(4, cPart2 + 1).value = `${b.fixedTA} ₹: ${employee.fixed_ta ? employee.fixed_ta : '-'}`;
+
+        ws.mergeCells(5, 1, 5, cPart1);
         ws.getCell(5, 1).value = `${b.designation}: ${employee.designation || '—'}`;
-        ws.mergeCells(5, 7, 5, 13);
-        ws.getCell(5, 7).value = `${b.headquarter}: ${employee.headquarters || '—'}`;
-        ws.mergeCells(5, 14, 5, 21);
-        ws.getCell(5, 14).value = `${b.consolidatedDA}: ${defaultDaRate ? '₹' + defaultDaRate : '-'}`;
+        ws.mergeCells(5, cPart1 + 1, 5, cPart2);
+        ws.getCell(5, cPart1 + 1).value = `${b.headquarter}: ${employee.headquarters || '—'}`;
+        ws.mergeCells(5, cPart2 + 1, 5, totalCols);
+        ws.getCell(5, cPart2 + 1).value = `${b.consolidatedDA}: ${defaultDaRate ? '₹' + defaultDaRate : '-'}`;
 
         ws.getRow(4).height = 22;
         ws.getRow(5).height = 22;
-        styleRange(4, 1, 5, 21, {
+        styleRange(4, 1, 5, totalCols, {
             font: { name: fontName, size: 9.5, color: { argb: 'FF000000' } },
             border: blackThinBorder,
             alignment: { horizontal: 'left', vertical: 'middle', wrapText: true }
         });
 
         // Row 6: Currency indicator
-        ws.getCell(6, 21).value = b.amountInRupees;
-        ws.getCell(6, 21).font = { name: fontName, size: 8.5, bold: true, italic: true, color: { argb: 'FF333333' } };
-        ws.getCell(6, 21).alignment = { horizontal: 'right', vertical: 'middle' };
+        ws.getCell(6, totalCols).value = b.amountInRupees;
+        ws.getCell(6, totalCols).font = { name: fontName, size: 8.5, bold: true, italic: true, color: { argb: 'FF333333' } };
+        ws.getCell(6, totalCols).alignment = { horizontal: 'right', vertical: 'middle' };
         ws.getRow(6).height = 16;
 
         // Row 7: Header Tier 1 (Groups)
-        ws.mergeCells(7, 1, 7, 4);
-        ws.getCell(7, 1).value = b.journeyAndHaltTitle;
-        ws.mergeCells(7, 5, 8, 5);
-        ws.getCell(7, 5).value = b.purpose;
-        ws.mergeCells(7, 6, 7, 7);
-        ws.getCell(7, 6).value = b.transferFamilyTitle;
-        ws.mergeCells(7, 8, 7, 11);
-        ws.getCell(7, 8).value = b.fareSectionTitle;
-        ws.mergeCells(7, 12, 7, 17);
-        ws.getCell(7, 12).value = b.allowancesTitle;
-        ws.mergeCells(7, 18, 8, 18);
-        ws.getCell(7, 18).value = b.transportExp;
-        ws.mergeCells(7, 19, 8, 19);
-        ws.getCell(7, 19).value = b.hotelExp;
-        ws.mergeCells(7, 20, 8, 20);
-        ws.getCell(7, 20).value = b.rowTotal;
-        ws.mergeCells(7, 21, 8, 21);
-        ws.getCell(7, 21).value = b.remarks;
+        const jhCols = [excelColMap.c1, excelColMap.c2, excelColMap.c3, excelColMap.c4].filter(Boolean);
+        if (jhCols.length > 0) {
+            const jStart = Math.min(...jhCols);
+            const jEnd = Math.max(...jhCols);
+            if (jStart < jEnd) ws.mergeCells(7, jStart, 7, jEnd);
+            ws.getCell(7, jStart).value = b.journeyAndHaltTitle;
+        }
+
+        if (excelColMap.c5) {
+            ws.mergeCells(7, excelColMap.c5, 8, excelColMap.c5);
+            ws.getCell(7, excelColMap.c5).value = b.purpose;
+        }
+
+        const trCols = [excelColMap.c6, excelColMap.c7].filter(Boolean);
+        if (trCols.length > 0) {
+            const tStart = Math.min(...trCols);
+            const tEnd = Math.max(...trCols);
+            if (tStart < tEnd) ws.mergeCells(7, tStart, 7, tEnd);
+            ws.getCell(7, tStart).value = b.transferFamilyTitle;
+        }
+
+        const fareCols = [excelColMap.c8, excelColMap.c9, excelColMap.c10, excelColMap.c11].filter(Boolean);
+        if (fareCols.length > 0) {
+            const fStart = Math.min(...fareCols);
+            const fEnd = Math.max(...fareCols);
+            if (fStart < fEnd) ws.mergeCells(7, fStart, 7, fEnd);
+            ws.getCell(7, fStart).value = b.fareSectionTitle;
+        }
+
+        const allowCols = [excelColMap.c12, excelColMap.c13, excelColMap.c14, excelColMap.c15, excelColMap.c16, excelColMap.c17].filter(Boolean);
+        if (allowCols.length > 0) {
+            const aStart = Math.min(...allowCols);
+            const aEnd = Math.max(...allowCols);
+            if (aStart < aEnd) ws.mergeCells(7, aStart, 7, aEnd);
+            ws.getCell(7, aStart).value = b.allowancesTitle;
+        }
+
+        if (excelColMap.c18) {
+            ws.mergeCells(7, excelColMap.c18, 8, excelColMap.c18);
+            ws.getCell(7, excelColMap.c18).value = b.transportExp;
+        }
+        if (excelColMap.c19) {
+            ws.mergeCells(7, excelColMap.c19, 8, excelColMap.c19);
+            ws.getCell(7, excelColMap.c19).value = b.hotelExp;
+        }
+        if (excelColMap.c20) {
+            ws.mergeCells(7, excelColMap.c20, 8, excelColMap.c20);
+            ws.getCell(7, excelColMap.c20).value = b.rowTotal;
+        }
+        if (excelColMap.c21) {
+            ws.mergeCells(7, excelColMap.c21, 8, excelColMap.c21);
+            ws.getCell(7, excelColMap.c21).value = b.remarks;
+        }
         ws.getRow(7).height = 28;
 
         // Row 8: Header Tier 2 (Sub-headers)
-        ws.getCell(8, 1).value = `${b.departure.place}`;
-        ws.getCell(8, 2).value = `${b.departure.dateTime}`;
-        ws.getCell(8, 3).value = `${b.arrival.place}`;
-        ws.getCell(8, 4).value = `${b.arrival.dateTime}`;
-        ws.getCell(8, 6).value = b.transferDescription;
-        ws.getCell(8, 7).value = b.transferAmount;
-        ws.getCell(8, 8).value = b.classOfTravel;
-        ws.getCell(8, 9).value = b.distanceKm;
-        ws.getCell(8, 10).value = b.ticketCountOrNo;
-        ws.getCell(8, 11).value = b.fareAmount;
-        ws.getCell(8, 12).value = b.journeyDA.hrs;
-        ws.getCell(8, 13).value = b.journeyDA.rate;
-        ws.getCell(8, 14).value = b.journeyDA.amount;
-        ws.getCell(8, 15).value = b.haltDA.hrs;
-        ws.getCell(8, 16).value = b.haltDA.rate;
-        ws.getCell(8, 17).value = b.haltDA.amount;
+        if (excelColMap.c1) ws.getCell(8, excelColMap.c1).value = `${b.departure.place}`;
+        if (excelColMap.c2) ws.getCell(8, excelColMap.c2).value = `${b.departure.dateTime}`;
+        if (excelColMap.c3) ws.getCell(8, excelColMap.c3).value = `${b.arrival.place}`;
+        if (excelColMap.c4) ws.getCell(8, excelColMap.c4).value = `${b.arrival.dateTime}`;
+        if (excelColMap.c6) ws.getCell(8, excelColMap.c6).value = b.transferDescription;
+        if (excelColMap.c7) ws.getCell(8, excelColMap.c7).value = b.transferAmount;
+        if (excelColMap.c8) ws.getCell(8, excelColMap.c8).value = b.classOfTravel;
+        if (excelColMap.c9) ws.getCell(8, excelColMap.c9).value = b.distanceKm;
+        if (excelColMap.c10) ws.getCell(8, excelColMap.c10).value = b.ticketCountOrNo;
+        if (excelColMap.c11) ws.getCell(8, excelColMap.c11).value = b.fareAmount;
+        if (excelColMap.c12) ws.getCell(8, excelColMap.c12).value = b.journeyDA.hrs;
+        if (excelColMap.c13) ws.getCell(8, excelColMap.c13).value = b.journeyDA.rate;
+        if (excelColMap.c14) ws.getCell(8, excelColMap.c14).value = b.journeyDA.amount;
+        if (excelColMap.c15) ws.getCell(8, excelColMap.c15).value = b.haltDA.hrs;
+        if (excelColMap.c16) ws.getCell(8, excelColMap.c16).value = b.haltDA.rate;
+        if (excelColMap.c17) ws.getCell(8, excelColMap.c17).value = b.haltDA.amount;
         ws.getRow(8).height = 28;
 
-        styleRange(7, 1, 8, 21, {
+        styleRange(7, 1, 8, totalCols, {
             font: { name: fontName, size: 9, bold: true, color: { argb: 'FF000000' } },
             fill: headerFill,
             border: blackThinBorder,
             alignment: { horizontal: 'center', vertical: 'middle', wrapText: true }
         });
 
-        // Row 9: Header Tier 3 (Numbers 1-21)
+        // Row 9: Header Tier 3 (Sequential Numbers 1 to N matching visible columns)
         ws.getRow(9).height = 18;
-        for (let c = 1; c <= 21; c++) {
+        for (let c = 1; c <= totalCols; c++) {
             const cell = ws.getCell(9, c);
             cell.value = c;
             cell.font = { name: fontName, size: 8, bold: true, color: { argb: 'FF334155' } };
@@ -561,90 +724,111 @@ export default function TADABill() {
             const jFactor = r.da_rate > 0 ? (parseFloat(r.journey_da) || 0) / r.da_rate : 0;
             const sFactor = r.stay_rate > 0 ? (parseFloat(r.stay_da) || 0) / r.stay_rate : 0;
 
-            row.getCell(1).value = r.departure_station || '';
-            row.getCell(1).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-
-            row.getCell(2).value = formatDateDMY(r.departure_date) + (r.departure_time ? '\n' + formatTime12Hr(r.departure_time) : '');
-            row.getCell(2).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-
-            row.getCell(3).value = r.arrival_station || '';
-            row.getCell(3).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-
-            row.getCell(4).value = formatDateDMY(r.arrival_date) + (r.arrival_time ? '\n' + formatTime12Hr(r.arrival_time) : '');
-            row.getCell(4).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-
-            // Purpose cell with vertical merge support
-            const mInfo = mergeInfo[idx] || { isChild: false, span: 1 };
-            if (!mInfo.isChild) {
-                if (mInfo.span > 1) {
-                    ws.mergeCells(curRow, 5, curRow + mInfo.span - 1, 5);
-                }
-                row.getCell(5).value = r.purpose || '—';
+            if (excelColMap.c1) {
+                row.getCell(excelColMap.c1).value = r.departure_station || '';
+                row.getCell(excelColMap.c1).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
             }
-            row.getCell(5).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+            if (excelColMap.c2) {
+                row.getCell(excelColMap.c2).value = formatDateDMY(r.departure_date) + (r.departure_time ? '\n' + formatTime12Hr(r.departure_time) : '');
+                row.getCell(excelColMap.c2).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            }
+            if (excelColMap.c3) {
+                row.getCell(excelColMap.c3).value = r.arrival_station || '';
+                row.getCell(excelColMap.c3).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+            }
+            if (excelColMap.c4) {
+                row.getCell(excelColMap.c4).value = formatDateDMY(r.arrival_date) + (r.arrival_time ? '\n' + formatTime12Hr(r.arrival_time) : '');
+                row.getCell(excelColMap.c4).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            }
+            if (excelColMap.c5) {
+                const mInfo = mergeInfo[idx] || { isChild: false, span: 1 };
+                if (!mInfo.isChild) {
+                    if (mInfo.span > 1) {
+                        ws.mergeCells(curRow, excelColMap.c5, curRow + mInfo.span - 1, excelColMap.c5);
+                    }
+                    row.getCell(excelColMap.c5).value = r.purpose || '—';
+                }
+                row.getCell(excelColMap.c5).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+            }
+            if (excelColMap.c6) {
+                row.getCell(excelColMap.c6).value = transferDesc;
+                row.getCell(excelColMap.c6).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+            }
+            if (excelColMap.c7) {
+                row.getCell(excelColMap.c7).value = transferAmt;
+                row.getCell(excelColMap.c7).numFmt = '#,##0.00';
+                row.getCell(excelColMap.c7).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            if (excelColMap.c8) {
+                row.getCell(excelColMap.c8).value = r.mode + (r.class_of_travel ? ` (${r.class_of_travel})` : '');
+                row.getCell(excelColMap.c8).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            }
+            if (excelColMap.c9) {
+                row.getCell(excelColMap.c9).value = r.distance_km ? parseFloat(r.distance_km) : null;
+                row.getCell(excelColMap.c9).alignment = { horizontal: 'center', vertical: 'middle' };
+            }
+            if (excelColMap.c10) {
+                row.getCell(excelColMap.c10).value = r.ticket_no || '';
+                row.getCell(excelColMap.c10).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            }
+            if (excelColMap.c11) {
+                const fareVal = parseFloat(r.ta_approved || r.fare_amount || 0);
+                row.getCell(excelColMap.c11).value = fareVal > 0 ? fareVal : null;
+                row.getCell(excelColMap.c11).numFmt = '#,##0.00';
+                row.getCell(excelColMap.c11).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            if (excelColMap.c12) {
+                row.getCell(excelColMap.c12).value = r.travel_hrs !== '0.0' && r.travel_hrs ? parseFloat(r.travel_hrs) : null;
+                row.getCell(excelColMap.c12).alignment = { horizontal: 'center', vertical: 'middle' };
+            }
+            if (excelColMap.c13) {
+                row.getCell(excelColMap.c13).value = jFactor > 0 ? formatDACount(jFactor, language, true) : '';
+                row.getCell(excelColMap.c13).alignment = { horizontal: 'center', vertical: 'middle' };
+            }
+            if (excelColMap.c14) {
+                const jAmt = parseFloat(r.journey_da || 0);
+                row.getCell(excelColMap.c14).value = jAmt > 0 ? jAmt : null;
+                row.getCell(excelColMap.c14).numFmt = '#,##0.00';
+                row.getCell(excelColMap.c14).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            if (excelColMap.c15) {
+                row.getCell(excelColMap.c15).value = r.stay_hrs !== '0.0' && r.stay_hrs ? parseFloat(r.stay_hrs) : null;
+                row.getCell(excelColMap.c15).alignment = { horizontal: 'center', vertical: 'middle' };
+            }
+            if (excelColMap.c16) {
+                row.getCell(excelColMap.c16).value = sFactor > 0 ? formatDACount(sFactor, language, true) : '';
+                row.getCell(excelColMap.c16).alignment = { horizontal: 'center', vertical: 'middle' };
+            }
+            if (excelColMap.c17) {
+                const sAmt = parseFloat(r.stay_da || 0);
+                row.getCell(excelColMap.c17).value = sAmt > 0 ? sAmt : null;
+                row.getCell(excelColMap.c17).numFmt = '#,##0.00';
+                row.getCell(excelColMap.c17).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            if (excelColMap.c18) {
+                const locTrans = parseFloat(r.local_transport || 0);
+                row.getCell(excelColMap.c18).value = locTrans > 0 ? locTrans : null;
+                row.getCell(excelColMap.c18).numFmt = '#,##0.00';
+                row.getCell(excelColMap.c18).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            if (excelColMap.c19) {
+                const stayAll = parseFloat(r.stay_allowance || 0);
+                row.getCell(excelColMap.c19).value = stayAll > 0 ? stayAll : null;
+                row.getCell(excelColMap.c19).numFmt = '#,##0.00';
+                row.getCell(excelColMap.c19).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            if (excelColMap.c20) {
+                const rTotal = parseFloat(r.total_amount || 0);
+                row.getCell(excelColMap.c20).value = rTotal > 0 ? rTotal : null;
+                row.getCell(excelColMap.c20).numFmt = '#,##0.00';
+                row.getCell(excelColMap.c20).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            if (excelColMap.c21) {
+                row.getCell(excelColMap.c21).value = r.remarks || '';
+                row.getCell(excelColMap.c21).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+            }
 
-            row.getCell(6).value = transferDesc;
-            row.getCell(6).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-
-            row.getCell(7).value = transferAmt;
-            row.getCell(7).numFmt = '#,##0.00';
-            row.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            row.getCell(8).value = r.mode + (r.class_of_travel ? ` (${r.class_of_travel})` : '');
-            row.getCell(8).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-
-            row.getCell(9).value = r.distance_km ? parseFloat(r.distance_km) : null;
-            row.getCell(9).alignment = { horizontal: 'center', vertical: 'middle' };
-
-            row.getCell(10).value = r.ticket_no || '';
-            row.getCell(10).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-
-            const fareVal = parseFloat(r.ta_approved || r.fare_amount || 0);
-            row.getCell(11).value = fareVal > 0 ? fareVal : null;
-            row.getCell(11).numFmt = '#,##0.00';
-            row.getCell(11).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            row.getCell(12).value = r.travel_hrs !== '0.0' && r.travel_hrs ? parseFloat(r.travel_hrs) : null;
-            row.getCell(12).alignment = { horizontal: 'center', vertical: 'middle' };
-
-            row.getCell(13).value = jFactor > 0 ? formatDACount(jFactor, language, true) : '';
-            row.getCell(13).alignment = { horizontal: 'center', vertical: 'middle' };
-
-            const jAmt = parseFloat(r.journey_da || 0);
-            row.getCell(14).value = jAmt > 0 ? jAmt : null;
-            row.getCell(14).numFmt = '#,##0.00';
-            row.getCell(14).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            row.getCell(15).value = r.stay_hrs !== '0.0' && r.stay_hrs ? parseFloat(r.stay_hrs) : null;
-            row.getCell(15).alignment = { horizontal: 'center', vertical: 'middle' };
-
-            row.getCell(16).value = sFactor > 0 ? formatDACount(sFactor, language, true) : '';
-            row.getCell(16).alignment = { horizontal: 'center', vertical: 'middle' };
-
-            const sAmt = parseFloat(r.stay_da || 0);
-            row.getCell(17).value = sAmt > 0 ? sAmt : null;
-            row.getCell(17).numFmt = '#,##0.00';
-            row.getCell(17).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            const locTrans = parseFloat(r.local_transport || 0);
-            row.getCell(18).value = locTrans > 0 ? locTrans : null;
-            row.getCell(18).numFmt = '#,##0.00';
-            row.getCell(18).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            const stayAll = parseFloat(r.stay_allowance || 0);
-            row.getCell(19).value = stayAll > 0 ? stayAll : null;
-            row.getCell(19).numFmt = '#,##0.00';
-            row.getCell(19).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            const rTotal = parseFloat(r.total_amount || 0);
-            row.getCell(20).value = rTotal > 0 ? rTotal : null;
-            row.getCell(20).numFmt = '#,##0.00';
-            row.getCell(20).alignment = { horizontal: 'right', vertical: 'middle' };
-
-            row.getCell(21).value = r.remarks || '';
-            row.getCell(21).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-
-            for (let c = 1; c <= 21; c++) {
+            for (let c = 1; c <= totalCols; c++) {
                 const cell = row.getCell(c);
                 if (!cell.font) cell.font = { name: fontName, size: 9 };
                 cell.border = thinBorder;
@@ -654,33 +838,42 @@ export default function TADABill() {
         });
 
         // Grand Total Row
-        ws.mergeCells(curRow, 1, curRow, 5);
+        const labelEndCol = excelColMap.c5 ? excelColMap.c5 : Math.min(4, totalCols);
+        ws.mergeCells(curRow, 1, curRow, labelEndCol);
         ws.getCell(curRow, 1).value = `${b.grossTotal}:`;
         ws.getCell(curRow, 1).alignment = { horizontal: 'right', vertical: 'middle' };
 
-        ws.getCell(curRow, 7).value = (claim.claim_type === 'TRANSFER' && (totals.transferAllowance || totals.totalTransport)) ? parseFloat(totals.transferAllowance || totals.totalTransport) : null;
-        ws.getCell(curRow, 7).numFmt = '#,##0.00';
-
-        ws.getCell(curRow, 11).value = totals.totalFare ? parseFloat(totals.totalFare) : null;
-        ws.getCell(curRow, 11).numFmt = '#,##0.00';
-
-        ws.getCell(curRow, 14).value = totals.totalJourneyDA ? parseFloat(totals.totalJourneyDA) : null;
-        ws.getCell(curRow, 14).numFmt = '#,##0.00';
-
-        ws.getCell(curRow, 17).value = totals.totalStayDA ? parseFloat(totals.totalStayDA) : null;
-        ws.getCell(curRow, 17).numFmt = '#,##0.00';
-
-        ws.getCell(curRow, 18).value = totals.totalLocalTransport > 0 ? parseFloat(totals.totalLocalTransport) : null;
-        ws.getCell(curRow, 18).numFmt = '#,##0.00';
-
-        ws.getCell(curRow, 19).value = totals.totalStayAllowance > 0 ? parseFloat(totals.totalStayAllowance) : null;
-        ws.getCell(curRow, 19).numFmt = '#,##0.00';
-
-        ws.getCell(curRow, 20).value = totals.grandTotal ? parseFloat(totals.grandTotal) : null;
-        ws.getCell(curRow, 20).numFmt = '#,##0.00';
+        if (excelColMap.c7) {
+            ws.getCell(curRow, excelColMap.c7).value = (claim.claim_type === 'TRANSFER' && (totals.transferAllowance || totals.totalTransport)) ? parseFloat(totals.transferAllowance || totals.totalTransport) : null;
+            ws.getCell(curRow, excelColMap.c7).numFmt = '#,##0.00';
+        }
+        if (excelColMap.c11) {
+            ws.getCell(curRow, excelColMap.c11).value = totals.totalFare ? parseFloat(totals.totalFare) : null;
+            ws.getCell(curRow, excelColMap.c11).numFmt = '#,##0.00';
+        }
+        if (excelColMap.c14) {
+            ws.getCell(curRow, excelColMap.c14).value = totals.totalJourneyDA ? parseFloat(totals.totalJourneyDA) : null;
+            ws.getCell(curRow, excelColMap.c14).numFmt = '#,##0.00';
+        }
+        if (excelColMap.c17) {
+            ws.getCell(curRow, excelColMap.c17).value = totals.totalStayDA ? parseFloat(totals.totalStayDA) : null;
+            ws.getCell(curRow, excelColMap.c17).numFmt = '#,##0.00';
+        }
+        if (excelColMap.c18) {
+            ws.getCell(curRow, excelColMap.c18).value = totals.totalLocalTransport > 0 ? parseFloat(totals.totalLocalTransport) : null;
+            ws.getCell(curRow, excelColMap.c18).numFmt = '#,##0.00';
+        }
+        if (excelColMap.c19) {
+            ws.getCell(curRow, excelColMap.c19).value = totals.totalStayAllowance > 0 ? parseFloat(totals.totalStayAllowance) : null;
+            ws.getCell(curRow, excelColMap.c19).numFmt = '#,##0.00';
+        }
+        if (excelColMap.c20) {
+            ws.getCell(curRow, excelColMap.c20).value = totals.grandTotal ? parseFloat(totals.grandTotal) : null;
+            ws.getCell(curRow, excelColMap.c20).numFmt = '#,##0.00';
+        }
 
         ws.getRow(curRow).height = 22;
-        styleRange(curRow, 1, curRow, 21, {
+        styleRange(curRow, 1, curRow, totalCols, {
             font: { name: fontName, size: 9, bold: true, color: { argb: 'FF000000' } },
             fill: totalRowFill,
             border: doubleBottomBorder
@@ -688,10 +881,11 @@ export default function TADABill() {
         curRow++;
 
         // Summary Row: Consolidated DA Limit
-        ws.mergeCells(curRow, 1, curRow, 5);
+        const bannerEnd = Math.min(labelEndCol, totalCols);
+        ws.mergeCells(curRow, 1, curRow, bannerEnd);
         ws.getCell(curRow, 1).value = `${b.consolidatedDALimit}: ${claimDALimitText}`;
         ws.getRow(curRow).height = 22;
-        styleRange(curRow, 1, curRow, 21, {
+        styleRange(curRow, 1, curRow, totalCols, {
             font: { name: fontName, size: 9.5, bold: true, color: { argb: 'FF1E3A8A' } },
             fill: summaryBannerFill,
             border: blackThinBorder,
@@ -699,50 +893,56 @@ export default function TADABill() {
         });
         curRow += 2;
 
-        // Deductions & Net Payable Box (Cols 13 to 21)
-        ws.mergeCells(curRow, 13, curRow, 17);
-        ws.getCell(curRow, 13).value = `${b.grossTotal}:`;
-        ws.mergeCells(curRow, 18, curRow, 21);
-        ws.getCell(curRow, 18).value = totals.grandTotal ? parseFloat(totals.grandTotal) : 0;
-        ws.getCell(curRow, 18).numFmt = '#,##0.00';
+        // Deductions & Net Payable Box (Aligned to right edge of visible columns)
+        const dBoxCols = Math.min(8, totalCols);
+        const dLabelStart = Math.max(1, totalCols - dBoxCols + 1);
+        const dLabelEnd = Math.max(dLabelStart, totalCols - Math.floor(dBoxCols / 2));
+        const dValStart = dLabelEnd + 1;
+        const dValEnd = totalCols;
+
+        ws.mergeCells(curRow, dLabelStart, curRow, dLabelEnd);
+        ws.getCell(curRow, dLabelStart).value = `${b.grossTotal}:`;
+        ws.mergeCells(curRow, dValStart, curRow, dValEnd);
+        ws.getCell(curRow, dValStart).value = totals.grandTotal ? parseFloat(totals.grandTotal) : 0;
+        ws.getCell(curRow, dValStart).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, dLabelStart, curRow, totalCols, {
             font: { name: fontName, size: 9, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 13, curRow, 17);
-        ws.getCell(curRow, 13).value = `${b.lessAdvance}:`;
-        ws.mergeCells(curRow, 18, curRow, 21);
-        ws.getCell(curRow, 18).value = totals.advanceAmount ? parseFloat(totals.advanceAmount) : 0;
-        ws.getCell(curRow, 18).numFmt = '#,##0.00';
+        ws.mergeCells(curRow, dLabelStart, curRow, dLabelEnd);
+        ws.getCell(curRow, dLabelStart).value = `${b.lessAdvance}:`;
+        ws.mergeCells(curRow, dValStart, curRow, dValEnd);
+        ws.getCell(curRow, dValStart).value = totals.advanceAmount ? parseFloat(totals.advanceAmount) : 0;
+        ws.getCell(curRow, dValStart).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, dLabelStart, curRow, totalCols, {
             font: { name: fontName, size: 9, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 13, curRow, 17);
-        ws.getCell(curRow, 13).value = `${b.netPayable}:`;
-        ws.mergeCells(curRow, 18, curRow, 21);
-        ws.getCell(curRow, 18).value = netAmount ? parseFloat(netAmount) : 0;
-        ws.getCell(curRow, 18).numFmt = '#,##0.00';
+        ws.mergeCells(curRow, dLabelStart, curRow, dLabelEnd);
+        ws.getCell(curRow, dLabelStart).value = `${b.netPayable}:`;
+        ws.mergeCells(curRow, dValStart, curRow, dValEnd);
+        ws.getCell(curRow, dValStart).value = netAmount ? parseFloat(netAmount) : 0;
+        ws.getCell(curRow, dValStart).numFmt = '#,##0.00';
         ws.getRow(curRow).height = 20;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, dLabelStart, curRow, totalCols, {
             font: { name: fontName, size: 9.5, bold: true },
             border: thinBorder,
             alignment: { horizontal: 'right', vertical: 'middle' }
         });
         curRow++;
 
-        ws.mergeCells(curRow, 13, curRow, 21);
-        ws.getCell(curRow, 13).value = `${b.amountInWordsLabel}: ${words}`;
+        ws.mergeCells(curRow, dLabelStart, curRow, totalCols);
+        ws.getCell(curRow, dLabelStart).value = `${b.amountInWordsLabel}: ${words}`;
         ws.getRow(curRow).height = 24;
-        styleRange(curRow, 13, curRow, 21, {
+        styleRange(curRow, dLabelStart, curRow, totalCols, {
             font: { name: fontName, size: 9, bold: true },
             border: blackThinBorder,
             alignment: { horizontal: 'left', vertical: 'middle', wrapText: true }
@@ -750,7 +950,7 @@ export default function TADABill() {
         curRow += 2;
 
         // Official Certificates
-        ws.mergeCells(curRow, 1, curRow, 21);
+        ws.mergeCells(curRow, 1, curRow, totalCols);
         ws.getCell(curRow, 1).value = b.certificatesTitle;
         ws.getCell(curRow, 1).font = { name: fontName, size: 9.5, bold: true, underline: true };
         ws.getRow(curRow).height = 18;
@@ -765,7 +965,7 @@ export default function TADABill() {
 
         const cert1Text = `${b.cert1} ${excelDisplayTickets}`;
         [cert1Text, b.cert2, b.cert3, b.cert4].forEach(cert => {
-            ws.mergeCells(curRow, 1, curRow, 21);
+            ws.mergeCells(curRow, 1, curRow, totalCols);
             ws.getCell(curRow, 1).value = cert;
             ws.getCell(curRow, 1).font = { name: fontName, size: 8.5 };
             ws.getCell(curRow, 1).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
@@ -776,18 +976,19 @@ export default function TADABill() {
 
         // Signatures
         const signRow = curRow;
-        ws.mergeCells(signRow, 1, signRow, 7);
+        const sigHalf = Math.floor(totalCols / 2);
+        ws.mergeCells(signRow, 1, signRow, sigHalf);
         ws.getCell(signRow, 1).value = `${b.place}: ${employee.headquarters || '__________'}`;
         ws.getCell(signRow, 1).font = { name: fontName, size: 9, bold: true };
 
-        ws.mergeCells(signRow, 13, signRow, 21);
-        ws.getCell(signRow, 13).value = `${b.claimantSignature}: ${empDisplayName}`;
-        ws.getCell(signRow, 13).font = { name: fontName, size: 9, bold: true };
-        ws.getCell(signRow, 13).alignment = { horizontal: 'right', vertical: 'middle' };
+        ws.mergeCells(signRow, sigHalf + 1, signRow, totalCols);
+        ws.getCell(signRow, sigHalf + 1).value = `${b.claimantSignature}: ${empDisplayName}`;
+        ws.getCell(signRow, sigHalf + 1).font = { name: fontName, size: 9, bold: true };
+        ws.getCell(signRow, sigHalf + 1).alignment = { horizontal: 'right', vertical: 'middle' };
         ws.getRow(signRow).height = 20;
         curRow++;
 
-        ws.mergeCells(curRow, 1, curRow, 7);
+        ws.mergeCells(curRow, 1, curRow, sigHalf);
         ws.getCell(curRow, 1).value = `${b.date}: ${formatDateDMY(claim.declaration_date || claim.end_date || '__________')}`;
         ws.getCell(curRow, 1).font = { name: fontName, size: 9, bold: true };
         ws.getRow(curRow).height = 20;
@@ -992,6 +1193,39 @@ export default function TADABill() {
                 <button onClick={handleExportExcel} className="btn btn-success">
                     <FileSpreadsheet size={18} /> {t.common.export} Excel
                 </button>
+                <button
+                    type="button"
+                    onClick={handleToggleBlankColumns}
+                    className={isHidingBlank ? "btn btn-outline-primary" : "btn btn-outline-secondary"}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        fontWeight: '600',
+                        background: isHidingBlank ? '#eff6ff' : '#ffffff',
+                        borderColor: isHidingBlank ? '#2563eb' : '#cbd5e1',
+                        color: isHidingBlank ? '#1d4ed8' : '#334155'
+                    }}
+                    title={isHidingBlank
+                        ? (language === 'hi' ? 'सभी 21 कॉलम पुनः दिखाएं' : 'Show All 21 Statutory Columns')
+                        : (language === 'hi' ? 'अनावश्यक / रिक्त कॉलम छिपाएं और क्रम संख्या (1..N) स्वतः समायोजित करें' : 'Hide Unnecessary / Blank Columns & Re-number')}
+                >
+                    {isHidingBlank ? <RotateCcw size={17} /> : <Sparkles size={17} color="#d97706" />}
+                    {isHidingBlank
+                        ? (language === 'hi' ? 'सभी 21 कॉलम दिखाएं' : 'Show All 21 Columns')
+                        : (language === 'hi' ? 'रिक्त कॉलम छिपाएं' : 'Hide Blank Columns')}
+                    <span style={{
+                        fontSize: '11px',
+                        padding: '1px 7px',
+                        borderRadius: '10px',
+                        background: isHidingBlank ? '#2563eb' : '#e2e8f0',
+                        color: isHidingBlank ? '#ffffff' : '#475569',
+                        fontWeight: 'bold',
+                        marginLeft: '2px'
+                    }}>
+                        {visibleColCount}/21
+                    </span>
+                </button>
                 {claim.status !== 'SUBMITTED' ? (
                     <button onClick={handleSubmit} className="btn btn-primary" disabled={isSubmitting} style={{ background: '#2563eb' }}>
                         {isSubmitting ? t.common.saving : t.common.finalSubmit}
@@ -1016,16 +1250,17 @@ export default function TADABill() {
                     <button
                         className="btn btn-sm btn-outline-secondary"
                         style={{ marginLeft: '0.5rem' }}
-                        onClick={() => setColSettings(defaultColSettings)}
+                        onClick={handleResetColSettings}
+                        title={language === 'hi' ? 'सभी कॉलम चौड़ाई और दृश्यता डिफ़ॉल्ट पर रीसेट करें' : 'Reset all column widths and visibility to default'}
                     >
-                        Reset Widths
+                        {language === 'hi' ? 'चौड़ाई रीसेट' : 'Reset Widths'}
                     </button>
                     <button
                         className="btn btn-sm btn-secondary"
                         style={{ marginLeft: '0.5rem' }}
                         onClick={() => setShowSettings(!showSettings)}
                     >
-                        {showSettings ? 'Hide Columns' : 'Column Settings'}
+                        {showSettings ? (language === 'hi' ? 'कॉलम बंद करें' : 'Hide Settings') : (language === 'hi' ? 'कॉलम सेटिंग' : 'Column Settings')}
                     </button>
                 </div>
             </div>
@@ -1033,26 +1268,87 @@ export default function TADABill() {
             {/* Column Customizer Panel */}
             {showSettings && (
                 <div className="card no-print glass-control-bar" style={{ marginBottom: '1rem', padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <h5 style={{ margin: 0, fontSize: '0.95rem' }}>Column Visibility & Width Settings (Columns 1 to 21)</h5>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                            <MousePointer2 size={13} style={{ verticalAlign: 'middle' }} /> Drag column headers in the table to resize.
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div>
+                            <h5 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold' }}>
+                                {language === 'hi' ? 'कॉलम दृश्यता एवं चौड़ाई नियंत्रण' : 'Column Visibility & Width Settings'}
+                                <span style={{ marginLeft: '8px', fontSize: '12px', fontWeight: 'normal', color: '#64748b' }}>
+                                    ({language === 'hi' ? `सक्रिय: ${visibleColCount}/21 कॉलम` : `Active: ${visibleColCount}/21 columns`})
+                                </span>
+                            </h5>
+                            <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
+                                <MousePointer2 size={13} style={{ verticalAlign: 'middle' }} /> {language === 'hi' ? 'कॉलम क्रमांक (1..N) स्वतः पुनः क्रमित होंगे।' : 'Visible columns are automatically re-numbered sequentially (1 to N). Drag table header edges to resize.'}
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={handleToggleBlankColumns}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', fontWeight: '600' }}
+                            >
+                                {isHidingBlank ? <RotateCcw size={13} /> : <Sparkles size={13} />}
+                                {isHidingBlank ? (language === 'hi' ? 'सभी 21 दिखाएं' : 'Show All 21') : (language === 'hi' ? 'रिक्त छिपाएं' : 'Hide Blank')}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={handleShowAllColumns}
+                                style={{ fontSize: '11.5px' }}
+                            >
+                                {language === 'hi' ? 'सभी 21 कॉलम' : 'All 21 Cols'}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={handleResetColSettings}
+                                style={{ fontSize: '11.5px' }}
+                            >
+                                {language === 'hi' ? 'डिफ़ॉल्ट रीसेट' : 'Reset All'}
+                            </button>
                         </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '6px' }}>
-                        {Object.keys(colSettings).map(key => (
-                            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', border: '1px solid #e2e8f0', padding: '3px 6px', borderRadius: '4px', background: 'white' }}>
-                                <input
-                                    type="checkbox"
-                                    id={`vis-${key}`}
-                                    checked={colSettings[key].v}
-                                    onChange={(e) => setColSettings({ ...colSettings, [key]: { ...colSettings[key], v: e.target.checked } })}
-                                />
-                                <label htmlFor={`vis-${key}`} style={{ cursor: 'pointer', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {colSettings[key].label}
-                                </label>
-                            </div>
-                        ))}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '6px' }}>
+                        {colKeys.map(key => {
+                            const isBlank = blankMap[key];
+                            const isVis = colSettings[key]?.v;
+                            const seqNum = colNumbers[key];
+                            return (
+                                <div key={key} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontSize: '0.75rem',
+                                    border: isVis ? '1px solid #cbd5e1' : '1px dashed #cbd5e1',
+                                    padding: '4px 7px',
+                                    borderRadius: '5px',
+                                    background: isVis ? '#ffffff' : '#f8fafc',
+                                    opacity: isVis ? 1 : 0.65
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        id={`vis-${key}`}
+                                        checked={isVis}
+                                        onChange={(e) => {
+                                            const updated = { ...colSettings, [key]: { ...colSettings[key], v: e.target.checked } };
+                                            setColSettings(updated);
+                                            // If user manually changed a blank column, update hiding state
+                                            const anyBlankVisible = colKeys.some(k => blankMap[k] && updated[k]?.v);
+                                            setIsHidingBlank(!anyBlankVisible);
+                                        }}
+                                    />
+                                    <label htmlFor={`vis-${key}`} style={{ cursor: 'pointer', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {isVis && <span style={{ fontWeight: 'bold', color: '#1e40af', marginRight: '4px' }}>#{seqNum}</span>}
+                                        {colSettings[key]?.label}
+                                    </label>
+                                    {isBlank && (
+                                        <span style={{ fontSize: '9.5px', color: '#dc2626', background: '#fee2e2', padding: '1px 5px', borderRadius: '3px', fontWeight: 'bold' }} title="No data in this bill">
+                                            {language === 'hi' ? 'रिक्त' : 'Blank'}
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}
@@ -1202,27 +1498,27 @@ export default function TADABill() {
                 <div className="table-scroll-wrapper" style={{ width: '100%', overflowX: 'hidden' }}>
                     <table className="bill-21-table">
                         <colgroup>
-                            {colSettings.c1.v && <col className="col-c1" style={{ width: colSettings.c1.w }} />}
-                            {colSettings.c2.v && <col className="col-c2" style={{ width: colSettings.c2.w }} />}
-                            {colSettings.c3.v && <col className="col-c3" style={{ width: colSettings.c3.w }} />}
-                            {colSettings.c4.v && <col className="col-c4" style={{ width: colSettings.c4.w }} />}
-                            {colSettings.c5.v && <col className="col-c5" style={{ width: colSettings.c5.w }} />}
-                            {colSettings.c6.v && <col className="col-c6" style={{ width: colSettings.c6.w }} />}
-                            {colSettings.c7.v && <col className="col-c7" style={{ width: colSettings.c7.w }} />}
-                            {colSettings.c8.v && <col className="col-c8" style={{ width: colSettings.c8.w }} />}
-                            {colSettings.c9.v && <col className="col-c9" style={{ width: colSettings.c9.w }} />}
-                            {colSettings.c10.v && <col className="col-c10" style={{ width: colSettings.c10.w }} />}
-                            {colSettings.c11.v && <col className="col-c11" style={{ width: colSettings.c11.w }} />}
-                            {colSettings.c12.v && <col className="col-c12" style={{ width: colSettings.c12.w }} />}
-                            {colSettings.c13.v && <col className="col-c13" style={{ width: colSettings.c13.w }} />}
-                            {colSettings.c14.v && <col className="col-c14" style={{ width: colSettings.c14.w }} />}
-                            {colSettings.c15.v && <col className="col-c15" style={{ width: colSettings.c15.w }} />}
-                            {colSettings.c16.v && <col className="col-c16" style={{ width: colSettings.c16.w }} />}
-                            {colSettings.c17.v && <col className="col-c17" style={{ width: colSettings.c17.w }} />}
-                            {colSettings.c18.v && <col className="col-c18" style={{ width: colSettings.c18.w }} />}
-                            {colSettings.c19.v && <col className="col-c19" style={{ width: colSettings.c19.w }} />}
-                            {colSettings.c20.v && <col className="col-c20" style={{ width: colSettings.c20.w }} />}
-                            {colSettings.c21.v && <col className="col-c21" style={{ width: colSettings.c21.w }} />}
+                            {colSettings.c1.v && <col className="col-c1" style={{ width: getColWidth('c1') }} />}
+                            {colSettings.c2.v && <col className="col-c2" style={{ width: getColWidth('c2') }} />}
+                            {colSettings.c3.v && <col className="col-c3" style={{ width: getColWidth('c3') }} />}
+                            {colSettings.c4.v && <col className="col-c4" style={{ width: getColWidth('c4') }} />}
+                            {colSettings.c5.v && <col className="col-c5" style={{ width: getColWidth('c5') }} />}
+                            {colSettings.c6.v && <col className="col-c6" style={{ width: getColWidth('c6') }} />}
+                            {colSettings.c7.v && <col className="col-c7" style={{ width: getColWidth('c7') }} />}
+                            {colSettings.c8.v && <col className="col-c8" style={{ width: getColWidth('c8') }} />}
+                            {colSettings.c9.v && <col className="col-c9" style={{ width: getColWidth('c9') }} />}
+                            {colSettings.c10.v && <col className="col-c10" style={{ width: getColWidth('c10') }} />}
+                            {colSettings.c11.v && <col className="col-c11" style={{ width: getColWidth('c11') }} />}
+                            {colSettings.c12.v && <col className="col-c12" style={{ width: getColWidth('c12') }} />}
+                            {colSettings.c13.v && <col className="col-c13" style={{ width: getColWidth('c13') }} />}
+                            {colSettings.c14.v && <col className="col-c14" style={{ width: getColWidth('c14') }} />}
+                            {colSettings.c15.v && <col className="col-c15" style={{ width: getColWidth('c15') }} />}
+                            {colSettings.c16.v && <col className="col-c16" style={{ width: getColWidth('c16') }} />}
+                            {colSettings.c17.v && <col className="col-c17" style={{ width: getColWidth('c17') }} />}
+                            {colSettings.c18.v && <col className="col-c18" style={{ width: getColWidth('c18') }} />}
+                            {colSettings.c19.v && <col className="col-c19" style={{ width: getColWidth('c19') }} />}
+                            {colSettings.c20.v && <col className="col-c20" style={{ width: getColWidth('c20') }} />}
+                            {colSettings.c21.v && <col className="col-c21" style={{ width: getColWidth('c21') }} />}
                         </colgroup>
 
                         <thead>
@@ -1235,7 +1531,7 @@ export default function TADABill() {
                                 )}
 
                                 {colSettings.c5.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c5.w }}>
+                                    <th rowSpan="2" style={{ position: 'relative', width: getColWidth('c5') }}>
                                         {b.purpose}
                                         <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c5')}></div>
                                     </th>
@@ -1263,28 +1559,28 @@ export default function TADABill() {
                                 )}
 
                                 {colSettings.c18.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c18.w }}>
+                                    <th rowSpan="2" style={{ position: 'relative', width: getColWidth('c18') }}>
                                         {b.transportExp}
                                         <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c18')}></div>
                                     </th>
                                 )}
 
                                 {colSettings.c19.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c19.w }}>
+                                    <th rowSpan="2" style={{ position: 'relative', width: getColWidth('c19') }}>
                                         {b.hotelExp}
                                         <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c19')}></div>
                                     </th>
                                 )}
 
                                 {colSettings.c20.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c20.w }}>
+                                    <th rowSpan="2" style={{ position: 'relative', width: getColWidth('c20') }}>
                                         {b.rowTotal}
                                         <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c20')}></div>
                                     </th>
                                 )}
 
                                 {colSettings.c21.v && (
-                                    <th rowSpan="2" style={{ position: 'relative', width: colSettings.c21.w }}>
+                                    <th rowSpan="2" style={{ position: 'relative', width: getColWidth('c21') }}>
                                         {b.remarks}
                                         <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c21')}></div>
                                     </th>
@@ -1293,51 +1589,51 @@ export default function TADABill() {
 
                             {/* Header Tier 2 (Specific Columns) */}
                             <tr>
-                                {colSettings.c1.v && <th style={{ position: 'relative', width: colSettings.c1.w }}>{b.departure.place} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c1')}></div></th>}
-                                {colSettings.c2.v && <th style={{ position: 'relative', width: colSettings.c2.w }}>{b.departure.dateTime} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c2')}></div></th>}
-                                {colSettings.c3.v && <th style={{ position: 'relative', width: colSettings.c3.w }}>{b.arrival.place} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c3')}></div></th>}
-                                {colSettings.c4.v && <th style={{ position: 'relative', width: colSettings.c4.w }}>{b.arrival.dateTime} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c4')}></div></th>}
+                                {colSettings.c1.v && <th style={{ position: 'relative', width: getColWidth('c1') }}>{b.departure.place} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c1')}></div></th>}
+                                {colSettings.c2.v && <th style={{ position: 'relative', width: getColWidth('c2') }}>{b.departure.dateTime} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c2')}></div></th>}
+                                {colSettings.c3.v && <th style={{ position: 'relative', width: getColWidth('c3') }}>{b.arrival.place} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c3')}></div></th>}
+                                {colSettings.c4.v && <th style={{ position: 'relative', width: getColWidth('c4') }}>{b.arrival.dateTime} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c4')}></div></th>}
 
-                                {colSettings.c6.v && <th style={{ position: 'relative', width: colSettings.c6.w }}>{b.transferDescription} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c6')}></div></th>}
-                                {colSettings.c7.v && <th style={{ position: 'relative', width: colSettings.c7.w }}>{b.transferAmount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c7')}></div></th>}
+                                {colSettings.c6.v && <th style={{ position: 'relative', width: getColWidth('c6') }}>{b.transferDescription} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c6')}></div></th>}
+                                {colSettings.c7.v && <th style={{ position: 'relative', width: getColWidth('c7') }}>{b.transferAmount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c7')}></div></th>}
 
-                                {colSettings.c8.v && <th style={{ position: 'relative', width: colSettings.c8.w }}>{b.classOfTravel} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c8')}></div></th>}
-                                {colSettings.c9.v && <th style={{ position: 'relative', width: colSettings.c9.w }}>{b.distanceKm} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c9')}></div></th>}
-                                {colSettings.c10.v && <th style={{ position: 'relative', width: colSettings.c10.w }}>{b.ticketCountOrNo} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c10')}></div></th>}
-                                {colSettings.c11.v && <th style={{ position: 'relative', width: colSettings.c11.w }}>{b.fareAmount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c11')}></div></th>}
+                                {colSettings.c8.v && <th style={{ position: 'relative', width: getColWidth('c8') }}>{b.classOfTravel} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c8')}></div></th>}
+                                {colSettings.c9.v && <th style={{ position: 'relative', width: getColWidth('c9') }}>{b.distanceKm} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c9')}></div></th>}
+                                {colSettings.c10.v && <th style={{ position: 'relative', width: getColWidth('c10') }}>{b.ticketCountOrNo} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c10')}></div></th>}
+                                {colSettings.c11.v && <th style={{ position: 'relative', width: getColWidth('c11') }}>{b.fareAmount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c11')}></div></th>}
 
-                                {colSettings.c12.v && <th style={{ position: 'relative', width: colSettings.c12.w }}>{b.journeyDA.hrs} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c12')}></div></th>}
-                                {colSettings.c13.v && <th style={{ position: 'relative', width: colSettings.c13.w }}>{b.journeyDA.rate} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c13')}></div></th>}
-                                {colSettings.c14.v && <th style={{ position: 'relative', width: colSettings.c14.w }}>{b.journeyDA.amount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c14')}></div></th>}
+                                {colSettings.c12.v && <th style={{ position: 'relative', width: getColWidth('c12') }}>{b.journeyDA.hrs} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c12')}></div></th>}
+                                {colSettings.c13.v && <th style={{ position: 'relative', width: getColWidth('c13') }}>{b.journeyDA.rate} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c13')}></div></th>}
+                                {colSettings.c14.v && <th style={{ position: 'relative', width: getColWidth('c14') }}>{b.journeyDA.amount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c14')}></div></th>}
 
-                                {colSettings.c15.v && <th style={{ position: 'relative', width: colSettings.c15.w }}>{b.haltDA.hrs} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c15')}></div></th>}
-                                {colSettings.c16.v && <th style={{ position: 'relative', width: colSettings.c16.w }}>{b.haltDA.rate} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c16')}></div></th>}
-                                {colSettings.c17.v && <th style={{ position: 'relative', width: colSettings.c17.w }}>{b.haltDA.amount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c17')}></div></th>}
+                                {colSettings.c15.v && <th style={{ position: 'relative', width: getColWidth('c15') }}>{b.haltDA.hrs} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c15')}></div></th>}
+                                {colSettings.c16.v && <th style={{ position: 'relative', width: getColWidth('c16') }}>{b.haltDA.rate} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c16')}></div></th>}
+                                {colSettings.c17.v && <th style={{ position: 'relative', width: getColWidth('c17') }}>{b.haltDA.amount} <div className="resizer no-print" onMouseDown={e => handleMouseDown(e, 'c17')}></div></th>}
                             </tr>
 
-                            {/* Header Tier 3: Column Numbers 1 to 21 */}
+                            {/* Header Tier 3: Dynamic Sequential Column Numbers (1 to N) */}
                             <tr className="col-numbers">
-                                {colSettings.c1.v && <td>1</td>}
-                                {colSettings.c2.v && <td>2</td>}
-                                {colSettings.c3.v && <td>3</td>}
-                                {colSettings.c4.v && <td>4</td>}
-                                {colSettings.c5.v && <td>5</td>}
-                                {colSettings.c6.v && <td>6</td>}
-                                {colSettings.c7.v && <td>7</td>}
-                                {colSettings.c8.v && <td>8</td>}
-                                {colSettings.c9.v && <td>9</td>}
-                                {colSettings.c10.v && <td>10</td>}
-                                {colSettings.c11.v && <td>11</td>}
-                                {colSettings.c12.v && <td>12</td>}
-                                {colSettings.c13.v && <td>13</td>}
-                                {colSettings.c14.v && <td>14</td>}
-                                {colSettings.c15.v && <td>15</td>}
-                                {colSettings.c16.v && <td>16</td>}
-                                {colSettings.c17.v && <td>17</td>}
-                                {colSettings.c18.v && <td>18</td>}
-                                {colSettings.c19.v && <td>19</td>}
-                                {colSettings.c20.v && <td>20</td>}
-                                {colSettings.c21.v && <td>21</td>}
+                                {colSettings.c1.v && <td>{colNumbers.c1}</td>}
+                                {colSettings.c2.v && <td>{colNumbers.c2}</td>}
+                                {colSettings.c3.v && <td>{colNumbers.c3}</td>}
+                                {colSettings.c4.v && <td>{colNumbers.c4}</td>}
+                                {colSettings.c5.v && <td>{colNumbers.c5}</td>}
+                                {colSettings.c6.v && <td>{colNumbers.c6}</td>}
+                                {colSettings.c7.v && <td>{colNumbers.c7}</td>}
+                                {colSettings.c8.v && <td>{colNumbers.c8}</td>}
+                                {colSettings.c9.v && <td>{colNumbers.c9}</td>}
+                                {colSettings.c10.v && <td>{colNumbers.c10}</td>}
+                                {colSettings.c11.v && <td>{colNumbers.c11}</td>}
+                                {colSettings.c12.v && <td>{colNumbers.c12}</td>}
+                                {colSettings.c13.v && <td>{colNumbers.c13}</td>}
+                                {colSettings.c14.v && <td>{colNumbers.c14}</td>}
+                                {colSettings.c15.v && <td>{colNumbers.c15}</td>}
+                                {colSettings.c16.v && <td>{colNumbers.c16}</td>}
+                                {colSettings.c17.v && <td>{colNumbers.c17}</td>}
+                                {colSettings.c18.v && <td>{colNumbers.c18}</td>}
+                                {colSettings.c19.v && <td>{colNumbers.c19}</td>}
+                                {colSettings.c20.v && <td>{colNumbers.c20}</td>}
+                                {colSettings.c21.v && <td>{colNumbers.c21}</td>}
                             </tr>
                         </thead>
 
@@ -1659,28 +1955,8 @@ export default function TADABill() {
                     padding: 1px;
                 }
 
-                /* Proportional widths on screen (Exact 100% distribution matching print) */
-                .bill-21-table col.col-c1  { width: 5.2%; }
-                .bill-21-table col.col-c2  { width: 6.4%; }
-                .bill-21-table col.col-c3  { width: 5.2%; }
-                .bill-21-table col.col-c4  { width: 6.4%; }
-                .bill-21-table col.col-c5  { width: 9.2%; }
-                .bill-21-table col.col-c6  { width: 4.8%; }
-                .bill-21-table col.col-c7  { width: 3.8%; }
-                .bill-21-table col.col-c8  { width: 4.8%; }
-                .bill-21-table col.col-c9  { width: 3.0%; }
-                .bill-21-table col.col-c10 { width: 4.6%; }
-                .bill-21-table col.col-c11 { width: 4.4%; }
-                .bill-21-table col.col-c12 { width: 2.8%; }
-                .bill-21-table col.col-c13 { width: 4.2%; }
-                .bill-21-table col.col-c14 { width: 4.2%; }
-                .bill-21-table col.col-c15 { width: 2.8%; }
-                .bill-21-table col.col-c16 { width: 4.2%; }
-                .bill-21-table col.col-c17 { width: 4.2%; }
-                .bill-21-table col.col-c18 { width: 4.0%; }
-                .bill-21-table col.col-c19 { width: 4.2%; }
-                .bill-21-table col.col-c20 { width: 5.5%; }
-                .bill-21-table col.col-c21 { width: 6.1%; }
+                /* Proportional widths are controlled dynamically via inline col style={{ width: getColWidth(k) }} */
+
                 @media (max-width: 850px) {
                     .form21-bottom-section {
                         grid-template-columns: 1fr !important;
@@ -1767,28 +2043,7 @@ export default function TADABill() {
                         break-inside: avoid !important;
                     }
 
-                    /* A4 Landscape 21-Column Proportions (Exact 100% distribution) */
-                    .bill-21-table col.col-c1  { width: 5.2% !important; }
-                    .bill-21-table col.col-c2  { width: 6.4% !important; }
-                    .bill-21-table col.col-c3  { width: 5.2% !important; }
-                    .bill-21-table col.col-c4  { width: 6.4% !important; }
-                    .bill-21-table col.col-c5  { width: 9.2% !important; }
-                    .bill-21-table col.col-c6  { width: 4.8% !important; }
-                    .bill-21-table col.col-c7  { width: 3.8% !important; }
-                    .bill-21-table col.col-c8  { width: 4.8% !important; }
-                    .bill-21-table col.col-c9  { width: 3.0% !important; }
-                    .bill-21-table col.col-c10 { width: 4.6% !important; }
-                    .bill-21-table col.col-c11 { width: 4.4% !important; }
-                    .bill-21-table col.col-c12 { width: 2.8% !important; }
-                    .bill-21-table col.col-c13 { width: 4.2% !important; }
-                    .bill-21-table col.col-c14 { width: 4.2% !important; }
-                    .bill-21-table col.col-c15 { width: 2.8% !important; }
-                    .bill-21-table col.col-c16 { width: 4.2% !important; }
-                    .bill-21-table col.col-c17 { width: 4.2% !important; }
-                    .bill-21-table col.col-c18 { width: 4.0% !important; }
-                    .bill-21-table col.col-c19 { width: 4.2% !important; }
-                    .bill-21-table col.col-c20 { width: 5.5% !important; }
-                    .bill-21-table col.col-c21 { width: 6.1% !important; }
+
 
                     .bill-21-table th, .bill-21-table td {
                         border: 1px solid black !important;

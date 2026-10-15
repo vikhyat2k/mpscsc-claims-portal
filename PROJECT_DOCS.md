@@ -390,9 +390,15 @@ mpscsc-claims-portal/
 - Automated grouping into travel chains based on purpose.
 - Stay allowance calculations (hotel vs friends/relatives).
 - **Form 21 Bill (प्रपत्र २१):**
+  - Fully restored statutory 21-column Treasury Form 21 layout (Columns 1 to 21) matching official Madhya Pradesh civil service travel billing rules.
   - Fully restored UTF-8 Devanagari Hindi text (heading, column labels, certificates, declaration).
   - Styled with Google Font `Noto Sans Devanagari` and `Inter`.
-  - Export to Excel via SheetJS and CSS-optimized Print layout.
+  - **Dynamic Blank / Unnecessary Column Auto-Hiding & Sequential Re-numbering:**
+    - Action bar toggle (`Hide Blank Columns` / `Show All 21 Columns`) allowing 1-click omission of unused statutory columns (transfer grant/transport, zero ticket PNR, nil DA, nil local conveyance/hotel, or blank remarks).
+    - **Adaptive Sequential Re-numbering (1..N):** Header Tier 3 and Excel exports automatically adjust column numbers to continuous 1, 2, 3... up to $N$ with zero numbering gaps.
+    - **Proportional Width Scaling (100% Fill):** Table column widths dynamically scale to fill 100% of the page width on both screen and print views without right-side blank gaps.
+    - **Interactive Column Settings:** Column Customizer panel features active column counter (`X/21`), sequential position badges (`#1`, `#2`...), blank status tags (`(Blank)` / `(रिक्त)`), and quick action controls (`Show All`, `Hide Blank`, `Reset Default`).
+  - Export to Excel via SheetJS and CSS-optimized Print layout with dynamic visible column mapping.
   - **Passing Order Access Control:** Section 4 Controlling Officer Certificate & Passing Order ("देयक पारित आदेश") is strictly hidden in Individual Login (non-admin accounts) and in standard employee views, terminating cleanly at the Claimant's Signature. It is exclusively shown in Admin Control (`/admin/claims`, `/admin`, `/admin/users/:id`), with contextual query state (`from=admin`) and an on-demand Admin Control action bar toggle (`Admin Control: Passing Order Active / Hidden`) allowing administrators to switch between the official Passing Order sanction copy and the unpassed Claimant submission copy.
   - **Universal Print Orientation:** Independent A4 Landscape and A4 Portrait orientation toggles available in all user logins (Admin and Individual) with dynamic `@page` CSS and localized button labels.
 
@@ -805,6 +811,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `3e0b784` | 2026-10-15 | feat(bill): restore official 21-column format in Form 21 TA/DA Bill |
 | `ab63ca0` | 2026-10-15 | feat(claim-editor): make class of travel a dynamic dropdown filtered by conveyance mode |
 | `1644962` | 2026-10-09 | fix(medical-claim): resolve print pagination text overlapping on Page 3 |
 | `70a1253` | 2026-09-29 | style(bill): expand physical signing space above claimant signature block and place/date |
@@ -812,13 +819,13 @@ This automatically launches:
 | `f3f672b` | 2026-09-29 | feat: match Form 21 TA/DA bill format to official department 18-column PDF standard |
 | `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 | `599c3e5` | 2026-09-29 | fix(bill): hide Form 21 Page 1 turnover continuation notice and Page 2 screen separator in individual login view |
-| `37e592a` | 2026-09-29 | feat: Restrict Controlling Officer Certificate & Bill Passing Order exclusively to Admin Control; hide from individual logins |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-10-15** | **Automated Update** | Add option to hide unnecessary/blank columns with dynamic sequential numbering in Form 21 Bill |
 | **2026-10-15** | **Automated Update** | Restore statutory 21-column Form 21 TA/DA Bill format across screen, print, Excel export, and customizer |
 | **2026-10-15** | **Automated Update** | Add dynamic mode-dependent class of travel dropdown in ClaimEditor journey table |
 | **2026-10-08** | **Automated Update** | Fix Medical Claim print pagination text overlapping on Page 3 by replacing fragile flex column nesting with robust CSS paged media block flow and repeating table headers |
