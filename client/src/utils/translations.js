@@ -282,8 +282,13 @@ export const translations = {
                 bus: "Bus",
                 rail: "Rail",
                 ownCar: "Own Car",
-                ownBike: "Own Bike"
+                ownBike: "Own Bike",
+                air: "Air",
+                taxi: "Taxi",
+                auto: "Auto"
             },
+            selectClass: "-- Select Class --",
+            otherCustomClass: "✏️ Other (Custom...)",
             purposeOptions: {
                 official: "Official",
                 transfer: "Transfer",
@@ -812,8 +817,13 @@ export const translations = {
                 bus: "बस",
                 rail: "रेल",
                 ownCar: "अपनी कार",
-                ownBike: "अपनी बाइक"
+                ownBike: "अपनी बाइक",
+                air: "हवाई जहाज",
+                taxi: "टैक्सी",
+                auto: "ऑटो"
             },
+            selectClass: "-- श्रेणी चुनें --",
+            otherCustomClass: "✏️ अन्य (कस्टम दर्ज करें...)",
             purposeOptions: {
                 official: "सरकारी",
                 transfer: "स्थानांतरण",

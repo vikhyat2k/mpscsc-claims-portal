@@ -6,6 +6,58 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getTranslations } from '../utils/translations';
 import { getDistrictKeys, getDistrictName } from '../utils/mp_districts_bilingual';
 
+export const MODE_CLASS_OPTIONS = {
+    Rail: [
+        { value: 'AC 1st Class', label: 'AC 1st Class (1A)', labelHi: 'वातानुकूलित प्रथम श्रेणी (1A)' },
+        { value: 'AC 2-Tier', label: 'AC 2-Tier (2A)', labelHi: 'एसी 2-टियर (2A)' },
+        { value: 'AC 3-Tier', label: 'AC 3-Tier (3A)', labelHi: 'एसी 3-टियर (3A)' },
+        { value: 'AC 3 Economy', label: 'AC 3 Economy (3E)', labelHi: 'एसी 3 इकोनॉमी (3E)' },
+        { value: 'AC Chair Car', label: 'AC Chair Car (CC)', labelHi: 'एसी चेयर कार (CC)' },
+        { value: 'AC Chair', label: 'AC Chair', labelHi: 'एसी चेयर' },
+        { value: 'Executive Class', label: 'Executive Class (EC)', labelHi: 'एक्जीक्यूटिव क्लास (EC)' },
+        { value: 'Sleeper', label: 'Sleeper (SL)', labelHi: 'स्लीपर (SL)' },
+        { value: 'Second Sitting (2S)', label: 'Second Sitting (2S)', labelHi: 'द्वितीय श्रेणी (2S)' },
+        { value: 'First Class', label: 'First Class (FC)', labelHi: 'फर्स्ट क्लास (FC)' },
+        { value: 'General / Unreserved', label: 'General / Unreserved', labelHi: 'सामान्य / अनारक्षित' },
+    ],
+    Bus: [
+        { value: 'Ordinary', label: 'Ordinary Bus', labelHi: 'साधारण बस' },
+        { value: 'Express', label: 'Express Bus', labelHi: 'एक्सप्रेस बस' },
+        { value: 'Semi-Deluxe', label: 'Semi-Deluxe Bus', labelHi: 'सेमी-डीलक्स बस' },
+        { value: 'Deluxe', label: 'Deluxe Bus', labelHi: 'डीलक्स बस' },
+        { value: 'AC', label: 'AC Bus', labelHi: 'एसी बस' },
+        { value: 'AC Sleeper / Volvo', label: 'AC Sleeper / Volvo', labelHi: 'एसी स्लीपर / वोल्वो' },
+    ],
+    Air: [
+        { value: 'Economy', label: 'Economy Class', labelHi: 'इकोनॉमी क्लास' },
+        { value: 'Premium Economy', label: 'Premium Economy', labelHi: 'प्रीमियम इकोनॉमी' },
+        { value: 'Business', label: 'Business Class', labelHi: 'बिजनेस क्लास' },
+    ],
+    'Own Car': [
+        { value: 'AC', label: 'AC Car', labelHi: 'एसी कार' },
+        { value: 'Non-AC', label: 'Non-AC Car', labelHi: 'नॉन-एसी कार' },
+        { value: 'Official', label: 'Official Vehicle', labelHi: 'शासकीय वाहन' },
+        { value: 'Own Arrangement', label: 'Own Arrangement', labelHi: 'निजी व्यवस्था' },
+        { value: 'N/A', label: 'Not Applicable (N/A)', labelHi: 'लागू नहीं (N/A)' },
+    ],
+    'Own Bike': [
+        { value: 'Standard', label: 'Motorcycle / Scooter', labelHi: 'मोटर साइकिल / स्कूटर' },
+        { value: 'Own Arrangement', label: 'Own Arrangement', labelHi: 'निजी व्यवस्था' },
+        { value: 'N/A', label: 'Not Applicable (N/A)', labelHi: 'लागू नहीं (N/A)' },
+    ],
+    Taxi: [
+        { value: 'AC Taxi', label: 'AC Taxi', labelHi: 'एसी टैक्सी' },
+        { value: 'Non-AC Taxi', label: 'Non-AC Taxi', labelHi: 'नॉन-एसी टैक्सी' },
+        { value: 'Shared Taxi', label: 'Shared Taxi', labelHi: 'शेयर्ड टैक्सी' },
+        { value: 'N/A', label: 'Not Applicable (N/A)', labelHi: 'लागू नहीं (N/A)' },
+    ],
+    Auto: [
+        { value: 'Auto Rickshaw', label: 'Auto Rickshaw', labelHi: 'ऑटो रिक्शा' },
+        { value: 'Shared Auto', label: 'Shared Auto', labelHi: 'शेयर्ड ऑटो' },
+        { value: 'N/A', label: 'Not Applicable (N/A)', labelHi: 'लागू नहीं (N/A)' },
+    ],
+};
+
 const ClaimEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -21,6 +73,7 @@ const ClaimEditor = () => {
     const [totals, setTotals] = useState({ fare: 0, da: 0, total: 0 });
     const [isDirty, setIsDirty] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [customClassMode, setCustomClassMode] = useState({});
 
 
     // Transfer details
@@ -87,18 +140,46 @@ const ClaimEditor = () => {
         return match ? match[0].toUpperCase() : 'E';
     };
 
+    const getDefaultClassForCategory = (mode, cat) => {
+        if (mode === 'Rail') {
+            if (cat === 'A') return 'AC 1st Class';
+            if (cat === 'B') return 'AC 2-Tier';
+            if (cat === 'C') return 'AC 3-Tier';
+            if (cat === 'D') return 'Sleeper';
+            if (cat === 'E') return 'Second Sitting (2S)';
+            return 'AC 2-Tier';
+        }
+        const options = MODE_CLASS_OPTIONS[mode] || [];
+        return options[0]?.value || '';
+    };
+
     const handleJourneyChange = (index, field, value) => {
         const updated = [...journeys];
         updated[index][field] = value;
         setJourneys(updated);
     };
 
+    const handleModeChange = (index, newMode) => {
+        const updated = [...journeys];
+        updated[index].mode = newMode;
+        setCustomClassMode(prev => ({ ...prev, [index]: false }));
+        const options = MODE_CLASS_OPTIONS[newMode] || [];
+        const isCurrentValid = options.some(opt => opt.value === updated[index].class_of_travel);
+        if (!isCurrentValid) {
+            const cat = getEmpCat();
+            updated[index].class_of_travel = getDefaultClassForCategory(newMode, cat);
+        }
+        setJourneys(updated);
+    };
+
     const handleAddJourney = () => {
+        const cat = getEmpCat();
+        const defaultClass = getDefaultClassForCategory('Rail', cat);
         setJourneys([...journeys, {
             claim_id: id,
             departure_date: '', departure_time: '', departure_station: '',
             arrival_date: '', arrival_time: '', arrival_station: '',
-            mode: 'Rail', class_of_travel: '', ticket_no: '',
+            mode: 'Rail', class_of_travel: defaultClass, ticket_no: '',
             fare_amount: 0, distance_km: 0, purpose: ''
         }]);
     };
@@ -193,6 +274,11 @@ const ClaimEditor = () => {
         if (!window.confirm(t.tourDiariesList.deleteConfirm)) return;
         const updated = journeys.filter((_, i) => i !== indexToRemove);
         setJourneys(updated);
+        setCustomClassMode(prev => {
+            const copy = { ...prev };
+            delete copy[indexToRemove];
+            return copy;
+        });
     };
 
     const handleDelete = async () => {
@@ -431,7 +517,7 @@ const ClaimEditor = () => {
                         <tr>
                             <th>{t.tourDiary.departure}</th>
                             <th>{t.tourDiary.arrival}</th>
-                            <th>{t.tourDiary.mode} / Class</th>
+                            <th>{t.tourDiary.mode} / {language === 'hi' ? 'श्रेणी (Class)' : 'Class'}</th>
                             <th>Ticket / PNR No.</th>
                             <th>{t.tourDiary.purpose}</th>
                             <th>Actual Fare (₹)</th>
@@ -499,26 +585,71 @@ const ClaimEditor = () => {
                                     <select
                                         className="form-select form-select-sm"
                                         value={j.mode || 'Rail'}
-                                        onChange={(e) => handleJourneyChange(i, 'mode', e.target.value)}
+                                        onChange={(e) => handleModeChange(i, e.target.value)}
                                         disabled={isReadOnly}
+                                        title={language === 'hi' ? 'यात्रा का साधन' : 'Mode of Conveyance'}
                                     >
-                                        <option value="Rail">Rail</option>
-                                        <option value="Bus">Bus</option>
-                                        <option value="Air">Air</option>
-                                        <option value="Own Car">Own Car</option>
-                                        <option value="Own Bike">Own Bike</option>
-                                        <option value="Taxi">Taxi</option>
-                                        <option value="Auto">Auto</option>
+                                        <option value="Rail">{language === 'hi' ? (t.tourDiary?.modeOptions?.rail || 'रेल') : 'Rail'}</option>
+                                        <option value="Bus">{language === 'hi' ? (t.tourDiary?.modeOptions?.bus || 'बस') : 'Bus'}</option>
+                                        <option value="Air">{language === 'hi' ? (t.tourDiary?.modeOptions?.air || 'हवाई जहाज') : 'Air'}</option>
+                                        <option value="Own Car">{language === 'hi' ? (t.tourDiary?.modeOptions?.ownCar || 'अपनी कार') : 'Own Car'}</option>
+                                        <option value="Own Bike">{language === 'hi' ? (t.tourDiary?.modeOptions?.ownBike || 'अपनी बाइक') : 'Own Bike'}</option>
+                                        <option value="Taxi">{language === 'hi' ? (t.tourDiary?.modeOptions?.taxi || 'टैक्सी') : 'Taxi'}</option>
+                                        <option value="Auto">{language === 'hi' ? (t.tourDiary?.modeOptions?.auto || 'ऑटो') : 'Auto'}</option>
                                     </select>
-                                    <input
-                                        type="text"
-                                        className="form-input form-input-sm"
+
+                                    {/* Class dropdown as per selected mode */}
+                                    <select
+                                        className="form-select form-select-sm"
                                         style={{ marginTop: '4px' }}
-                                        value={j.class_of_travel || ''}
-                                        onChange={(e) => handleJourneyChange(i, 'class_of_travel', e.target.value)}
-                                        placeholder="Class"
+                                        value={
+                                            customClassMode[i]
+                                                ? '__custom__'
+                                                : (j.class_of_travel || '')
+                                        }
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === '__custom__') {
+                                                setCustomClassMode(prev => ({ ...prev, [i]: true }));
+                                            } else {
+                                                setCustomClassMode(prev => ({ ...prev, [i]: false }));
+                                                handleJourneyChange(i, 'class_of_travel', val);
+                                            }
+                                        }}
                                         disabled={isReadOnly}
-                                    />
+                                        title={language === 'hi' ? 'यात्रा की श्रेणी' : 'Class of Travel'}
+                                    >
+                                        <option value="">{t.tourDiary?.selectClass || (language === 'hi' ? '-- श्रेणी चुनें --' : '-- Select Class --')}</option>
+                                        {(MODE_CLASS_OPTIONS[j.mode || 'Rail'] || MODE_CLASS_OPTIONS['Rail']).map((cls) => (
+                                            <option key={cls.value} value={cls.value}>
+                                                {language === 'hi' ? cls.labelHi : cls.label}
+                                            </option>
+                                        ))}
+                                        {/* Preserve custom / non-standard legacy value */}
+                                        {j.class_of_travel &&
+                                         !(MODE_CLASS_OPTIONS[j.mode || 'Rail'] || []).some(c => c.value === j.class_of_travel) &&
+                                         !customClassMode[i] && (
+                                            <option value={j.class_of_travel}>
+                                                {j.class_of_travel}
+                                            </option>
+                                        )}
+                                        <option value="__custom__">
+                                            {t.tourDiary?.otherCustomClass || (language === 'hi' ? '✏️ अन्य (कस्टम दर्ज करें...)' : '✏️ Other (Custom...)')}
+                                        </option>
+                                    </select>
+
+                                    {/* Custom class text input if 'Other (Custom...)' is selected */}
+                                    {customClassMode[i] && !isReadOnly && (
+                                        <input
+                                            type="text"
+                                            className="form-input form-input-sm"
+                                            style={{ marginTop: '4px' }}
+                                            value={j.class_of_travel || ''}
+                                            onChange={(e) => handleJourneyChange(i, 'class_of_travel', e.target.value)}
+                                            placeholder={language === 'hi' ? 'कस्टम श्रेणी लिखें...' : 'Type custom class...'}
+                                            autoFocus
+                                        />
+                                    )}
                                 </td>
                                 <td>
                                     <input
