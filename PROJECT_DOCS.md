@@ -12,7 +12,7 @@
 > **System:** Claims Portal Web Application  
 > **Stack:** Express.js (Node.js) · React 19 · Vite · Better-SQLite3 (WAL Mode) · React Router v7 · Lucide React · JWT (jsonwebtoken) · bcryptjs  
 > **Document Status:** LIVE — Maintained by developer / AI assistant on every project change  
-> **Last Sync:** 2026-10-15  
+> **Last Sync:** 2026-11-03  
 
 ---
 
@@ -255,6 +255,7 @@ mpscsc-claims-portal/
 ├── install_dependencies.bat        <- Installs dependencies for server and client
 ├── backup_database.bat             <- Creates timestamped backup in backups/
 ├── reset_database.bat              <- Resets database to clean initial state
+├── HELP_GUIDE_BILINGUAL.md         <- Complete bilingual (Hindi+English) module operations guide
 ├── PROJECT_DOCS.md                 <- Master architecture and system documentation
 └── README.md                       <- Quick start guide
 ```
@@ -811,6 +812,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `bc59240` | 2026-10-15 | feat(bill): add option to hide blank columns with dynamic sequential numbering |
 | `3e0b784` | 2026-10-15 | feat(bill): restore official 21-column format in Form 21 TA/DA Bill |
 | `ab63ca0` | 2026-10-15 | feat(claim-editor): make class of travel a dynamic dropdown filtered by conveyance mode |
 | `1644962` | 2026-10-09 | fix(medical-claim): resolve print pagination text overlapping on Page 3 |
@@ -818,13 +820,13 @@ This automatically launches:
 | `23629ec` | 2026-09-29 | fix(bill): align Form 21 borders, eliminate scrollbar, set 100% width on screen and format Fixed TA label |
 | `f3f672b` | 2026-09-29 | feat: match Form 21 TA/DA bill format to official department 18-column PDF standard |
 | `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
-| `599c3e5` | 2026-09-29 | fix(bill): hide Form 21 Page 1 turnover continuation notice and Page 2 screen separator in individual login view |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-11-03** | **Automated Update** | Added comprehensive bilingual help guide (HELP_GUIDE_BILINGUAL.md) for all modules |
 | **2026-10-15** | **Automated Update** | Add option to hide unnecessary/blank columns with dynamic sequential numbering in Form 21 Bill |
 | **2026-10-15** | **Automated Update** | Restore statutory 21-column Form 21 TA/DA Bill format across screen, print, Excel export, and customizer |
 | **2026-10-15** | **Automated Update** | Add dynamic mode-dependent class of travel dropdown in ClaimEditor journey table |
