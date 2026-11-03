@@ -360,7 +360,7 @@ mpscsc-claims-portal/
 
 - **JWT Token Management:** Stored in `localStorage` under `auth_token`, validated on every API request.
 - **Auto-Logout on Expiry:** Global 401 interceptor removes credentials and broadcasts `auth:expired`.
-- **Inactivity & Idle Timeout (Enterprise Security):** Managed via `InactivityHandler.jsx`. Monitors user input across tabs. If idle for 14 minutes, triggers a 60-second advance warning countdown dialog with options to "Stay Logged In" or "Log Out Now". If 15 minutes of inactivity elapse, automatically terminates the session, clears credentials, and redirects to `/login?reason=inactivity` with a prominent security banner. Cross-tab `localStorage` synchronization prevents premature timeouts when active in parallel tabs.
+- **Persistent User Session (Auto-Logout Removed):** The auto-logout on inactivity mechanism has been completely removed to prevent disruption while staff and officers compose lengthy journey legs, medical items, and transfer bills. Sessions remain active persistently until the user explicitly clicks "Sign Out".
 - **Role-Based Guards:** `ProtectedRoute.jsx` intercepts unauthorized routes based on role (`admin` vs `user`).
 - **Brute Force Protection:** Express rate limiter (`authLimiter`) prevents credential spraying.
 
@@ -814,6 +814,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `5c37f74` | 2026-11-03 | feat(ui): add visual graphical flowcharts and detailed step-by-step guides to in-portal Help Guide |
 | `77e7391` | 2026-11-03 | feat(ui): add interactive in-portal Help Guide (/help and /guide) with live search and category filters |
 | `f74fb58` | 2026-11-03 | docs: adapt bilingual help guide specifically for live Render portal (mpscsc-claims-portal.onrender.com) |
 | `b9c5030` | 2026-11-03 | docs: simplify Hindi in bilingual help guide for effortless understanding |
@@ -821,13 +822,13 @@ This automatically launches:
 | `bc59240` | 2026-10-15 | feat(bill): add option to hide blank columns with dynamic sequential numbering |
 | `3e0b784` | 2026-10-15 | feat(bill): restore official 21-column format in Form 21 TA/DA Bill |
 | `ab63ca0` | 2026-10-15 | feat(claim-editor): make class of travel a dynamic dropdown filtered by conveyance mode |
-| `1644962` | 2026-10-09 | fix(medical-claim): resolve print pagination text overlapping on Page 3 |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-11-03** | **Automated Update** | Removed auto-logout on inactivity; sessions remain persistently active until explicit manual sign out |
 | **2026-11-03** | **Automated Update** | Added interactive visual Flowcharts and Step-by-Step guides to in-portal HelpGuide component |
 | **2026-11-03** | **Automated Update** | Added interactive in-portal Help & Guide (/help and /guide) with bilingual search and category filters |
 | **2026-11-03** | **Automated Update** | Tailored bilingual help guide for live online Render deployment (https://mpscsc-claims-portal.onrender.com/) |
