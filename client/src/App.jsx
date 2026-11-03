@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } f
 import {
   Users, FileText, FileSpreadsheet,
   BarChart2, ClipboardList, ArrowLeftRight, HeartPulse,
-  LayoutDashboard, LogOut, ShieldCheck, UserCog
+  LayoutDashboard, LogOut, ShieldCheck, UserCog, BookOpen
 } from "lucide-react";
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -22,6 +22,7 @@ import TransferClaim  from "./pages/TransferClaim";
 import MedicalClaims  from "./pages/MedicalClaims";
 import MedicalClaim   from "./pages/MedicalClaim";
 import Reports        from "./pages/Reports";
+import HelpGuide      from "./pages/HelpGuide";
 import logoIco        from "./assets/logo.ico";
 import Dashboard      from "./components/dashboard/Dashboard";
 
@@ -59,6 +60,9 @@ const NavBar = () => {
       <div className="nav-links nav-links-scrollable">
         <Link to="/" className={isActive("/")} style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
           <LayoutDashboard size={15} /> {language === "hi" ? "डैशबोर्ड" : "Dashboard"}
+        </Link>
+        <Link to="/help" className={isActive("/help")} style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
+          <BookOpen size={14} /> {language === "hi" ? "सहायता एवं गाइड" : "Help & Guide"}
         </Link>
         <div className="nav-divider" />
         <div className="nav-section-label">{language === "hi" ? "दावा प्रबंधन" : "Claims Management"}</div>
@@ -156,6 +160,7 @@ function MainLayout() {
             <Route path="/medical"                   element={<MedicalClaims />} />
             <Route path="/medical-claims/:id"        element={<MedicalClaim />} />
             <Route path="/reports"                   element={<Reports />} />
+            <Route path="/help"                      element={<HelpGuide />} />
             {/* Admin routes */}
             <Route path="/admin"                     element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/users"               element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
@@ -184,6 +189,7 @@ export default function App() {
               <Route path="/register"       element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/guide"          element={<div style={{ minHeight: "100vh", background: "var(--bg-color, #f8fafc)" }}><HelpGuide /></div>} />
               {/* All protected routes */}
               <Route path="/*" element={
                 <ProtectedRoute>

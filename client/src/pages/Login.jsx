@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, AlertCircle, CheckCircle, ArrowRight, ShieldCheck, Sparkles, Clock } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, AlertCircle, CheckCircle, ArrowRight, ShieldCheck, Sparkles, Clock, BookOpen } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getTranslations } from "../utils/translations";
@@ -207,6 +207,13 @@ export default function Login() {
                         <span className="auth-footer-subtext">Don&apos;t have an account?</span>
                         <Link to="/register" className="auth-link enterprise-create-link">
                             Create one
+                        </Link>
+                    </div>
+
+                    {/* Online User Guide Link */}
+                    <div style={{ textAlign: "center", marginTop: "0.6rem", marginBottom: "0.25rem" }}>
+                        <Link to="/guide" style={{ color: "#0e7c86", fontSize: "0.84rem", textDecoration: "none", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                            <BookOpen size={14} /> {language === "hi" ? "पोर्टल उपयोग गाइड देखें (Help Guide)" : "View Portal Help Guide"}
                         </Link>
                     </div>
 
