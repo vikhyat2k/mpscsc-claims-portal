@@ -814,6 +814,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `77e7391` | 2026-11-03 | feat(ui): add interactive in-portal Help Guide (/help and /guide) with live search and category filters |
 | `f74fb58` | 2026-11-03 | docs: adapt bilingual help guide specifically for live Render portal (mpscsc-claims-portal.onrender.com) |
 | `b9c5030` | 2026-11-03 | docs: simplify Hindi in bilingual help guide for effortless understanding |
 | `69dd329` | 2026-11-03 | docs: add comprehensive bilingual help guide for all modules |
@@ -821,13 +822,13 @@ This automatically launches:
 | `3e0b784` | 2026-10-15 | feat(bill): restore official 21-column format in Form 21 TA/DA Bill |
 | `ab63ca0` | 2026-10-15 | feat(claim-editor): make class of travel a dynamic dropdown filtered by conveyance mode |
 | `1644962` | 2026-10-09 | fix(medical-claim): resolve print pagination text overlapping on Page 3 |
-| `70a1253` | 2026-09-29 | style(bill): expand physical signing space above claimant signature block and place/date |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-11-03** | **Automated Update** | Added interactive visual Flowcharts and Step-by-Step guides to in-portal HelpGuide component |
 | **2026-11-03** | **Automated Update** | Added interactive in-portal Help & Guide (/help and /guide) with bilingual search and category filters |
 | **2026-11-03** | **Automated Update** | Tailored bilingual help guide for live online Render deployment (https://mpscsc-claims-portal.onrender.com/) |
 | **2026-11-03** | **Automated Update** | Updated bilingual help guide with simple, easy-to-understand Hindi |
