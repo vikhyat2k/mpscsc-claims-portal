@@ -812,6 +812,7 @@ This automatically launches:
 
 | Commit | Date | Summary |
 |---|---|---|
+| `69dd329` | 2026-11-03 | docs: add comprehensive bilingual help guide for all modules |
 | `bc59240` | 2026-10-15 | feat(bill): add option to hide blank columns with dynamic sequential numbering |
 | `3e0b784` | 2026-10-15 | feat(bill): restore official 21-column format in Form 21 TA/DA Bill |
 | `ab63ca0` | 2026-10-15 | feat(claim-editor): make class of travel a dynamic dropdown filtered by conveyance mode |
@@ -819,13 +820,13 @@ This automatically launches:
 | `70a1253` | 2026-09-29 | style(bill): expand physical signing space above claimant signature block and place/date |
 | `23629ec` | 2026-09-29 | fix(bill): align Form 21 borders, eliminate scrollbar, set 100% width on screen and format Fixed TA label |
 | `f3f672b` | 2026-09-29 | feat: match Form 21 TA/DA bill format to official department 18-column PDF standard |
-| `2772d26` | 2026-09-29 | feat(bill): optimize Form 21 print layout for single-page A4 Landscape with text wrapping and 2-column Part II |
 <!-- AUTO-GENERATED-COMMITS-END -->
 
 ### Major Project Milestones
 
 | Date | Milestone / Change | Details |
 |---|---|---|
+| **2026-11-03** | **Automated Update** | Updated bilingual help guide with simple, easy-to-understand Hindi |
 | **2026-11-03** | **Automated Update** | Added comprehensive bilingual help guide (HELP_GUIDE_BILINGUAL.md) for all modules |
 | **2026-10-15** | **Automated Update** | Add option to hide unnecessary/blank columns with dynamic sequential numbering in Form 21 Bill |
 | **2026-10-15** | **Automated Update** | Restore statutory 21-column Form 21 TA/DA Bill format across screen, print, Excel export, and customizer |

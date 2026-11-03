@@ -1,525 +1,412 @@
-# MPSCSC Claims Portal — Complete Bilingual Help & Operations Guide
-# मध्यप्रदेश राज्य नागरिक आपूर्ति निगम (MPSCSC) दावा पोर्टल — संपूर्ण द्विभाषी संचालन एवं उपयोगकर्ता मार्गदर्शिका
+# MPSCSC दावा पोर्टल — आसान द्विभाषी उपयोगकर्ता गाइड
+# MPSCSC Claims Portal — Easy Bilingual User Guide
 
 ---
 
-> **Organisation / संस्था:** Madhya Pradesh State Civil Supplies Corporation Ltd. (MPSCSC)  
-> **System / प्रणाली:** Enterprise Claims & Entitlements Portal (TA/DA, Transfer, Medical, Tour Diary)  
-> **Target Audience / लक्षित उपयोगकर्ता:** All Officers, District Managers, Accounts Staff, Claimants & System Administrators  
-> **Language / भाषा:** Simple Dual Language (English + सरल हिन्दी)  
-> **Rules Reference / नियम संदर्भ:** MP Civil Services (Travelling Allowance) Rules, Medical Attendance Rules & Composite Transfer Guidelines (Revised April 2025)
+> **संस्था / Organisation:** म.प्र. राज्य नागरिक आपूर्ति निगम (MPSCSC Ltd.)  
+> **प्रणाली / System:** यात्रा, स्थानांतरण, चिकित्सा दावा एवं दौरा डायरी पोर्टल  
+> **भाषा / Language:** सरल हिन्दी + Simple English (आसान बोलचाल की भाषा)  
+> **उपयोगकर्ता / Users:** सभी कर्मचारी, शाखा प्रभारी, जिला प्रबंधक, लेखा अधिकारी एवं व्यवस्थापक (Admin)
 
 ---
 
-## Table of Contents / विषय-सूची
+## विषय-सूची / Table of Contents
 
-1. [System Overview & Architecture / सिस्टम का संक्षिप्त परिचय](#1-system-overview--architecture)
-2. [Visual Process Flowcharts / मुख्य प्रक्रिया फ्लोचार्ट](#2-visual-process-flowcharts)
-3. [Module 1: Authentication, Login & Security / मॉड्यूल 1: खाता प्रमाणीकरण, लॉगिन एवं सुरक्षा](#3-module-1-authentication-login--security)
-4. [Module 2: Dashboard & Workspace / मॉड्यूल 2: डैशबोर्ड एवं मुख्य कार्यक्षेत्र](#4-module-2-dashboard--workspace)
-5. [Module 3: Employee Master & Family Setup / मॉड्यूल 3: कर्मचारी मास्टर एवं परिवार प्रबंधन](#5-module-3-employee-master--family-setup)
-6. [Module 4: TA/DA Claims & Statutory Form 21 Bill / मॉड्यूल 4: यात्रा एवं दैनिक भत्ता (TA/DA) तथा प्रपत्र 21 देयक](#6-module-4-tada-claims--statutory-form-21-bill)
-7. [Module 5: Official Tour Diary Module / मॉड्यूल 5: शासकीय दौरा डायरी (Tour Diary)](#7-module-5-official-tour-diary-module)
-8. [Module 6: Transfer Claims Management / मॉड्यूल 6: स्थानांतरण दावा प्रबंधन (Transfer Claims)](#8-module-6-transfer-claims-management)
-9. [Module 7: Medical Reimbursement Claims / मॉड्यूल 7: चिकित्सा प्रतिपूर्ति दावा (Medical Claims)](#9-module-7-medical-reimbursement-claims)
-10. [Module 8: Universal Claims Register & Reports / मॉड्यूल 8: सार्वभौमिक दावा रजिस्टर एवं रिपोर्ट्स](#10-module-8-universal-claims-register--reports)
-11. [Module 9: Administrative Portal & Statewide Governance / मॉड्यूल 9: व्यवस्थापक पोर्टल एवं राज्यव्यापी नियंत्रण](#11-module-9-administrative-portal--statewide-governance)
-12. [Module 10: System Utilities, Backup & Troubleshooting (FAQ) / मॉड्यूल 10: बैकअप एवं सामान्य प्रश्नोत्तर](#12-module-10-system-utilities-backup--troubleshooting-faq)
-
----
-
-## 1. System Overview & Architecture / सिस्टम का संक्षिप्त परिचय
-
-### English
-The **MPSCSC Claims Portal** is a secure, offline-first web portal built to digitise and automate employee entitlements across the State of Madhya Pradesh. It manages Travelling Allowance/Daily Allowance (TA/DA) under the April 2025 MP Govt revised rates, Employee Relocation/Transfer allowances, Medical Reimbursements, and Official Tour Diaries. It operates on your local network/PC without any mandatory internet dependency.
-
-### हिन्दी (Hindi)
-**म.प्र. राज्य नागरिक आपूर्ति निगम (MPSCSC) दावा पोर्टल** एक सुरक्षित और ऑफलाइन-सक्षम वेब एप्लीकेशन है। इसे मध्यप्रदेश शासन के अप्रैल 2025 के नवीनतम पुनरीक्षित नियमों के अनुसार कर्मचारियों के यात्रा भत्ता/दैनिक भत्ता (TA/DA), स्थानांतरण भत्ता (Transfer Claim), चिकित्सा व्यय प्रतिपूर्ति (Medical Claim) तथा शासकीय दौरा डायरी (Tour Diary) के डिजिटलीकरण और त्वरित निपटान हेतु तैयार किया गया है। यह बिना इंटरनेट के भी लोकल कंप्यूटर अथवा कार्यालय के लोकल नेटवर्क (LAN) पर सुचारू रूप से कार्य करता है।
-
-### User Roles / उपयोगकर्ता भूमिकाएं:
-1. **Individual Claimant / User (सामान्य कर्मचारी/दावेदार):**
-   - Can register, maintain their employee profile & family members.
-   - Can prepare drafts, enter journeys, medical bills, and generate bills.
-   - Can submit claims for official scrutiny and download Form 21 bills / Excel exports.
-2. **Administrator / Controlling Officer (व्यवस्थापक/नियंत्रक अधिकारी):**
-   - Comprehensive oversight across all districts and employees statewide.
-   - Ability to Approve (`APPROVED`), Reject (`REJECTED`), or Return claims for corrections.
-   - Authorised to view and sign Section 4: Controlling Officer Certificate & Passing Order ("देयक पारित आदेश").
-   - User account activation, administrative password overrides, and temporary user impersonation.
+1. [पोर्टल क्या है और कैसे काम करता है? (System Overview)](#1-पोर्टल-क्या-है-और-कैसे-काम-करता-है-system-overview)
+2. [प्रक्रिया फ्लोचार्ट — एक नज़र में (Workflow Flowcharts)](#2-प्रक्रिया-फ्लोचार्ट--एक-नज़र-में-workflow-flowcharts)
+3. [मॉड्यूल 1: पोर्टल चालू करना, लॉगिन और पासवर्ड (Login & Password)](#3-मॉड्यूल-1-पोर्टल-चालू-करना-लॉगिन-और-पासवर्ड-login--password)
+4. [मॉड्यूल 2: मुख्य डैशबोर्ड (Dashboard)](#4-मॉड्यूल-2-मुख्य-डैशबोर्ड-dashboard)
+5. [मॉड्यूल 3: कर्मचारी मास्टर — सबसे पहला और जरूरी काम (Employee Master)](#5-मॉड्यूल-3-कर्मचारी-मास्टर--सबसे-पहला-और-जरूरी-काम-employee-master)
+6. [मॉड्यूल 4: यात्रा भत्ता दावा और प्रपत्र 21 बिल (TA/DA Claims & Form 21 Bill)](#6-मॉड्यूल-4-यात्रा-भत्ता-दावा-और-प्रपत्र-21-बिल-tada-claims--form-21-bill)
+7. [मॉड्यूल 5: शासकीय दौरा डायरी (Tour Diary)](#7-मॉड्यूल-5-शासकीय-दौरा-डायरी-tour-diary)
+8. [मॉड्यूल 6: स्थानांतरण दावा (Transfer Claim)](#8-मॉड्यूल-6-स्थानांतरण-दावा-transfer-claim)
+9. [मॉड्यूल 7: चिकित्सा प्रतिपूर्ति दावा (Medical Claim)](#9-मॉड्यूल-7-चिकित्सा-प्रतिपूर्ति-दावा-medical-claim)
+10. [मॉड्यूल 8: सभी दावे और एक्सेल रिपोर्ट (Claims Register & Reports)](#10-मॉड्यूल-8-सभी-दावे-और-एक्सेल-रिपोर्ट-claims-register--reports)
+11. [मॉड्यूल 9: अधिकारी / व्यवस्थापक के कार्य (Admin Features)](#11-मॉड्यूल-9-अधिकारी--व्यवस्थापक-के-कार्य-admin-features)
+12. [मॉड्यूल 10: बैकअप और अक्सर पूछे जाने वाले सवाल (FAQ & Troubleshooting)](#12-मॉड्यूल-10-बैकअप-और-अक्सर-पूछे-जाने-वाले-सवाल-faq--troubleshooting)
 
 ---
 
-## 2. Visual Process Flowcharts / मुख्य प्रक्रिया फ्लोचार्ट
+## 1. पोर्टल क्या है और कैसे काम करता है? (System Overview)
 
-### A. Overall Portal Workflow / संपूर्ण पोर्टल कार्यप्रवाह
+### सरल हिन्दी में:
+यह पोर्टल मध्यप्रदेश राज्य नागरिक आपूर्ति निगम (MPSCSC) के अधिकारियों और कर्मचारियों के दावों को ऑनलाइन तैयार करने, नियम अनुसार जांचने और प्रिंट करने के लिए बनाया गया है।
+इसके जरिए आप:
+- **यात्रा भत्ता (TA/DA Claim):** दौरे की यात्रा, टिकट, होटल या रुकने का खर्चा और दैनिक भत्ता जोड़कर सरकारी **प्रपत्र 21 (Form 21 Bill)** तुरंत बना सकते हैं।
+- **स्थानांतरण दावा (Transfer Claim):** ट्रांसफर होने पर सामान ढुलाई, पैकिंग और परिवार की यात्रा का बिल बना सकते हैं।
+- **चिकित्सा दावा (Medical Claim):** स्वयं या परिवार के इलाज, दवाइयों और जांच (Lab Test) के बिल का हिंदी फॉर्म भर सकते हैं।
+- **दौरा डायरी (Tour Diary):** दौरे के दौरान किए गए शासकीय कार्यों का दिनवार विवरण लिख सकते हैं।
+- **ऑफ़लाइन सुविधा:** यह पोर्टल बिना इंटरनेट के भी आपके कंप्यूटर या ऑफिस के लोकल नेटवर्क पर बहुत तेजी से काम करता है।
+
+### In Simple English:
+The **MPSCSC Claims Portal** is an easy offline web portal for all staff to create, calculate, and print official claims. It automatically applies the revised MP Government rules (April 2025) for Travelling Allowance, Transfers, and Medical reimbursements without requiring any internet connection.
+
+---
+
+## 2. प्रक्रिया फ्लोचार्ट — एक नज़र में (Workflow Flowcharts)
+
+### A. दावा तैयार करने से भुगतान तक की प्रक्रिया (End-to-End Process)
 
 ```mermaid
 flowchart TD
-    Start(["Start / प्रारंभ: run_portal.bat"]) --> Login["User Login / लॉगिन (/login)"]
-    Login --> RoleCheck{"Is User Admin?<br/>क्या उपयोगकर्ता व्यवस्थापक है?"}
+    A["1. पोर्टल शुरू करें<br/>(run_portal.bat चलाएं)"] --> B["2. लॉगिन करें<br/>(ईमेल और पासवर्ड डालें)"]
+    B --> C{"क्या कर्मचारी का नाम<br/>कर्मचारी मास्टर में है?"}
     
-    RoleCheck -- No / सामान्य कर्मचारी --> EmpCheck{"Is Employee Registered?<br/>क्या कर्मचारी मास्टर में दर्ज है?"}
-    EmpCheck -- No --> CreateEmp["Register Employee in Employee Master<br/>कर्मचारी मास्टर में विवरण जोड़ें"]
-    CreateEmp --> ChooseModule
-    EmpCheck -- Yes --> ChooseModule["Select Module / मॉड्यूल चुनें"]
+    C -- नहीं --> D["कर्मचारी मास्टर में नाम जोड़ें<br/>(Add Employee)"]
+    D --> E["दावे का प्रकार चुनें"]
+    C -- हाँ --> E
     
-    ChooseModule --> TA["TA/DA Claim<br/>यात्रा भत्ता"]
-    ChooseModule --> TR["Transfer Claim<br/>स्थानांतरण दावा"]
-    ChooseModule --> MD["Medical Claim<br/>चिकित्सा दावा"]
-    ChooseModule --> TD["Tour Diary<br/>दौरा डायरी"]
+    E --> F["TA/DA यात्रा भत्ता"]
+    E --> G["Transfer स्थानांतरण"]
+    E --> H["Medical चिकित्सा"]
+    E --> I["Tour Diary दौरा डायरी"]
     
-    TA --> SaveDraft["Save Draft & Calculate Entitlements<br/>ड्राफ्ट सहेजें व नियम आधारित गणना"]
-    TR --> SaveDraft
-    MD --> SaveDraft
-    TD --> SaveDraft
+    F --> J["विवरण भरें और सहेजें (Save Draft)<br/>नियम अनुसार राशि अपने आप जुड़ेगी"]
+    G --> J
+    H --> J
+    I --> J
     
-    SaveDraft --> SubmitClaim["Final Submit to Controlling Officer<br/>नियंत्रक अधिकारी को प्रस्तुत करें"]
+    J --> K["दावा प्रस्तुत करें<br/>(Final Submit to Officer)"]
+    K --> L{"अधिकारी / Admin द्वारा जांच"}
     
-    RoleCheck -- Yes / व्यवस्थापक --> AdminPortal["Admin Portal / नियंत्रण कक्ष (/admin)"]
-    SubmitClaim --> AdminReview["Statewide Claims Review<br/>दावा परीक्षण एवं समीक्षा"]
-    AdminPortal --> AdminReview
-    
-    AdminReview --> Decision{"Admin Decision<br/>अधिकारी निर्णय"}
-    Decision -- Return / सुधार हेतु --> SaveDraft
-    Decision -- Reject / निरस्त --> Rejected(["Claim Rejected / निरस्त"])
-    Decision -- Approve / स्वीकृत --> Sanction["Passing Order (देयक पारित आदेश) & Sanction"]
-    Sanction --> Payout(["Disbursement / भुगतान जारी"])
+    L -- सुधार चाहिए --> M["सुधार हेतु वापस (Return to Draft)"]
+    M --> J
+    L -- सही है --> N["दावा स्वीकृत (Approved)"]
+    N --> O["पारित आदेश (Passing Order) जारी"]
+    O --> P["भुगतान (Payment Disbursed)"]
 ```
 
 ---
 
-### B. TA/DA & Form 21 Statutory Bill Workflow / यात्रा भत्ता एवं प्रपत्र 21 बिल निर्माण
+### B. यात्रा भत्ता (TA/DA) और प्रपत्र 21 बिल कैसे बनता है?
 
 ```mermaid
 flowchart LR
-    Step1["1. New TA/DA Claim<br/>नया दावा (CL-YY-XXXX)"] --> Step2["2. Add Journey Legs<br/>यात्रा विवरण भरें"]
-    Step2 --> Step3["3. Dynamic Travel Class<br/>पात्र श्रेणी व टिकट विवरण"]
-    Step3 --> Step4["4. Stay Allowance<br/>ठहराव भत्ता (होटल/रिश्तेदार)"]
-    Step4 --> Step5["5. Auto Engine<br/>स्वचालित गणना (DA Slabs)"]
-    Step5 --> Step6["6. Form 21 Bill<br/>प्रपत्र 21 देयक तैयार"]
-    Step6 --> Step7["7. Hide Blank Columns<br/>रिक्त कॉलम छुपाएं (1..N)"]
-    Step7 --> Step8["8. Print / Excel Export<br/>प्रिंट अथवा एक्सेल निर्यात"]
+    S1["1. नया दावा बनाएं<br/>(+ New Claim)"] --> S2["2. यात्रा विवरण भरें<br/>(तारीख, समय, स्टेशन)"]
+    S2 --> S3["3. साधन व क्लास चुनें<br/>(ट्रेन, बस, कार, टिकट नंबर)"]
+    S3 --> S4["4. रुकने का भत्ता चुनें<br/>(होटल बिल या रिश्तेदार के घर)"]
+    S4 --> S5["5. प्रपत्र 21 बिल देखें<br/>(View Form 21 Bill)"]
+    S5 --> S6["6. 'खाली कॉलम छिपाएं'<br/>(Hide Blank Columns)"]
+    S6 --> S7["7. प्रिंट या Excel निकालें<br/>(Print / Export Excel)"]
 ```
 
 ---
 
-## 3. Module 1: Authentication, Login & Security / मॉड्यूल 1: खाता प्रमाणीकरण, लॉगिन एवं सुरक्षा
+## 3. मॉड्यूल 1: पोर्टल चालू करना, लॉगिन और पासवर्ड (Login & Password)
 
-### 3.1 Starting the System / सिस्टम चालू करना
-* **English:** Double click the file `run_portal.bat` located in the application root directory. This starts the Express Server (Port 5000) and launches the Vite React frontend (Port 5173). Open your browser at `http://localhost:5173/`.
-* **हिन्दी:** मुख्य फ़ोल्डर में मौजूद `run_portal.bat` फ़ाइल पर डबल-क्लिक करें। इससे बैकएंड सर्वर (Port 5000) और यूज़र इंटरफ़ेस (Port 5173) दोनों शुरू हो जाएंगे। ब्राउज़र में `http://localhost:5173/` खोलें।
-
----
-
-### 3.2 User Login & Registration / उपयोगकर्ता लॉगिन एवं नवीन पंजीयन
-
-#### Step-by-Step Login / लॉगिन के चरण:
-1. **Navigate to /login**: Enter your registered **Email Address** and **Password**.
-   - *हिन्दी:* लॉगिन स्क्रीन पर अपना पंजीकृत **ईमेल आईडी** और **पासवर्ड** दर्ज करें।
-2. **Click "Sign In" (साइन इन करें):** Upon successful verification, you will be redirected to the Dashboard (or Admin Dashboard for administrators).
-   - *हिन्दी:* "साइन इन" बटन दबाएं। सत्यापन के पश्चात आप सीधे मुख्य डैशबोर्ड पर पहुँच जाएंगे।
-3. **New User Registration (नया खाता बनाएं):**
-   - Click **"Register here"** on the login page.
-   - Fill in: **Full Name** (पूरा नाम), **Email Address** (ईमेल आईडी), **Mobile Number** (मोबाइल नंबर), and **Password** (पासवर्ड - न्यूनतम 6 अक्षर).
-   - Click **"Create Account" (खाता बनाएं)**. Your account is immediately activated in `active` status.
+### 3.1 पोर्टल कैसे चालू करें? (How to Start)
+1. अपने कंप्यूटर पर पोर्टल के मुख्य फ़ोल्डर में जाएं।
+2. फ़ाइल **`run_portal.bat`** पर माउस से दो बार क्लिक (Double Click) करें।
+3. एक काली स्क्रीन (Command Prompt) खुलेगी। इसे बंद न करें, इसे खुला रहने दें।
+4. अपने इंटरनेट ब्राउज़र (Chrome या Edge) में **`http://localhost:5173/`** खोलें। पोर्टल की स्क्रीन सामने आ जाएगी।
 
 ---
 
-### 3.3 Password Recovery & Reset / पासवर्ड भूल जाने पर रीसेट करना
+### 3.2 लॉगिन कैसे करें? (How to Login)
+1. स्क्रीन पर अपना **Email Address (ईमेल)** और **Password (पासवर्ड)** दर्ज करें।
+2. **"Sign In" (लॉगिन)** बटन पर क्लिक करें। आप सीधे मुख्य डैशबोर्ड पर पहुँच जाएंगे।
 
-#### Option A: Self-Service Reset (उपयोगकर्ता द्वारा स्वयं रीसेट):
-1. Click **"Forgot Password?" (पासवर्ड भूल गए?)** on the login screen.
-2. Enter your registered email address and click **"Generate Reset Link"**.
-3. A secure 15-minute token is generated. On local setups, the direct reset link is shown on screen for instant access.
-4. Click the link to open `/reset-password?token=...`, type your **New Password** (नया पासवर्ड), re-enter to confirm, and submit.
-
-#### Option B: Administrative Password Override (प्रशासक द्वारा पासवर्ड बदलना):
-* If an employee forgets their password and cannot recover it, an Administrator can navigate to `/admin/users/:id`, enter a new temporary password in the **"Administrative Password Override"** box, and click **"Apply New Password"**. The user can then immediately log in with that password.
+> [!TIP]
+> **नया खाता बनाना (New Registration):**
+> यदि आपका खाता पहले से नहीं बना है, तो लॉगिन स्क्रीन पर नीचे **"Register here"** पर क्लिक करें। अपना नाम, ईमेल, मोबाइल नंबर और पासवर्ड डालकर **"Create Account"** दबाएं। खाता तुरंत चालू हो जाएगा।
 
 ---
 
-### 3.4 Enterprise Inactivity Security / 15 मिनट की निष्क्रियता पर सुरक्षा लॉगआउट
-* **Warning Modal (14 मिनट बाद चेतावनी):** If the portal remains idle with no mouse or keyboard activity for 14 minutes, a security dialog appears warning: *"Session Expiring Soon"* with a **60-second live countdown timer**.
-* **Options:** Click **"Stay Logged In" (लॉगिन रहें)** to continue working, or **"Log Out Now" (अभी लॉगआउट करें)** to exit immediately.
-* **Auto-Logout (15 मिनट पर स्वतः लॉगआउट):** If no response is received, the session automatically terminates to protect sensitive financial records from unattended desktop access.
+### 3.3 पासवर्ड भूल जाएं तो क्या करें? (Forgot Password)
+* **तरीका 1 (स्वयं रीसेट करें):**
+  1. लॉगिन पेज पर **"Forgot Password?" (पासवर्ड भूल गए?)** पर क्लिक करें।
+  2. अपना पंजीकृत ईमेल लिखें और बटन दबाएं।
+  3. स्क्रीन पर एक लिंक दिखाई देगा, उस पर क्लिक करके नया पासवर्ड दर्ज करें और सहेज लें।
+* **तरीका 2 (एडमिन की मदद से):**
+  - यदि आप अपना पासवर्ड रीसेट नहीं कर पा रहे हैं, तो अपने कार्यालय के एडमिन (व्यवस्थापक) से संपर्क करें। एडमिन अपने लॉगिन से 1 मिनट में आपका नया पासवर्ड सेट कर सकते हैं।
 
 ---
 
-### 3.5 Bilingual Language Toggle / भाषा परिवर्तन (हिन्दी / English)
-* In the left sidebar navigation (bottom panel), click the **"हिं"** button to switch the entire application interface to Hindi, or **"Eng"** to switch to English.
-* Form data currently being entered is **never lost** when toggling languages.
+### 3.4 15 मिनट की सुरक्षा — अपने आप लॉगआउट (Inactivity Timeout)
+* **यह क्यों होता है?** यदि आप कंप्यूटर छोड़कर चले जाएं, तो कोई अन्य व्यक्ति आपके बिल में बदलाव न कर सके, इसलिए 15 मिनट तक कोई हलचल न होने पर पोर्टल अपने आप सुरक्षित रूप से लॉगआउट हो जाता है।
+* **चेतावनी विंडो (14 मिनट पर):** 14 मिनट बाद स्क्रीन पर एक पॉप-अप आएगा जिसमें 60 सेकंड का उल्टी गिनती वाला टाइमर (Countdown) चलेगा।
+* **काम जारी रखने के लिए:** बस **"Stay Logged In" (लॉगिन रहें)** बटन पर क्लिक कर दें। आपका काम चालू रहेगा।
 
 ---
 
-## 4. Module 2: Dashboard & Workspace / मॉड्यूल 2: डैशबोर्ड एवं मुख्य कार्यक्षेत्र
-
-**Route / मार्ग:** `/` | **Component:** `Dashboard.jsx`
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 📊 MPSCSC CLAIMS OVERVIEW — DASHBOARD / मुख्य डैशबोर्ड                      │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [ Total Employees: 12 ] [ Total Claimed: ₹84,500 ] [ Disbursed: ₹62,000 ]   │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│ ⚡ Decision Queue (कार्रवाई हेतु दावे) │ 🥧 Type Distribution (दावा प्रकार)   │
-│ - CL-26-0012 (TA/DA): Needs Submit   │   ■ TA/DA (65%)                      │
-│ - MD-26-0004 (Medical): In Review    │   ■ Transfer (20%)   ■ Medical (15%) │
-├──────────────────────────────────────┴──────────────────────────────────────┤
-│ 📈 6-Month Expenditure Trend (माहवार व्यय प्रवृत्ति)                       │
-│ 🗂️ Quick Workspace Tiles: [Employees] [TA/DA] [Transfer] [Medical] [Reports]│
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Key Elements / मुख्य विशेषताएं:
-1. **Live Metric Cards (प्रमुख वित्तीय संकेतक):** Instant summary of Total Employees registered, Total Amount Claimed, Disbursed Amount, and Claims Pending Decision.
-   - *हिन्दी:* पंजीकृत कर्मचारियों की कुल संख्या, कुल दावा राशि, स्वीकृत/भुगतान की गई राशि तथा लंबित दावों की संख्या एक नज़र में दिखती है।
-2. **Decision Queue (कार्रवाई योग्य दावे):** Displays high-priority claims requiring your prompt attention (drafts pending submission or claims awaiting managerial review).
-   - *हिन्दी:* वे दावे जिन्हें प्रस्तुत (Submit) किया जाना शेष है अथवा जो निर्णय हेतु लंबित हैं।
-3. **Quick Workspace Tiles (त्वरित नेविगेशन टाइल्स):** One-click shortcut cards directing you straight into Employee Master, TA/DA, Transfer, Medical, or Reports.
+### 3.5 भाषा कैसे बदलें? (Hindi / English Toggle)
+* बाईं तरफ के मेनू (Sidebar) में सबसे नीचे **"हिं"** और **"Eng"** का बटन दिया गया है।
+* **"हिं"** दबाने पर पूरी स्क्रीन सरल हिंदी में बदल जाएगी।
+* **"Eng"** दबाने पर स्क्रीन अंग्रेजी में हो जाएगी।
+* *विशेष बात:* भाषा बदलने पर आपके द्वारा भरा जा रहा डेटा कभी मिटता नहीं है।
 
 ---
 
-## 5. Module 3: Employee Master & Family Setup / मॉड्यूल 3: कर्मचारी मास्टर एवं परिवार प्रबंधन
+## 4. मॉड्यूल 2: मुख्य डैशबोर्ड (Dashboard)
 
-**Route / मार्ग:** `/employees` | **Access:** All Authenticated Users
+डैशबोर्ड आपके पोर्टल का मुख्य पन्ना है। लॉगिन करते ही यह खुलता है:
+
+1. **ऊपर के मुख्य आंकड़े (KPI Cards):**
+   - कुल पंजीकृत कर्मचारी कितने हैं।
+   - अब तक कुल कितने रुपये के दावे प्रस्तुत हुए।
+   - कितनी राशि स्वीकृत होकर भुगतान हो चुकी है।
+   - कितने दावों पर अभी निर्णय होना बाकी है।
+2. **कार्रवाई योग्य दावे (Decision Queue):**
+   - वे दावे जो अभी ड्राफ्ट में पड़े हैं और जिन्हें आपको सबमिट करना है।
+   - वे दावे जो जांच हेतु लंबित हैं।
+3. **दावा प्रकार चार्ट (Type Distribution):**
+   - एक रंगीन वृत्त चार्ट, जो दिखाता है कि यात्रा भत्ता (TA/DA), ट्रांसफर और मेडिकल में से किसमें कितना खर्च हुआ।
+4. **त्वरित टाइल्स (Quick Links):**
+   - 1 क्लिक में कर्मचारी मास्टर, यात्रा भत्ता, स्थानांतरण या मेडिकल पन्ने पर जाने के शॉर्टकट बटन।
+
+---
+
+## 5. मॉड्यूल 3: कर्मचारी मास्टर — सबसे पहला और जरूरी काम (Employee Master)
 
 > [!IMPORTANT]
-> **Mandatory Prerequisite / अनिवार्य पूर्व-शर्त:**
-> A claim can only be prepared for a registered employee. You **must** create or select an employee record before creating any TA/DA, Transfer, or Medical claim.
-> *हिन्दी: किसी भी यात्रा, स्थानांतरण या चिकित्सा दावे को बनाने से पहले संबंधित कर्मचारी का पंजीयन "कर्मचारी मास्टर" में होना अनिवार्य है।*
+> **सबसे जरूरी नियम:**
+> किसी भी कर्मचारी का बिल बनाने से पहले उसका नाम **कर्मचारी मास्टर (Employee Master)** में दर्ज होना अनिवार्य है। यदि नाम नहीं जुड़ा होगा, तो आप नया दावा नहीं बना पाएंगे।
 
 ---
 
-### 3.1 Step-by-Step: Adding a New Employee / कर्मचारी जोड़ने के चरण
-
-```mermaid
-flowchart TD
-    E1["Click '+ Add Employee' / '+ कर्मचारी जोड़ें'"] --> E2["Enter Name (English & Devanagari Hindi)<br/>नाम (अंग्रेजी एवं हिन्दी) दर्ज करें"]
-    E2 --> E3["Select Designation & Headquarters<br/>पदनाम एवं पदस्थ मुख्यालय चुनें"]
-    E3 --> E4["Enter Pay Level, Grade Pay & Basic Pay<br/>वेतन स्तर, ग्रेड पे एवं मूल वेतन भरें"]
-    E4 --> E5["Select Category (A, B, C, D, E)<br/>कर्मचारी की श्रेणी (A से E) का चयन करें"]
-    E5 --> E6["Click 'Save Employee' / सहेजें"]
-```
-
-#### Detailed Field Descriptions / विवरण:
-* **Full Name (नाम):** Enter the employee's official name in English (e.g., `Rajesh Sharma`) and in Hindi (e.g., `राजेश शर्मा`).
-* **Designation (पदनाम):** Official post (e.g., *District Manager*, *Assistant Accounts Officer*, *Quality Inspector*, *Clerk*).
-* **Headquarters (मुख्यालय):** Official home station/district (e.g., *Bhopal*, *Indore*, *Jabalpur*, *Ujjain*).
-* **Pay Level & Basic Pay (वेतन स्तर व मूल वेतन):** 7th Pay Matrix Level (e.g., *Level 12*) and current Basic Pay (मूल वेतन, उदा. ₹67,300).
-* **Employee Category (श्रेणी A से E):** 
-  > [!TIP]
-  > **Statutory Category Classification (म.प्र. शासन नियम अनुसार श्रेणी):**
-  > - **Category A (श्रेणी 'क'):** Basic Pay ₹10,000+ (Old) / Level 14 & above (Senior Executives, DMs). Entitled to **AC 1st Class / Air / Executive Class**.
-  > - **Category B (श्रेणी 'ख'):** Basic Pay ₹8,000 to ₹9,999 / Level 10 to 13. Entitled to **AC 2-Tier / AC Bus**.
-  > - **Category C (श्रेणी 'ग'):** Basic Pay ₹6,500 to ₹7,999 / Level 7 to 9. Entitled to **AC 3-Tier / Deluxe Bus**.
-  > - **Category D (श्रेणी 'घ'):** Basic Pay ₹4,000 to ₹6,499 / Level 4 to 6. Entitled to **Sleeper Class / Express Bus**.
-  > - **Category E (श्रेणी 'ड़'):** Basic Pay below ₹4,000 / Level 1 to 3 (Support Staff). Entitled to **Ordinary / 2nd Sitting**.
+### 5.1 नया कर्मचारी कैसे जोड़ें? (Step-by-Step)
+1. बाईं तरफ के मेनू से **"कर्मचारी मास्टर" (Employee Master)** पर क्लिक करें।
+2. ऊपर दाईं ओर हरे रंग के **"+ Add Employee" (+ कर्मचारी जोड़ें)** बटन पर क्लिक करें।
+3. नीचे दिए अनुसार आसान जानकारी भरें:
+   - **नाम (अंग्रेजी में):** जैसे `Rajesh Sharma`
+   - **नाम (हिन्दी में):** जैसे `राजेश शर्मा`
+   - **पदनाम (Designation):** जैसे *सहायक लेखा अधिकारी*, *गुणवत्ता निरीक्षक*, *जिला प्रबंधक*, *सहायक ग्रेड-3*
+   - **पदस्थ मुख्यालय (Headquarters):** जैसे *भोपाल*, *इंदौर*, *उज्जैन*, *जबलपुर*
+   - **वेतन स्तर (Pay Level):** 7वें वेतनमान का लेवल (जैसे *Level 7*, *Level 10*, *Level 12*)
+   - **मूल वेतन (Basic Pay):** वर्तमान बेसिक पे (जैसे ₹56,100)
+4. **कर्मचारी की श्रेणी (Category A से E) चुनें:**
+   - **श्रेणी A (क):** वरिष्ठ अधिकारी, जिला प्रबंधक (मूल वेतन ₹10,000+ पुराना / लेवल 14+)। *पात्रता: हवाई यात्रा, रेल AC 1st क्लास।*
+   - **श्रेणी B (ख):** लेवल 10 से 13 के अधिकारी। *पात्रता: रेल AC 2-Tier, AC बस।*
+   - **श्रेणी C (ग):** लेवल 7 से 9 के कर्मचारी (सहायक लेखा अधिकारी, आदि)। *पात्रता: रेल AC 3-Tier, डीलक्स बस।*
+   - **श्रेणी D (घ):** लेवल 4 से 6 के कर्मचारी (सहायक, लिपिक वर्ग)। *पात्रता: स्लीपर क्लास, एक्सप्रेस बस।*
+   - **श्रेणी E (ड़):** लेवल 1 से 3 के कर्मचारी (भृत्य, वाहन चालक आदि)। *पात्रता: साधारण श्रेणी, द्वितीय श्रेणी।*
+5. **"Save Employee" (सहेजें)** पर क्लिक करें। कर्मचारी का खाता जुड़ जाएगा।
 
 ---
 
-### 3.2 Family Members Sub-Management / परिवार के सदस्यों का विवरण
-* To manage family members eligible for **Transfer Claims (स्थानांतरण दावे)**:
-  1. Click **"Manage Family" (परिवार विवरण)** on the employee card.
-  2. Click **"+ Add Member" (+ सदस्य जोड़ें)**.
-  3. Enter **Full Name** (नाम), **Relationship** (संबंध: उदा. पत्नी/पति, पुत्र, पुत्री, माता, पिता), and **Date of Birth** (जन्म तिथि).
-  4. Click **"Save Member"**. This data automatically populates transfer entitlement forms.
+### 5.2 परिवार के सदस्यों का नाम जोड़ना (Family Details for Transfer)
+यदि कर्मचारी का ट्रांसफर हुआ है, तो उनके परिवार के सदस्यों के टिकट का पैसा भी मिलता है:
+1. कर्मचारी के कार्ड पर **"Manage Family" (परिवार विवरण)** पर क्लिक करें।
+2. **"+ Add Member"** पर क्लिक करें।
+3. सदस्य का **नाम**, **कर्मचारी से रिश्ता** (पत्नी, पुत्र, पुत्री, माता, पिता) और **जन्म तिथि** भरें।
+4. सहेज लें। यह जानकारी ट्रांसफर बिल में अपने आप आ जाएगी।
 
 ---
 
-## 6. Module 4: TA/DA Claims & Statutory Form 21 Bill / मॉड्यूल 4: यात्रा एवं दैनिक भत्ता (TA/DA) तथा प्रपत्र 21 देयक
+## 6. मॉड्यूल 4: यात्रा भत्ता दावा और प्रपत्र 21 बिल (TA/DA Claims & Form 21 Bill)
 
-**Routes / मार्ग:**
-- `/claims/tada` — TA/DA Claims Directory (दावा सूची)
-- `/claims/:id` — Multi-Leg Journey Editor (यात्रा चरण संपादक)
-- `/claims/:id/bill` — Statutory Form 21 Bill View & Print (प्रपत्र 21 देयक)
+यह पोर्टल का सबसे ज्यादा इस्तेमाल होने वाला मॉड्यूल है।
 
 ---
 
-### 6.1 Creating a New TA/DA Claim / नया यात्रा भत्ता दावा बनाना
-1. Navigate to **TA/DA Claims** (`/claims/tada`) and click **"+ New TA/DA Claim" (+ नया टीए/डीए दावा)**.
-2. Select the **Employee** from the dropdown.
-3. Choose the **Month** and **Year** of tour (उदा. माह: *March*, वर्ष: *2026*).
-4. Click **"Create Claim"**. The system generates a statutory claim identifier (e.g. `CL-26-0045`) and opens the **Claim Editor**.
+### चरण 1: नया दावा शुरू करना (New TA/DA Claim)
+1. बाईं तरफ मेनू में **"टीए/डीए दावा" (TA/DA Claim)** पर जाएं।
+2. **"+ New TA/DA Claim" (+ नया टीए/डीए दावा)** बटन दबाएं।
+3. सूची में से **कर्मचारी का नाम** चुनें।
+4. दौरे का **माह (Month)** और **वर्ष (Year)** चुनें (उदा. मार्च 2026)।
+5. **"Create Claim"** दबाएं। सिस्टम एक नया दावा नंबर (जैसे `CL-26-0045`) बना देगा।
 
 ---
 
-### 6.2 Entering Journey Details (Multi-Leg Editor) / यात्रा विवरण दर्ज करना
-
-For each leg of travel during the tour:
-1. **Departure Details (प्रस्थान):**
-   - Date (`YYYY-MM-DD`) and Time (`HH:MM`).
-   - Departure Station (प्रस्थान स्थान: e.g., *Bhopal*).
-2. **Arrival Details (आगमन):**
-   - Date (`YYYY-MM-DD`) and Time (`HH:MM`).
-   - Arrival Station (गंतव्य स्थान: e.g., *Indore*, *Delhi*, *Jabalpur*).
-   > [!NOTE]
-   > The system automatically detects the **City Tier**:
-   > - **Metro (महानगर):** Delhi, Mumbai, Kolkata, Chennai, Bengaluru, Hyderabad, Ahmedabad, Pune, Kanpur.
-   > - **Major MP City (प्रमुख नगर):** Bhopal, Indore, Jabalpur, Gwalior & all stations outside MP.
-   > - **Other (साधारण दर):** Other stations within Madhya Pradesh.
-3. **Conveyance Mode & Dynamic Travel Class (साधन एवं यात्रा श्रेणी):**
-   - Select **Mode of Travel** (Rail, Bus, Air, Own Car, Own Bike, Taxi/Auto).
-   - **Dynamic Class Dropdown:** The travel class automatically filters based on the selected mode:
-     - **Rail (रेल):** AC 1st Class, AC 2-Tier, AC 3-Tier, AC Chair Car, Sleeper, 2nd Class.
-     - **Bus (बस):** Ordinary, Express, Deluxe, AC Sleeper.
-     - **Air (हवाई यात्रा):** Economy Class, Business Class.
-     - **Personal Vehicle (निजी वाहन):** Own Car (₹9/km), Motor Cycle/Scooter (₹4/km).
-   - The dropdown displays an **"Entitled" (पात्र)** badge matching the employee's category.
-4. **Ticket & Financials (टिकट एवं किराया):**
-   - Enter **Ticket / PNR No.** (टिकट क्रमांक).
-   - Enter **Actual Fare Paid** (वास्तविक किराया राशि ₹).
-   - Enter **Distance in KM** (if claiming road mileage allowance).
-5. **Official Purpose (शासकीय प्रयोजन):**
-   - Enter reason for travel (e.g., *Paddy Procurement Review Meeting*, *Warehouse Physical Verification*).
-   - Legs sharing the same purpose are automatically grouped into official travel chains.
-6. Click **"+ Add Another Leg"** to enter the return or next journey leg.
+### चरण 2: यात्रा का विवरण दर्ज करना (Journey Details)
+दौरे में जहाँ-जहाँ गए, उसका एक-एक फेरा (Journey Leg) दर्ज करें:
+1. **प्रस्थान (कहाँ से चले):**
+   - तारीख (Date) और समय (Time)।
+   - प्रस्थान स्टेशन (Departure Station: जैसे *भोपाल*)।
+2. **आगमन (कहाँ पहुँचे):**
+   - तारीख (Date) और समय (Time)।
+   - आगमन स्टेशन (Arrival Station: जैसे *इंदौर*, *दिल्ली*, *जबलपुर*)।
+   - *शहर की श्रेणी सिस्टम अपने आप पहचानता है:*
+     - **महानगर (Metro):** दिल्ली, मुंबई, कोलकाता, चेन्नई, बेंगलुरु, हैदराबाद, अहमदाबाद, पुणे, कानपुर।
+     - **प्रमुख नगर (Major City):** भोपाल, इंदौर, जबलपुर, ग्वालियर एवं म.प्र. के बाहर के सभी शहर।
+     - **अन्य (Other):** म.प्र. के शेष सभी साधारण स्थान।
+3. **यात्रा का साधन व क्लास (Mode & Class):**
+   - साधन चुनें (Rail, Bus, Air, Own Car, Own Bike)।
+   - **क्लास ड्रॉपडाउन अपने आप बदलेगा:**
+     - यदि **Rail** चुना: AC 1st, AC 2-Tier, AC 3-Tier, Sleeper आदि।
+     - यदि **Bus** चुना: Ordinary, Express, Deluxe, AC बस।
+     - यदि **Car / Bike** चुना: सड़क मील भत्ता (कार ₹9/किमी, बाइक ₹4/किमी)।
+   - इसमें कर्मचारी की श्रेणी अनुसार **"Entitled" (पात्रता)** का हरा निशान भी दिखेगा।
+4. **टिकट और किराया:**
+   - टिकट या PNR नंबर लिखें।
+   - वास्तविक भुगतान किया गया किराया (₹) भरें।
+5. **शासकीय प्रयोजन (Purpose):**
+   - यात्रा का कारण लिखें (जैसे: *उपार्जन समीक्षा बैठक*, *गोदाम भौतिक सत्यापन*)।
+6. वापसी यात्रा जोड़ने के लिए नीचे **"+ Add Another Leg" (+ अगला फेरा जोड़ें)** दबाएं।
 
 ---
 
-### 6.3 Stay Allowance & Advances / ठहराव भत्ता एवं अग्रिम समायोजन
-
-* **Stay Allowance Type (ठहराव का प्रकार):**
-  - **None (कोई नहीं):** Same-day return or accommodation arranged by Corporation/Govt.
-  - **Hotel Bill (होटल देयक):** Enter the actual hotel receipt amount paid. The system automatically applies the statutory ceiling per category and city tier (e.g. up to ₹7,400/day for Cat A in Metros; ₹3,700 for Cat C in Metros; ₹1,850 in regular MP cities).
-  - **Friends & Relatives Stay (मित्र/रिश्तेदार के यहाँ ठहराव):** Fixed statutory daily allowance without requiring hotel receipts (Cat A: ₹750/day; Cat B: ₹660; Cat C: ₹550; Cat D: ₹450; Cat E: ₹370).
-* **TA Advance Adjustment (दौरा अग्रिम राशि):**
-  - If any tour advance was received from the office prior to the tour, enter the amount in **"Advance Drawn (अग्रिम राशि)"**. The system will deduct this from the gross total to calculate the net payable amount.
-* Click **"Save Journey Details" (यात्रा विवरण सहेजें)**.
-
----
-
-### 6.4 Statutory Form 21 Bill (प्रपत्र २१) & Print Controls
-
-Click **"View Bill" (देयक देखें)** or navigate to `/claims/:id/bill` to view the official MP Treasury Form 21 layout.
-
-```
-═══════════════════════════════════════════════════════════════════════════════
-  मध्यप्रदेश शासन — प्रपत्र २१ (नियम ३०) : यात्रा भत्ता देयक (FORM 21 TA BILL)
-═══════════════════════════════════════════════════════════════════════════════
-[ Claim ID: CL-26-0045 ]  [ Name: राजेश शर्मा ]  [ Designation: जिला प्रबंधक ]
-─────────────────────────────────────────────────────────────────────────────
-(Col 1-2)  प्रस्थान: दिनांक, समय व स्थान
-(Col 3-4)  आगमन: दिनांक, समय व स्थान
-(Col 5-9)  यात्रा का साधन, श्रेणी, टिकट/PNR, दूरी (किमी), वास्तविक किराया
-(Col 10-14) दैनिक भत्ता (दिन, दर, प्रतिशत, कुल दैनिक भत्ता)
-(Col 15-18) ठहराव व्यय (होटल देयक / मित्र ठहराव भत्ता)
-(Col 19-21) अन्य अनुषंगिक व्यय, कुल योग एवं अभियुक्ति
-─────────────────────────────────────────────────────────────────────────────
-[✓ Hide Blank Columns]  [Print: A4 Landscape]  [Print: A4 Portrait]  [Export Excel]
-```
-
-#### Special Features in Form 21 Bill:
-1. **Dynamic Blank Column Auto-Hiding (रिक्त कॉलम स्वतः छिपाएं):**
-   - Click the button **"Hide Blank Columns" (रिक्त कॉलम छिपाएं)** in the action toolbar.
-   - Any column that has no values across the entire tour (e.g. transfer grant, baggage transport, unused local conveyance, or blank remarks) is instantly hidden.
-   - **Adaptive Sequential Re-numbering (1..N):** The column numbers in the table header automatically re-number consecutively as `1, 2, 3, ... N` with zero missing gaps.
-   - **100% Proportional Width Scaling:** The remaining columns automatically expand to fill 100% of the printable page width with no blank white spaces on the right margin.
-2. **Passing Order Access Control ("देयक पारित आदेश" नियंत्रण):**
-   - In individual employee login, the bill cleanly ends at Section 3 (Claimant's Signature & Undertaking).
-   - In **Admin Mode** (Controlling Officer view), Section 4 **"देयक पारित आदेश" (Passing Order & Sanction Certificate)** is displayed, allowing the sanctioning authority to record sanctioned amounts, deductions, and official signature.
-3. **Print & Export Controls:**
-   - **A4 Landscape (Recommended) / A4 Portrait:** Independent 1-click orientation buttons styled with dynamic `@page` print CSS.
-   - **Export to Excel (.xlsx):** Generates a formatted spreadsheet ready for submission to treasury or accounts division.
+### चरण 3: रुकने का खर्चा एवं अग्रिम समायोजन (Stay & Advance)
+* **रुकने का प्रकार (Stay Allowance):**
+  - **कोई नहीं (None):** उसी दिन वापस आ गए या सरकारी गेस्ट हाउस में रुके।
+  - **होटल का बिल (Hotel Bill):** होटल की रसीद की वास्तविक राशि भरें। सरकारी नियम अनुसार अधिकतम सीमा (जैसे महानगर में कैट C को ₹3,700/दिन तक) अपने आप लागू हो जाएगी।
+  - **मित्र या रिश्तेदार के घर रुकना (Friends/Relatives Stay):** बिना किसी होटल बिल के सरकार द्वारा निर्धारित फिक्स दैनिक भत्ता (कैट A: ₹750, कैट B: ₹660, कैट C: ₹550, कैट D: ₹450, कैट E: ₹370 प्रतिदिन)।
+* **दौरा अग्रिम कटौती (TA Advance):**
+  - यदि दौरे पर जाने से पहले ऑफिस से कोई अग्रिम राशि ली थी, तो उसे **"Advance Drawn (अग्रिम राशि)"** में भरें। यह राशि कुल देयक में से अपने आप घट जाएगी।
+* **"Save Journey Details"** दबाकर सहेजें।
 
 ---
 
-## 7. Module 5: Official Tour Diary Module / मॉड्यूल 5: शासकीय दौरा डायरी (Tour Diary)
+### चरण 4: प्रपत्र 21 बिल देखना और प्रिंट करना (Form 21 Bill)
 
-**Routes / मार्ग:** `/tour-diaries` & `/claims/:id/tour-diary`
+ऊपर दिए बटन **"View Bill" (देयक देखें)** पर क्लिक करें। आपके सामने मध्यप्रदेश शासन का आधिकारिक **प्रपत्र २१ (Form 21 TA Bill)** खुल जाएगा।
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 📓 OFFICIAL TOUR DIARY (शासकीय दौरा डायरी) — TD-26-0032                     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Tour Diary No: TD-26-0032  │ Employee: विक्यात हिंडोलिया (जिला प्रबंधक)      │
-│ Tour Period: 10/03/2026 to 14/03/2026 │ Linked Claim: CL-26-0045            │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Date       │ Station Visited │ Inspection / Duties Performed                 │
-├────────────┼─────────────────┼───────────────────────────────────────────────┤
-│ 10/03/2026 │ Bhopal -> Ujjain│ Inspection of Food Storage Depot #2           │
-│ 11/03/2026 │ Ujjain -> Dewas │ Review meeting with procurement societies     │
-│ 12/03/2026 │ Dewas -> Bhopal │ Verification of gunny bag inventory & return  │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+#### प्रपत्र 21 की खास सुविधाएं:
 
-### Purpose & Functionality / उद्देश्य एवं कार्यप्रणाली:
-* **Statutory Requirement:** Under MP civil service rules, any TA/DA claim must be accompanied by an inspection log or daily tour diary signed by the touring officer.
-* **Stand-Alone vs Linked Diary:**
-  - You can record an independent Tour Diary at `/tour-diaries`.
-  - Alternatively, click **"Tour Diary"** directly from inside any TA/DA claim to maintain linked itinerary notes.
-* **Automatic Duration & DA Slab Calculation (दैनिक भत्ता स्लैब):**
-  - **Journey Duration <= 6 Hours:** 0% DA (शून्य दैनिक भत्ता).
-  - **Journey Duration 6 to 12 Hours:** 50% DA (आधा दैनिक भत्ता).
-  - **Journey Duration > 12 Hours:** 100% Full DA (पूर्ण दैनिक भत्ता).
+> [!TIP]
+> **जादुई बटन: "रिक्त कॉलम छिपाएं" (Hide Blank Columns)**
+> सरकारी प्रपत्र 21 में कुल 21 कॉलम होते हैं। साधारण दौरे में कई कॉलम (जैसे ट्रांसफर अनुदान, सामान परिवहन, आदि) खाली रह जाते हैं।
+> - बिल के ऊपर **"Hide Blank Columns" (रिक्त कॉलम छिपाएं)** बटन पर क्लिक करें।
+> - सभी खाली कॉलम 1 सेकंड में गायब हो जाएंगे!
+> - बचे हुए कॉलमों के नंबर अपने आप क्रम से **1, 2, 3, 4...** हो जाएंगे।
+> - बिल पूरे पन्ने पर खूबसूरत और चौड़ा फैल जाएगा, कोई खाली जगह नहीं छूटेगी।
+
+* **पारित आदेश (Passing Order) की गोपनीयता:**
+  - जब कोई कर्मचारी अपने लॉगिन से बिल देखता है, तो बिल कर्मचारी के हस्ताक्षर पर ही समाप्त हो जाता है।
+  - भाग 4 **"देयक पारित आदेश"** केवल अधिकारी (Admin) के लॉगिन में दिखता है, ताकि बिना अनुमोदन कोई पारित आदेश प्रिंट न कर सके।
+* **प्रिंट विकल्प:**
+  - **Print: A4 Landscape (आड़ा पन्ना - सबसे बढ़िया):** पूरे 21 कॉलम एक ही पन्ने पर साफ-साफ आ जाते हैं।
+  - **Print: A4 Portrait (खड़ा पन्ना):** सामान्य पन्ने पर प्रिंट करने के लिए।
+  - **Export to Excel:** पूरे बिल की एक्सेल फ़ाइल डाउनलोड करने के लिए।
 
 ---
 
-## 8. Module 6: Transfer Claims Management / मॉड्यूल 6: स्थानांतरण दावा प्रबंधन (Transfer Claims)
+## 7. मॉड्यूल 5: शासकीय दौरा डायरी (Tour Diary)
 
-**Routes / मार्ग:** `/claims/transfer-list` & `/claims/transfer/:id`
+शासकीय नियमों के अनुसार यात्रा भत्ते के साथ दौरे पर किए गए कार्यों की **दौरा डायरी** लगाना अनिवार्य होता है।
 
-```mermaid
-flowchart TD
-    T1["Create Transfer Claim<br/>नया स्थानांतरण दावा बनाएं"] --> T2["Select Old & New Headquarters<br/>पुराना एवं नवीन पदस्थापना जिला चुनें"]
-    T2 --> T3["Select Family Members Relocated<br/>साथ गए परिवार के सदस्यों का चयन करें"]
-    T3 --> T4["Enter Personal Baggage Weight (kg)<br/>सामान का वजन (किग्रा) दर्ज करें"]
-    T4 --> T5["Enter Goods Transport & Packing Charges<br/>सामान परिवहन भाड़ा एवं पैकिंग व्यय"]
-    T5 --> T6["Composite Transfer Grant Applied<br/>समेकित स्थानांतरण अनुदान स्वतः जोड़ें"]
-    T6 --> T7["Review & Print Transfer Bill<br/>स्थानांतरण देयक समीक्षा एवं प्रिंट"]
-```
-
-### Step-by-Step Guide / स्थानांतरण दावा तैयार करने के चरण:
-1. Go to **Transfer Claims** (`/claims/transfer-list`) and click **"+ New Transfer Claim"**.
-2. Select the **Transferred Employee**.
-3. Choose the **Old Headquarters** (पूर्व पदस्थ स्थान) and **New Headquarters** (नवीन पदस्थापना स्थान) from the integrated **52 MP Districts Bilingual Dropdown**.
-4. **Family Relocation Details (परिवार का विवरण):** Check the boxes for family members who travelled along with the employee. The system computes their entitled passenger fares.
-5. **Personal Effects / Baggage (व्यक्तिगत सामान भार):**
-   - Enter total baggage weight in kilograms.
-   - Statutory limits: Category A & B (up to 6,000 kg by train/truck); Category C (up to 3,000 kg); Category D (up to 1,500 kg); Category E (up to 1,000 kg).
-6. **Goods Transport Charges (सामान परिवहन दर):**
-   - Under Rule 2.8: Transporting goods by road is reimbursed up to ₹40/km (Cat A/B), ₹25/km (Cat C/D), and ₹15/km (Cat E). Enter the actual truck transport receipt amount.
-7. **Packing & Loading Charges (पैकिंग एवं लोडिंग व्यय):** Enter receipts for packing charges up to the statutory limit.
-8. **Composite Transfer Grant (समेकित स्थानांतरण अनुदान):** The system automatically adds the lump-sum transfer grant (Cat A: ₹6,500; Cat B: ₹5,000; Cat C: ₹3,600; Cat D: ₹2,500; Cat E: ₹1,800).
-9. Click **"Save Transfer Claim"** and generate the printable summary.
+### दौरा डायरी कैसे भरें?
+1. बाईं तरफ मेनू में **"दौरा डायरी" (Tour Diary)** पर जाएं।
+2. नया दौरा डायरी बनाएं या TA/DA दावे के अंदर से सीधे **"Tour Diary"** पर क्लिक करें।
+3. दौरे की प्रत्येक तारीख के सामने लिखें कि उस दिन आपने क्या शासकीय कार्य किया (जैसे: *सोसायटी क्र. 102 में धान खरीदी का निरीक्षण किया एवं वजन तौल की जांच की*)।
+4. **दैनिक भत्ता (DA) का सरकारी नियम (सिस्टम अपने आप निकालता है):**
+   - **यात्रा अवधि 6 घंटे या कम:** 0% DA (दैनिक भत्ता नहीं मिलेगा)।
+   - **यात्रा अवधि 6 से 12 घंटे:** 50% DA (आधा दैनिक भत्ता)।
+   - **यात्रा अवधि 12 घंटे से अधिक:** 100% DA (पूरा दैनिक भत्ता)।
 
 ---
 
-## 9. Module 7: Medical Reimbursement Claims / मॉड्यूल 7: चिकित्सा प्रतिपूर्ति दावा (Medical Claims)
+## 8. मॉड्यूल 6: स्थानांतरण दावा (Transfer Claim)
 
-**Routes / मार्ग:** `/medical` & `/medical-claims/:id`
+जब किसी कर्मचारी का एक जिले से दूसरे जिले में ट्रांसफर होता है, तब यह दावा भरा जाता है।
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🏥 MEDICAL REIMBURSEMENT CLAIM FORM (चिकित्सा व्यय प्रतिपूर्ति प्रपत्र)      │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Employee: राजेश शर्मा │ Patient: श्रीमती अनीता शर्मा (पत्नी / Dependent)     │
-│ Diagnosis: तीव्र ज्वर एवं वायरल संक्रमण │ Treatment Duration: 5 दिन           │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Bill Type     │ Lab / Chemist Name   │ Receipt No. & Date │ Amount (₹)      │
-├───────────────┼──────────────────────┼────────────────────┼─────────────────┤
-│ CONSULTATION  │ डॉ. वी.के. गुप्ता    │ R-4412 (02/03/2026)│ ₹500.00         │
-│ MEDICINE      │ संजीवनी मेडिकल स्टोर │ M-8821 (03/03/2026)│ ₹2,450.00       │
-│ INVESTIGATION │ सेंट्रल पैथोलॉजी लैब  │ L-1092 (02/03/2026)│ ₹1,200.00       │
-├───────────────┴──────────────────────┴────────────────────┴─────────────────┤
-│ TOTAL CLAIMED AMOUNT / कुल दावा राशि: ₹4,150.00                             │
-│ [Print: A4 Portrait (Recommended)]  [Print: A4 Landscape]                   │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Step-by-Step Guide / चिकित्सा प्रतिपूर्ति दावा भरने के चरण:
-1. Navigate to **Medical Claims** (`/medical`) and click **"+ New Medical Claim" (+ नया चिकित्सा दावा)**.
-2. Enter **Patient Details**:
-   - **Patient Name (रोगी का नाम)**.
-   - **Relationship to Employee (कर्मचारी से संबंध):** Self (स्वयं), Spouse (पत्नी/पति), Son (पुत्र), Daughter (पुत्री), Dependent Mother/Father (आश्रित माता/पिता).
-   - **Illness Diagnosis (बीमारी का नाम):** e.g., *Typhoid, Hypertension, Cardiac Treatment, Fracture*.
-   - **Treatment Dates (उपचार अवधि):** From date to To date.
-   - **Total Enclosures (संलग्नक संख्या):** Number of original prescription sheets and bill vouchers attached.
-3. **Itemised Bills Entry (देयक वाउचर जोड़ें):**
-   - Click **"+ Add Bill Item" (+ बिल जोड़ें)**.
-   - Select **Category:** `CONSULTATION` (चिकित्सक परामर्श), `MEDICINE` (दवाइयां), `TEST` (पैथोलॉजी/जांच), or `OTHER` (अन्य व्यय).
-   - Enter **Chemist / Doctor / Hospital Name** (अस्पताल/दुकान का नाम).
-   - Enter **Receipt Number & Date** (रसीद क्रमांक व दिनांक).
-   - Enter **Billed Amount ₹** (बिल राशि).
-4. Click **"Save Medical Claim"**.
-5. **Print Official Hindi Form:** Click **"Print Claim Form"**. The system renders the statutory Madhya Pradesh Medical Attendance Rules Hindi reimbursement application form with signature blocks positioned to avoid awkward page breaks.
+### स्थानांतरण दावा भरने के आसान चरण:
+1. मेनू में **"स्थानांतरण दावा" (Transfer Claim)** पर जाएं और **"+ New Transfer Claim"** दबाएं।
+2. स्थानांतरित कर्मचारी का चयन करें।
+3. **पुराना मुख्यालय** और **नवीन मुख्यालय** चुनें (म.प्र. के 52 जिलों की सूची में से)।
+4. **परिवार के सदस्य:** उन सदस्यों के आगे सही (✓) का निशान लगाएं जो कर्मचारी के साथ गए हैं।
+5. **सामान का वजन (Baggage Weight):**
+   - कुल सामान का वजन किग्रा में लिखें।
+   - *अधिकतम सीमा:* कैट A और B (6,000 किग्रा), कैट C (3,000 किग्रा), कैट D (1,500 किग्रा), कैट E (1,000 किग्रा)।
+6. **ट्रक भाड़ा (Goods Transport):** सामान लाने वाले ट्रक/ट्रांसपोर्ट का बिल भरें (कैट A/B: ₹40/किमी, कैट C/D: ₹25/किमी तक)।
+7. **पैकिंग एवं लोडिंग खर्चा:** सामान पैक करने और चढ़ाने-उतारने की रसीद की राशि भरें।
+8. **मुश्त स्थानांतरण अनुदान (Transfer Grant):** कर्मचारी की श्रेणी अनुसार एकमुश्त अनुदान (कैट A: ₹6,500, कैट B: ₹5,000, कैट C: ₹3,600, कैट D: ₹2,500, कैट E: ₹1,800) अपने आप जुड़ जाएगा।
+9. सहेजें और प्रिंट निकालें।
 
 ---
 
-## 10. Module 8: Universal Claims Register & Reports / मॉड्यूल 8: सार्वभौमिक दावा रजिस्टर एवं रिपोर्ट्स
+## 9. मॉड्यूल 7: चिकित्सा प्रतिपूर्ति दावा (Medical Claim)
 
-**Routes / मार्ग:** `/claims` (Register) & `/reports` (Reports & Analytics)
+कर्मचारी या उनके आश्रित परिवार के सदस्यों के इलाज के खर्च की प्रतिपूर्ति के लिए यह मॉड्यूल है।
 
-### 10.1 Universal Claims Register (`/claims`)
-* A consolidated single-window ledger showing all claims across all 3 types (**TA/DA**, **Transfer**, **Medical**).
-* Filter quickly by tabs: **All (सभी)**, **Draft (ड्राफ्ट)**, **Submitted (प्रस्तुत)**, **Approved (स्वीकृत)**, or **Rejected (निरस्त)**.
-* Search instantly by Claim ID, Employee Name, or Designation.
+### चिकित्सा दावा कैसे भरें?
+1. मेनू में **"चिकित्सा प्रतिपूर्ति" (Medical Claim)** पर जाएं और **"+ New Medical Claim"** दबाएं।
+2. **रोगी की जानकारी भरें:**
+   - मरीज का नाम।
+   - कर्मचारी से संबंध (स्वयं, पत्नी, पति, पुत्र, पुत्री, माता, पिता)।
+   - बीमारी का नाम (जैसे: *टाइफाइड, वायरल फीवर, हृदय रोग, फ्रैक्चर*)।
+   - इलाज की अवधि (किस तारीख से किस तारीख तक)।
+   - संलग्न बिलों/रसीदों की कुल संख्या।
+3. **एक-एक बिल जोड़ें (+ Add Bill Item):**
+   - **प्रकार चुनें:** `CONSULTATION` (डॉक्टर फीस), `MEDICINE` (दवाइयां), `TEST` (खून/पेशाब/एक्स-रे जांच), या `OTHER` (अन्य)।
+   - दुकान / डॉक्टर / पैथोलॉजी लैब का नाम लिखें।
+   - रसीद नंबर और रसीद की तारीख भरें।
+   - बिल की राशि (₹) लिखें।
+4. **"Save Medical Claim"** पर क्लिक करें।
+5. **प्रिंट निकालें:** **"Print Claim Form"** दबाएं। मध्यप्रदेश सिविल सेवा चिकित्सा नियमों के अनुसार भरा हुआ पूरा हिंदी आवेदन पत्र तैयार हो जाएगा, जिस पर नीचे हस्ताक्षर करके कार्यालय में जमा किया जा सकता है।
 
 ---
 
-### 10.2 Reports & Analytics (`/reports`)
-1. **Custom Date-Range Filters (दिनांक फ़िल्टर):** Specify Start Date and End Date (e.g. *01/04/2025 to 31/03/2026* for the full financial year).
-2. **Employee Filter (कर्मचारी अनुसार फ़िल्टर):** Generate reports for all employees statewide or isolate a specific officer.
-3. **Claim Type Breakdown:** Toggle between TA/DA, Transfer, and Medical claims.
-4. **Summary Metric Cards:** Displays Total Bills, Total Amount Claimed, Total Amount Passed, and Disbursal Percentage.
-5. **Multi-Sheet Excel Export (एक्सेल डाउनलोड):** Click **"Export to Excel"** to generate an audited `.xlsx` workbook formatted with header metadata for audit and corporate office accounting.
+## 10. मॉड्यूल 8: सभी दावे और एक्सेल रिपोर्ट (Claims Register & Reports)
+
+### 10.1 सभी दावों की सूची (All Claims Register - `/claims`)
+* इस पन्ने पर आपको आपके द्वारा बनाए गए सभी दावे एक साथ दिखते हैं।
+* ऊपर दिए गए टैब से आप छांट सकते हैं:
+  - **सभी (All)**
+  - **ड्राफ्ट (Draft):** जो अभी बन रहे हैं।
+  - **प्रस्तुत (Submitted):** जो अधिकारी को भेजे जा चुके हैं।
+  - **स्वीकृत (Approved):** जो पास हो चुके हैं।
+  - **निरस्त (Rejected):** जो अस्वीकृत हुए।
 
 ---
 
-## 11. Module 9: Administrative Portal & Statewide Governance / मॉड्यूल 9: व्यवस्थापक पोर्टल एवं राज्यव्यापी नियंत्रण
+### 10.2 रिपोर्ट और एक्सेल डाउनलोड (Reports - `/reports`)
+1. **तारीख चुनें:** शुरुआत की तारीख और अंतिम तारीख (जैसे *01/04/2025 से 31/03/2026* पूरे वित्तीय वर्ष हेतु)।
+2. **कर्मचारी चुनें:** किसी एक कर्मचारी की रिपोर्ट देखनी हो या पूरे कार्यालय की।
+3. **दावे का प्रकार चुनें:** TA/DA, Transfer, या Medical।
+4. स्क्रीन पर कुल दावे और कुल पास हुई राशि आ जाएगी।
+5. **Excel Export (एक्सेल डाउनलोड):** हरे रंग के **"Export to Excel"** बटन पर क्लिक करें। पूरी रिपोर्ट की सुंदर एक्सेल शीट तुरंत आपके कंप्यूटर पर डाउनलोड हो जाएगी।
+
+---
+
+## 11. मॉड्यूल 9: अधिकारी / व्यवस्थापक के कार्य (Admin Features)
 
 > [!NOTE]
-> **Access Requirement / पात्रता:** Available exclusively to users holding the **`admin`** role. Ordinary claimant logins will not see the Admin Control section in their navigation menu.
+> यह भाग केवल उन अधिकारियों (व्यवस्थापकों) के लिए है जिनके पास **`admin`** अधिकार हैं।
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🛡️ MPSCSC CLAIMS PORTAL — ADMIN GOVERNANCE / प्रशासक नियंत्रण कक्ष         │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ Active Users: 28 │ Total Statewide Claims: 142 │ Pending Sanction: ₹1,85,400│
-├─────────────────────────────────────────────────────────────────────────────┤
-│ 1. User Directory (/admin/users)   - Account Status, Impersonation, Password│
-│ 2. Claims Oversight (/admin/claims)- Statewide Ledger, Approve / Reject     │
-│ 3. Passing Orders (/claims/:id/bill)- Section 4 Sanction & Passing Order    │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+### 11.1 कर्मचारियों के खातों का नियंत्रण (`/admin/users`)
+* **खाता चालू या बंद करना:** किसी भी उपयोगकर्ता का खाता `active` (चालू) या `suspended` (निलंबित) किया जा सकता है।
+* **पासवर्ड बदलना (Admin Password Override):** यदि कोई कर्मचारी पासवर्ड भूल जाए और खुद न बदल पाए, तो एडमिन उनके प्रोफाइल में जाकर नया पासवर्ड लिखकर तुरंत सेट कर सकते हैं।
+* **उपयोगकर्ता के रूप में लॉगिन करें (Log In As This User):**
+  - यदि किसी कर्मचारी को बिल भरने में कोई दिक्कत आ रही हो, तो एडमिन बिना पासवर्ड पूछे 1 क्लिक में उस कर्मचारी की स्क्रीन में जा सकते हैं।
+  - स्क्रीन के ऊपर एक पीले रंग की पट्टी (Banner) दिखेगी।
+  - कर्मचारी की समस्या देखने या सुधारने के बाद, ऊपर दिए **"Exit & Return to Admin" (व्यवस्थापक पर वापस जाएं)** बटन को दबाते ही आप सुरक्षित वापस एडमिन में आ जाएंगे।
 
 ---
 
-### 11.1 Managing User Accounts (`/admin/users` & `/admin/users/:id`)
-* **Status Toggles (खाता स्थिति):** Switch user accounts between `active` (सक्रिय), `suspended` (निलंबित), and `pending` (सत्यापनाधीन). Suspended users are immediately blocked from logging in.
-* **Administrative Password Reset:** Open any user's profile card, type a new password under "Administrative Password Override", and click apply.
-* **User Impersonation ("Log In As This User"):**
-  - If a user reports difficulty entering a tour leg or bill, the Administrator can click **"Log In As This User"** on their user detail page.
-  - The system issues a secure, scoped 4-hour impersonation session without requiring the user's password.
-  - **Safety Banner:** A prominent amber security banner stays pinned to the top of the screen: *"Impersonating [User Name] (Read/Write session)"*.
-  - **1-Click Return:** Click the **"Exit & Return to Admin" (वापस व्यवस्थापक पर जाएं)** button on the banner at any time to return safely to your admin session.
+### 11.2 राज्यव्यापी दावों की स्वीकृति (`/admin/claims`)
+1. अधिकारी के पास जिले या राज्य के सभी कर्मचारियों के दावे इस सूची में आते हैं।
+2. दावे का परीक्षण करने के बाद अधिकारी के पास 3 विकल्प होते हैं:
+   - **स्वीकृत करें (Approve):** दावा सही होने पर इसे पास करें।
+   - **सुधार हेतु वापस करें (Return):** यदि टिकट नंबर या रसीद छूट गई हो, तो रिमार्क लिखकर दावे को ड्राफ्ट में लौटा दें ताकि कर्मचारी सुधार सके।
+   - **निरस्त करें (Reject):** यदि दावा नियमानुसार न हो, तो कारण लिखकर निरस्त करें।
+3. **देयक पारित आदेश जारी करना:** प्रपत्र 21 के भाग 4 में पारित राशि लिखकर हस्ताक्षर करें।
 
 ---
 
-### 11.2 Statewide Claims Review & Sanction (`/admin/claims`)
-1. Open the Statewide Claims Register at `/admin/claims`.
-2. Inspect any claim by clicking its Claim ID or Bill button.
-3. Perform Governance Actions:
-   - **Approve (स्वीकृत करें):** Marks the claim status as `APPROVED` and queues it for payment disbursement.
-   - **Return for Corrections (सुधार हेतु वापस करें):** Reverts the claim to `DRAFT` status with remarks so the claimant can correct missing receipts or ticket numbers.
-   - **Reject (निरस्त करें):** Rejects invalid or unentitled claims with audit notes.
-4. **Form 21 Passing Order Execution:** In the Form 21 Bill view, the administrator records the passed amount in figures and words, records any disallowances, and applies their digital/physical signature under **Section 4: देयक पारित आदेश**.
+## 12. मॉड्यूल 10: बैकअप और अक्सर पूछे जाने वाले सवाल (FAQ & Troubleshooting)
 
----
+### 12.1 डेटा सुरक्षित रखने के टूल्स (Backup)
 
-## 12. Module 10: System Utilities, Backup & Troubleshooting (FAQ) / मॉड्यूल 10: बैकअप एवं सामान्य प्रश्नोत्तर
-
-### 12.1 Backup & Safe Reset Scripts / डेटा बैकअप एवं रीसेट टूल्स
-
-| Batch Script फ़ाइल | Purpose / उद्देश्य | How to Run / कैसे चलाएं |
+| फ़ाइल का नाम | इसका क्या काम है? | कैसे चलाएं? |
 |---|---|---|
-| `run_portal.bat` | Starts both server & client concurrently / पोर्टल चालू करना | Double click `run_portal.bat` |
-| `backup_database.bat` | Creates a timestamped `.zip` backup of database / तत्काल बैकअप | Double click `backup_database.bat` |
-| `install_dependencies.bat` | Installs or updates all Node packages / आवश्यक पैकेज लोड करना | Run once after fresh copy |
-| `reset_database.bat` | Resets DB to baseline initial state / डेटाबेस रीसेट (सावधानी रखें) | Double click `reset_database.bat` |
+| `run_portal.bat` | पोर्टल चालू करने के लिए | माउस से डबल क्लिक करें |
+| `backup_database.bat` | पूरे डेटा का सुरक्षित बैकअप ZIP बनाने के लिए | सप्ताह में एक बार डबल क्लिक करें |
+| `install_dependencies.bat` | नए कंप्यूटर में पोर्टल सेटअप करने के लिए | केवल पहली बार चलाएं |
 
 ---
 
-### 12.2 Frequently Asked Questions (FAQ) / सामान्य प्रश्न एवं समाधान
+### 12.2 सामान्य प्रश्न एवं उनके आसान उत्तर (FAQ)
 
-#### Q1: How do I change the language between Hindi and English?
-* **उत्तर / Answer:** Click the **"हिं"** or **"Eng"** button located at the bottom-left of the sidebar menu. The entire interface switches language instantly without losing any text you have typed.
+#### प्र. 1: भाषा कैसे बदलें (हिंदी से अंग्रेजी या अंग्रेजी से हिंदी)?
+**उत्तर:** बाईं तरफ सबसे नीचे मेनू में **"हिं"** और **"Eng"** का बटन दिया गया है। अपनी पसंद का बटन दबाएं, भाषा तुरंत बदल जाएगी।
 
-#### Q2: Why does the system log me out automatically?
-* **उत्तर / Answer:** For security compliance against unauthorized office desk access, the system monitors inactivity. If no keyboard or mouse activity occurs for 14 minutes, a 60-second warning countdown appears. If not answered, the session logs out at 15 minutes. To avoid this, simply click **"Stay Logged In"** on the popup.
+#### प्र. 2: काम करते-करते अचानक पोर्टल लॉगआउट क्यों हो गया?
+**उत्तर:** सुरक्षा के लिए यदि आप 15 मिनट तक कंप्यूटर पर कोई कीबोर्ड या माउस नहीं चलाते, तो पोर्टल अपने आप बंद हो जाता है। 14 मिनट पर एक उल्टी गिनती वाली खिड़की आती है, उसमें बस **"Stay Logged In"** दबा दिया करें।
 
-#### Q3: Why is Section 4 ("देयक पारित आदेश" / Passing Order) not visible on my Form 21 Bill?
-* **उत्तर / Answer:** Section 4 is strictly reserved for the **Controlling Officer / Sanctioning Authority (Admin)**. In an individual employee's login, the bill terminates cleanly after the Claimant's declaration signature to avoid premature passing orders. It appears automatically when logged in as Administrator.
+#### प्र. 3: प्रपत्र 21 में बहुत सारे खाली कॉलम आ रहे हैं, उन्हें कैसे हटाएं?
+**उत्तर:** बिल के ऊपर दिए गए **"Hide Blank Columns" (रिक्त कॉलम छिपाएं)** बटन को दबाएं। सारे खाली कॉलम हट जाएंगे और पन्ना बहुत साफ और सुंदर दिखेगा।
 
-#### Q4: How do I remove blank, unused columns from the printed Form 21 Bill?
-* **उत्तर / Answer:** Click the **"Hide Blank Columns" (रिक्त कॉलम छिपाएं)** button in the top toolbar of the bill. All columns with zero data will be omitted, and the remaining columns will automatically renumber sequentially `1, 2, 3...` and stretch to fill 100% of the page width.
+#### प्र. 4: मेरे बिल पर "देयक पारित आदेश" (Passing Order) क्यों नहीं दिख रहा?
+**उत्तर:** नियम अनुसार पारित आदेश केवल सक्षम अधिकारी (Admin) के लॉगिन में दिखता है। सामान्य कर्मचारी के बिल पर केवल कर्मचारी के हस्ताक्षर आते हैं।
 
-#### Q5: Can I claim higher travel class than my entitlement?
-* **उत्तर / Answer:** The system highlights your entitled class (e.g. AC 3-Tier for Cat C). If you traveled in a higher class due to official exigency with approval, you may select it from the dynamic dropdown, but reimbursement may be restricted to the entitled class rate by the Controlling Officer.
+#### प्र. 5: क्या मैं अपने बिल को एक्सेल में डाउनलोड कर सकता हूँ?
+**उत्तर:** हाँ, बिल के ऊपर या रिपोर्ट्स के पन्ने पर दिए गए **"Export to Excel"** बटन पर क्लिक करें। एक्सेल फ़ाइल तुरंत डाउनलोड हो जाएगी।
 
-#### Q6: How do I export my claims and reports to Excel?
-* **उत्तर / Answer:** On the **Form 21 Bill** page or the **Reports** page, click the green **"Export to Excel"** button. An `.xlsx` file is immediately downloaded to your computer.
+#### प्र. 6: यदि पोर्टल न खुले तो क्या करें?
+**उत्तर:** जांचें कि क्या `run_portal.bat` वाली काली स्क्रीन खुली है? यदि बंद हो गई हो, तो `run_portal.bat` पर फिर से डबल क्लिक करें और ब्राउज़र में `http://localhost:5173/` खोलें।
 
 ---
 
-*MPSCSC Claims Portal — Built for Madhya Pradesh State Civil Supplies Corporation Ltd. © 2026*  
-*म.प्र. राज्य नागरिक आपूर्ति निगम — सुशासन, पारदर्शिता एवं डिजिटल सशक्तिकरण*
+*MPSCSC Claims Portal — मध्यप्रदेश राज्य नागरिक आपूर्ति निगम*  
+*सरल, पारदर्शी एवं पूर्णतः डिजिटल दावा प्रबंधन प्रणाली © 2026*
